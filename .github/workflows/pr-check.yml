@@ -173,11 +173,9 @@ jobs:
       
       - name: Run tests with coverage for SonarCloud
         run: npm run test:coverage
-        continue-on-error: true
       
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
-        continue-on-error: true  # Don't fail if SonarCloud is not configured
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -198,17 +196,15 @@ jobs:
     steps:
       - name: Check all job statuses
         run: |
-          # Required checks (must pass)
           if [[ "${{ needs.build.result }}" != "success" ]] || \
              [[ "${{ needs.test.result }}" != "success" ]] || \
              [[ "${{ needs.e2e-test.result }}" != "success" ]] || \
-             [[ "${{ needs.lint.result }}" != "success" ]]; then
-            echo "One or more required checks failed"
+             [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs.code-quality.result }}" != "success" ]]; then
+            echo "One or more checks failed"
             exit 1
           fi
-          
-          # Optional checks (code-quality/SonarCloud)
-          if [[ "${{ needs.code-quality.result }}" == "failure" ]]; then
+          echo "All checks passed successfully"
             echo "⚠️  Warning: Code quality check failed (non-blocking)"
           fi
           
