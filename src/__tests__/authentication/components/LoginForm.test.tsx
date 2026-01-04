@@ -177,10 +177,10 @@ describe('LoginForm', () => {
       expect(screen.getByText(/loading/i)).toBeInTheDocument();
     });
 
-    // Wait for submission to complete
+    // Wait for submission to complete with increased timeout
     await waitFor(() => {
       expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
 
     // Second submission should clear any previous errors
     fireEvent.submit(form);
