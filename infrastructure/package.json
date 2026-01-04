@@ -1,0 +1,26 @@
+{
+  "name": "college-athlete-base-infrastructure",
+  "version": "1.0.0",
+  "description": "Infrastructure as Code for College Athlete Base platform",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "deploy:dev": "cdk deploy DevStack --require-approval never",
+    "deploy:prod": "cdk deploy ProdStack --require-approval always",
+    "diff:dev": "cdk diff DevStack",
+    "diff:prod": "cdk diff ProdStack",
+    "synth": "cdk synth",
+    "destroy:dev": "cdk destroy DevStack",
+    "destroy:prod": "cdk destroy ProdStack"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "aws-cdk": "^2.120.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.120.0",
+    "constructs": "^10.0.0"
+  }
+}

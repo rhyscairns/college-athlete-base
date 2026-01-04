@@ -3,10 +3,16 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
 # Production builds
 /build
 /dist
+
+# Next.js
+/.next/
+/out/
+next-env.d.ts
 
 # Environment variables
 .env
@@ -14,6 +20,7 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.env*.local
 
 # IDE
 .vscode/
@@ -37,6 +44,16 @@ pids
 
 # Coverage directory used by tools like istanbul
 coverage/
+coverage-reports/
+
+# Test results
+junit.xml
+test-results/
+
+# Playwright
+playwright-report/
+playwright/.cache/
+test-results/
 
 # Dependency directories
 jspm_packages/
@@ -52,3 +69,26 @@ jspm_packages/
 
 # Yarn Integrity file
 .yarn-integrity
+
+# TypeScript
+*.tsbuildinfo
+
+# SonarCloud
+.scannerwork/
+.sonar/
+
+# Infrastructure / CDK
+infrastructure/cdk.out/
+infrastructure/.cdk.staging/
+infrastructure/node_modules/
+infrastructure/*.js
+infrastructure/*.d.ts
+infrastructure/.env
+infrastructure/.env.local
+!infrastructure/jest.config.js
+
+# Kiro
+.kiro
+
+# Docs
+docs

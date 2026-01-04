@@ -1,0 +1,71 @@
+name: Test Validation
+
+# This workflow validates that tests can run successfully
+# Useful for testing the test infrastructure itself
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  validate-tests:
+    name: Validate Test Infrastructure
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Verify Jest configuration
+        run: |
+          if [ ! -f "jest.config.js" ]; then
+            echo "Error: jest.config.js not found"
+            exit 1
+          fi
+          echo "✓ Jest configuration found"
+      
+      - name: Verify Playwright configuration
+        run: |
+          if [ ! -f "playwright.config.ts" ]; then
+            echo "Error: playwright.config.ts not found"
+            exit 1
+          fi
+          echo "✓ Playwright configuration found"
+      
+      - name: Run unit tests
+        run: npm run test:coverage
+      
+      - name: Verify coverage thresholds
+        run: |
+          if [ ! -d "coverage" ]; then
+            echo "Error: Coverage directory not generated"
+            exit 1
+          fi
+          echo "✓ Coverage reports generated"
+      
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+      
+      - name: List E2E tests
+        run: npx playwright test --list
+      
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-validation-artifacts
+          path: |
+            coverage/
+            playwright-report/
+          retention-days: 7
