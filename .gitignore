@@ -90,3 +90,5 @@ infrastructure/.env.local
 # Kiro
 .kiro
 
+# Docs
+docs
