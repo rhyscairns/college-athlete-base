@@ -1,0 +1,13 @@
+echo "🧪 Running tests before push..."
+
+# Run tests in src/__tests__
+npm test -- --passWithNoTests
+
+# Check if tests passed
+if [ $? -ne 0 ]; then
+  echo "❌ Tests failed! Push aborted."
+  echo "Fix the failing tests before pushing."
+  exit 1
+fi
+
+echo "✅ All tests passed! Proceeding with push..."

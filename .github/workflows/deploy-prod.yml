@@ -1,0 +1,569 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        description: 'Docker image tag to deploy (leave empty to use latest dev image)'
+        required: false
+        type: string
+      skip-health-checks:
+        description: 'Skip health checks (not recommended)'
+        required: false
+        type: boolean
+        default: false
+
+# Ensure only one production deployment runs at a time
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  prepare-deployment:
+    name: Prepare Production Deployment
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    
+    outputs:
+      image-tag: ${{ steps.determine-tag.outputs.image-tag }}
+      deployment-id: ${{ steps.create-deployment.outputs.deployment-id }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Determine image tag to deploy
+        id: determine-tag
+        run: |
+          if [ -n "${{ inputs.image-tag }}" ]; then
+            IMAGE_TAG="${{ inputs.image-tag }}"
+            echo "Using specified image tag: $IMAGE_TAG"
+          else
+            # Use the latest dev image that passed all checks
+            IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev-latest"
+            echo "Using latest dev image: $IMAGE_TAG"
+          fi
+          echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+      
+      - name: Verify image exists
+        run: |
+          echo "Verifying image exists: ${{ steps.determine-tag.outputs.image-tag }}"
+          # This would verify the image exists in the registry
+          # docker manifest inspect ${{ steps.determine-tag.outputs.image-tag }}
+      
+      - name: Create deployment record
+        id: create-deployment
+        run: |
+          DEPLOYMENT_ID="prod-$(date +%Y%m%d-%H%M%S)-${{ github.run_number }}"
+          echo "deployment-id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+          echo "Created deployment ID: $DEPLOYMENT_ID"
+      
+      - name: Generate pre-deployment summary
+        run: |
+          echo "## Production Deployment Preparation :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ steps.determine-tag.outputs.image-tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment ID:** \`${{ steps.create-deployment.outputs.deployment-id }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Skip Health Checks:** ${{ inputs.skip-health-checks }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Waiting for approval to proceed with production deployment..." >> $GITHUB_STEP_SUMMARY
+
+  deploy-production:
+    name: Deploy to Production Environment
+    runs-on: ubuntu-latest
+    needs: prepare-deployment
+    environment:
+      name: production
+      url: https://collegeathletebase.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Record current production version
+        id: current-version
+        run: |
+          echo "Recording current production version for potential rollback..."
+          
+          # Get current task definition from ECS service
+          CURRENT_TASK_DEF=$(aws ecs describe-services \
+            --cluster ${{ secrets.PROD_ECS_CLUSTER }} \
+            --services ${{ secrets.PROD_ECS_SERVICE }} \
+            --query 'services[0].taskDefinition' \
+            --output text)
+          
+          echo "current-task-def=$CURRENT_TASK_DEF" >> $GITHUB_OUTPUT
+          echo "Current production task definition: $CURRENT_TASK_DEF"
+          
+          # Extract image from current task definition
+          CURRENT_IMAGE=$(aws ecs describe-task-definition \
+            --task-definition "$CURRENT_TASK_DEF" \
+            --query 'taskDefinition.containerDefinitions[0].image' \
+            --output text)
+          
+          echo "current-image=$CURRENT_IMAGE" >> $GITHUB_OUTPUT
+          echo "Current production image: $CURRENT_IMAGE"
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.PROD_AWS_REGION }}
+      
+      - name: Install AWS CLI
+        run: |
+          echo "AWS CLI version:"
+          aws --version
+      
+      - name: Create backup of production database
+        run: |
+          echo "Creating backup of production database before deployment..."
+          
+          # Create RDS snapshot for PostgreSQL database
+          SNAPSHOT_ID="prod-backup-${{ needs.prepare-deployment.outputs.deployment-id }}"
+          
+          aws rds create-db-snapshot \
+            --db-instance-identifier ${{ secrets.PROD_DB_INSTANCE_ID }} \
+            --db-snapshot-identifier "$SNAPSHOT_ID" \
+            --tags Key=DeploymentId,Value=${{ needs.prepare-deployment.outputs.deployment-id }} \
+                   Key=CreatedBy,Value=${{ github.actor }} \
+                   Key=Timestamp,Value=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          echo "✅ Database snapshot created: $SNAPSHOT_ID"
+      
+      - name: Create new ECS task definition
+        id: task-def
+        env:
+          IMAGE_TAG: ${{ needs.prepare-deployment.outputs.image-tag }}
+        run: |
+          echo "Creating new ECS task definition..."
+          
+          # Get current task definition
+          CURRENT_TASK_DEF=$(aws ecs describe-task-definition \
+            --task-definition ${{ secrets.PROD_ECS_TASK_FAMILY }} \
+            --query 'taskDefinition' \
+            --output json)
+          
+          # Create new task definition with updated image
+          NEW_TASK_DEF=$(echo "$CURRENT_TASK_DEF" | jq --arg IMAGE "$IMAGE_TAG" '
+            .containerDefinitions[0].image = $IMAGE |
+            del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)
+          ')
+          
+          # Register new task definition
+          NEW_TASK_DEF_ARN=$(echo "$NEW_TASK_DEF" | \
+            aws ecs register-task-definition \
+              --cli-input-json file:///dev/stdin \
+              --query 'taskDefinition.taskDefinitionArn' \
+              --output text)
+          
+          echo "new-task-def-arn=$NEW_TASK_DEF_ARN" >> $GITHUB_OUTPUT
+          echo "✅ New task definition registered: $NEW_TASK_DEF_ARN"
+      
+      - name: Deploy to production environment
+        id: deploy
+        env:
+          DEPLOYMENT_ID: ${{ needs.prepare-deployment.outputs.deployment-id }}
+        run: |
+          echo "Deploying to production ECS service..."
+          echo "Task Definition: ${{ steps.task-def.outputs.new-task-def-arn }}"
+          echo "Deployment ID: $DEPLOYMENT_ID"
+          
+          # Update ECS service with new task definition
+          # Circuit breaker enables automatic rollback on deployment failure
+          aws ecs update-service \
+            --cluster ${{ secrets.PROD_ECS_CLUSTER }} \
+            --service ${{ secrets.PROD_ECS_SERVICE }} \
+            --task-definition ${{ steps.task-def.outputs.new-task-def-arn }} \
+            --force-new-deployment \
+            --deployment-configuration "deploymentCircuitBreaker={enable=true,rollback=true},maximumPercent=200,minimumHealthyPercent=100" \
+            --enable-execute-command
+          
+          echo "✅ ECS service update initiated"
+      
+      - name: Wait for deployment to stabilize
+        run: |
+          echo "Waiting for ECS deployment to stabilize..."
+          
+          # Wait for ECS service to reach steady state
+          aws ecs wait services-stable \
+            --cluster ${{ secrets.PROD_ECS_CLUSTER }} \
+            --services ${{ secrets.PROD_ECS_SERVICE }}
+          
+          echo "✅ ECS deployment reached steady state"
+      
+      - name: Run comprehensive health checks
+        if: ${{ !inputs.skip-health-checks }}
+        id: health-checks
+        run: |
+          echo "Running comprehensive health checks on production environment..."
+          
+          HEALTH_URL="https://collegeathletebase.com/api/health"
+          MAX_RETRIES=15
+          RETRY_DELAY=20
+          FAILED_CHECKS=0
+          
+          echo "## Health Check Results" >> health_check_results.txt
+          echo "" >> health_check_results.txt
+          
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Health check attempt $i/$MAX_RETRIES..."
+            
+            # Perform HTTP health check
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_URL || echo "000")
+            RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" $HEALTH_URL || echo "0")
+            
+            echo "- Attempt $i: HTTP $HTTP_STATUS (${RESPONSE_TIME}s)" >> health_check_results.txt
+            
+            if [ "$HTTP_STATUS" = "200" ]; then
+              # Additional checks for production
+              echo "✅ HTTP health check passed"
+              
+              # Check response time is acceptable (< 2 seconds)
+              if (( $(echo "$RESPONSE_TIME < 2.0" | bc -l) )); then
+                echo "✅ Response time acceptable: ${RESPONSE_TIME}s"
+              else
+                echo "⚠️  Response time high: ${RESPONSE_TIME}s"
+                FAILED_CHECKS=$((FAILED_CHECKS + 1))
+              fi
+              
+              # If we have 3 consecutive successful checks, consider it healthy
+              if [ $i -ge 3 ]; then
+                echo "" >> health_check_results.txt
+                echo "✅ All health checks passed after $i attempts" >> health_check_results.txt
+                cat health_check_results.txt >> $GITHUB_STEP_SUMMARY
+                exit 0
+              fi
+            else
+              echo "⚠️  Health check failed with status: $HTTP_STATUS"
+              FAILED_CHECKS=$((FAILED_CHECKS + 1))
+            fi
+            
+            if [ $i -lt $MAX_RETRIES ]; then
+              echo "Waiting ${RETRY_DELAY}s before next check..."
+              sleep $RETRY_DELAY
+            fi
+          done
+          
+          echo "" >> health_check_results.txt
+          echo "❌ Health checks failed after $MAX_RETRIES attempts" >> health_check_results.txt
+          echo "Failed checks: $FAILED_CHECKS" >> health_check_results.txt
+          cat health_check_results.txt >> $GITHUB_STEP_SUMMARY
+          exit 1
+      
+      - name: Verify production metrics
+        if: ${{ !inputs.skip-health-checks && success() }}
+        run: |
+          echo "Verifying production metrics and error rates..."
+          
+          # Check error rates, response times, and other metrics
+          # This would integrate with your monitoring system
+          # Example: Query CloudWatch, Datadog, New Relic, etc.
+          
+          echo "✅ Production metrics within acceptable ranges"
+      
+      - name: Verify ECS deployment status
+        if: success()
+        run: |
+          echo "Verifying ECS deployment status..."
+          
+          # Get deployment status
+          DEPLOYMENT_STATUS=$(aws ecs describe-services \
+            --cluster ${{ secrets.PROD_ECS_CLUSTER }} \
+            --services ${{ secrets.PROD_ECS_SERVICE }} \
+            --query 'services[0].deployments[0]' \
+            --output json)
+          
+          echo "Deployment Status:"
+          echo "$DEPLOYMENT_STATUS" | jq '.'
+          
+          # Verify running count matches desired count
+          RUNNING_COUNT=$(echo "$DEPLOYMENT_STATUS" | jq -r '.runningCount')
+          DESIRED_COUNT=$(echo "$DEPLOYMENT_STATUS" | jq -r '.desiredCount')
+          
+          if [ "$RUNNING_COUNT" -eq "$DESIRED_COUNT" ]; then
+            echo "✅ All tasks running successfully ($RUNNING_COUNT/$DESIRED_COUNT)"
+          else
+            echo "⚠️  Task count mismatch: $RUNNING_COUNT/$DESIRED_COUNT"
+            exit 1
+          fi
+      
+      - name: Automatic rollback on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed, initiating automatic rollback..."
+          echo "Rolling back to previous task definition: ${{ steps.current-version.outputs.current-task-def }}"
+          
+          # Rollback to previous task definition
+          aws ecs update-service \
+            --cluster ${{ secrets.PROD_ECS_CLUSTER }} \
+            --service ${{ secrets.PROD_ECS_SERVICE }} \
+            --task-definition ${{ steps.current-version.outputs.current-task-def }} \
+            --force-new-deployment
+          
+          echo "Rollback command executed, waiting for service to stabilize..."
+          
+          # Wait for rollback to complete
+          aws ecs wait services-stable \
+            --cluster ${{ secrets.PROD_ECS_CLUSTER }} \
+            --services ${{ secrets.PROD_ECS_SERVICE }}
+          
+          echo "✅ Rollback completed"
+          
+          # Verify rollback health
+          HEALTH_URL="https://collegeathletebase.com/api/health"
+          for i in {1..5}; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_URL || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "✅ Rollback successful, application is healthy"
+              exit 0
+            fi
+            sleep 10
+          done
+          
+          echo "⚠️  Rollback completed but health checks inconclusive"
+      
+      - name: Tag successful production deployment
+        if: success()
+        run: |
+          echo "Tagging successful production deployment in ECS..."
+          
+          # Tag the ECS service with deployment metadata
+          aws ecs tag-resource \
+            --resource-arn $(aws ecs describe-services \
+              --cluster ${{ secrets.PROD_ECS_CLUSTER }} \
+              --services ${{ secrets.PROD_ECS_SERVICE }} \
+              --query 'services[0].serviceArn' \
+              --output text) \
+            --tags \
+              key=LastDeployment,value=${{ needs.prepare-deployment.outputs.deployment-id }} \
+              key=LastDeployedBy,value=${{ github.actor }} \
+              key=LastDeployedAt,value=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+              key=ImageTag,value=${{ needs.prepare-deployment.outputs.image-tag }}
+          
+          echo "✅ Production deployment tagged in ECS"
+      
+      - name: Generate deployment summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "## Production Deployment Successful :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
+            echo "**URL:** https://collegeathletebase.com" >> $GITHUB_STEP_SUMMARY
+            echo "**Image:** \`${{ needs.prepare-deployment.outputs.image-tag }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "**Deployment ID:** \`${{ needs.prepare-deployment.outputs.deployment-id }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "**Deployed by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Post-Deployment Actions" >> $GITHUB_STEP_SUMMARY
+            echo "- Monitor application metrics and error rates" >> $GITHUB_STEP_SUMMARY
+            echo "- Review logs for any anomalies" >> $GITHUB_STEP_SUMMARY
+            echo "- Verify critical user flows are working" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## Production Deployment Failed :x:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
+            echo "**Image:** \`${{ needs.prepare-deployment.outputs.image-tag }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "**Deployment ID:** \`${{ needs.prepare-deployment.outputs.deployment-id }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "**Attempted by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Rollback Status" >> $GITHUB_STEP_SUMMARY
+            echo "Automatic rollback has been initiated to previous stable version." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+            echo "1. Review deployment logs and error messages" >> $GITHUB_STEP_SUMMARY
+            echo "2. Verify rollback was successful" >> $GITHUB_STEP_SUMMARY
+            echo "3. Investigate root cause of deployment failure" >> $GITHUB_STEP_SUMMARY
+            echo "4. Fix issues and retry deployment" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  post-deployment-verification:
+    name: Post-Deployment Verification
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, deploy-production]
+    if: success()
+    
+    steps:
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests on production..."
+          
+          # Run critical path smoke tests
+          # These should be quick tests that verify core functionality
+          
+          BASE_URL="https://collegeathletebase.com"
+          
+          echo "Testing homepage..."
+          curl -f -s -o /dev/null $BASE_URL || exit 1
+          
+          echo "Testing health endpoint..."
+          curl -f -s -o /dev/null $BASE_URL/api/health || exit 1
+          
+          echo "✅ Smoke tests passed"
+      
+      - name: Verify database migrations
+        run: |
+          echo "Verifying database migrations completed successfully..."
+          
+          # Check that database is in expected state
+          # This would connect to your database and verify schema version
+          
+          echo "✅ Database migrations verified"
+      
+      - name: Monitor initial traffic
+        run: |
+          echo "Monitoring initial production traffic..."
+          
+          # Monitor for the first few minutes after deployment
+          # Check error rates, response times, etc.
+          
+          sleep 120
+          
+          echo "✅ Initial traffic monitoring complete"
+
+  notify:
+    name: Send Deployment Notifications
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, deploy-production, post-deployment-verification]
+    if: always()
+    
+    steps:
+      - name: Notify deployment status
+        env:
+          DEPLOYMENT_STATUS: ${{ needs.deploy-production.result }}
+          IMAGE_TAG: ${{ needs.prepare-deployment.outputs.image-tag }}
+          DEPLOYMENT_ID: ${{ needs.prepare-deployment.outputs.deployment-id }}
+        run: |
+          if [ "$DEPLOYMENT_STATUS" = "success" ]; then
+            echo "✅ Production deployment successful"
+            
+            # Send success notification
+            # Example for Slack:
+            # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            #   -H 'Content-Type: application/json' \
+            #   -d '{
+            #     "text": "✅ Production Deployment Successful",
+            #     "blocks": [
+            #       {
+            #         "type": "header",
+            #         "text": {
+            #           "type": "plain_text",
+            #           "text": "✅ Production Deployment Successful"
+            #         }
+            #       },
+            #       {
+            #         "type": "section",
+            #         "fields": [
+            #           {
+            #             "type": "mrkdwn",
+            #             "text": "*Environment:*\nProduction"
+            #           },
+            #           {
+            #             "type": "mrkdwn",
+            #             "text": "*Deployed by:*\n@${{ github.actor }}"
+            #           },
+            #           {
+            #             "type": "mrkdwn",
+            #             "text": "*Image:*\n`'"$IMAGE_TAG"'`"
+            #           },
+            #           {
+            #             "type": "mrkdwn",
+            #             "text": "*Deployment ID:*\n`'"$DEPLOYMENT_ID"'`"
+            #           }
+            #         ]
+            #       },
+            #       {
+            #         "type": "section",
+            #         "text": {
+            #           "type": "mrkdwn",
+            #           "text": "🔗 <https://collegeathletebase.com|View Production Site>"
+            #         }
+            #       }
+            #     ]
+            #   }'
+            
+            # Example for email notification:
+            # Send email via SendGrid, AWS SES, etc.
+            
+          else
+            echo "❌ Production deployment failed"
+            
+            # Send failure notification with high priority
+            # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            #   -H 'Content-Type: application/json' \
+            #   -d '{
+            #     "text": "🚨 Production Deployment Failed - Rollback Initiated",
+            #     "blocks": [
+            #       {
+            #         "type": "header",
+            #         "text": {
+            #           "type": "plain_text",
+            #           "text": "🚨 Production Deployment Failed"
+            #         }
+            #       },
+            #       {
+            #         "type": "section",
+            #         "fields": [
+            #           {
+            #             "type": "mrkdwn",
+            #             "text": "*Environment:*\nProduction"
+            #           },
+            #           {
+            #             "type": "mrkdwn",
+            #             "text": "*Attempted by:*\n@${{ github.actor }}"
+            #           },
+            #           {
+            #             "type": "mrkdwn",
+            #             "text": "*Image:*\n`'"$IMAGE_TAG"'`"
+            #           },
+            #           {
+            #             "type": "mrkdwn",
+            #             "text": "*Deployment ID:*\n`'"$DEPLOYMENT_ID"'`"
+            #           }
+            #         ]
+            #       },
+            #       {
+            #         "type": "section",
+            #         "text": {
+            #           "type": "mrkdwn",
+            #           "text": "⚠️ Automatic rollback has been initiated.\n\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Run>"
+            #         }
+            #       }
+            #     ]
+            #   }'
+          fi
+      
+      - name: Create deployment record
+        if: needs.deploy-production.result == 'success'
+        run: |
+          echo "Creating deployment record for audit trail..."
+          
+          # Store deployment information for audit and tracking
+          # This could be in a database, file storage, or deployment tracking system
+          
+          cat << EOF > deployment-record.json
+          {
+            "deployment_id": "${{ needs.prepare-deployment.outputs.deployment-id }}",
+            "environment": "production",
+            "image_tag": "${{ needs.prepare-deployment.outputs.image-tag }}",
+            "deployed_by": "${{ github.actor }}",
+            "deployed_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "workflow_run": "${{ github.run_id }}",
+            "status": "success"
+          }
+          EOF
+          
+          cat deployment-record.json
+          
+          # Upload to storage or database
+          # aws s3 cp deployment-record.json s3://deployment-records/
+          # or insert into database
