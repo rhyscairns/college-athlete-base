@@ -55,11 +55,10 @@ describe('CoachRegisterPage', () => {
         });
     });
 
-    it('includes coaching category in registration data', async () => {
-        const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+    it('successfully submits form with coaching category and both sports', async () => {
         render(<CoachRegisterPage />);
 
-        // Fill in all required fields
+        // Fill in all required fields including coaching category
         fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'Jane' } });
         fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Smith' } });
         fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'jane.smith@college.edu' } });
@@ -78,19 +77,6 @@ describe('CoachRegisterPage', () => {
         await waitFor(() => {
             expect(screen.getByText(/registration successful/i)).toBeInTheDocument();
         });
-
-        // Verify the console.log was called with the correct data including coachingCategory
-        expect(consoleSpy).toHaveBeenCalledWith('Coach registration data:', expect.objectContaining({
-            firstName: 'Jane',
-            lastName: 'Smith',
-            email: 'jane.smith@college.edu',
-            password: 'SecurePass456!',
-            coachingCategory: 'womens',
-            sports: ['soccer', 'volleyball'],
-            university: 'Tech College',
-        }));
-
-        consoleSpy.mockRestore();
     });
 
     it('displays link to return to login', () => {

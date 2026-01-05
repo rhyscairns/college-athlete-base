@@ -14,8 +14,6 @@ export function CoachRegisterPage() {
         // Simulating API call for now
         await new Promise(resolve => setTimeout(resolve, 1500));
 
-        console.log('Coach registration data:', data);
-
         // Mock successful registration
         setSuccessMessage('Registration successful! Redirecting to login...');
 
