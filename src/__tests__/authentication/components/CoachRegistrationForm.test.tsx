@@ -5,6 +5,7 @@ import { CoachRegistrationForm } from '@/authentication/components/CoachRegistra
 
 const exampleEmail = 'john.doe@university.edu'
 const examplePassword = 'Password123!'
+const stateUniversity = 'State University'
 
 describe('CoachRegistrationForm', () => {
     const mockOnSubmit = jest.fn();
@@ -86,7 +87,7 @@ describe('CoachRegistrationForm', () => {
         fireEvent.change(screen.getByLabelText(/email/i), { target: { value: exampleEmail } });
         fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: examplePassword } });
         fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
-        fireEvent.change(screen.getByLabelText(/university/i), { target: { value: 'State University' } });
+        fireEvent.change(screen.getByLabelText(/university/i), { target: { value: stateUniversity } });
 
         // Button should still be disabled without coaching category
         const submitButton = screen.getByRole('button', { name: /create coach account/i });
@@ -105,7 +106,7 @@ describe('CoachRegistrationForm', () => {
         fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: examplePassword } });
         fireEvent.change(screen.getByLabelText(/coaching category/i), { target: { value: 'mens' } });
         fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
-        fireEvent.change(screen.getByLabelText(/university/i), { target: { value: 'State University' } });
+        fireEvent.change(screen.getByLabelText(/university/i), { target: { value: stateUniversity } });
 
         const submitButton = screen.getByRole('button', { name: /create coach account/i });
         fireEvent.click(submitButton);
@@ -118,7 +119,7 @@ describe('CoachRegistrationForm', () => {
                 password: examplePassword,
                 coachingCategory: 'mens',
                 sports: ['basketball'],
-                university: 'State University',
+                university: stateUniversity,
             });
         });
     });
@@ -181,7 +182,7 @@ describe('CoachRegistrationForm', () => {
         fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: examplePassword } });
         fireEvent.change(screen.getByLabelText(/coaching category/i), { target: { value: 'mens' } });
         fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
-        fireEvent.change(screen.getByLabelText(/university/i), { target: { value: 'State University' } });
+        fireEvent.change(screen.getByLabelText(/university/i), { target: { value: stateUniversity } });
 
         await waitFor(() => {
             const submitButton = screen.getByRole('button', { name: /create coach account/i });
@@ -209,7 +210,7 @@ describe('CoachRegistrationForm', () => {
         fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: examplePassword } });
         fireEvent.change(screen.getByLabelText(/coaching category/i), { target: { value: 'mens' } });
         fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
-        fireEvent.change(screen.getByLabelText(/university/i), { target: { value: 'State University' } });
+        fireEvent.change(screen.getByLabelText(/university/i), { target: { value: stateUniversity } });
 
         const submitButton = screen.getByRole('button', { name: /create coach account/i });
         fireEvent.click(submitButton);
@@ -230,7 +231,7 @@ describe('CoachRegistrationForm', () => {
         fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: examplePassword } });
         fireEvent.change(screen.getByLabelText(/coaching category/i), { target: { value: 'mens' } });
         fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
-        fireEvent.change(screen.getByLabelText(/university/i), { target: { value: 'State University' } });
+        fireEvent.change(screen.getByLabelText(/university/i), { target: { value: stateUniversity } });
 
         const submitButton = screen.getByRole('button', { name: /create coach account/i });
         fireEvent.click(submitButton);
