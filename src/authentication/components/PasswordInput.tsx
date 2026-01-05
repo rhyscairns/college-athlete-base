@@ -4,23 +4,27 @@ import { useState } from 'react';
 import { ErrorMessage } from './ErrorMessage';
 import type { PasswordInputProps } from '../types';
 
-export function PasswordInput({ value, onChange, error, disabled = false }: PasswordInputProps) {
+export function PasswordInput({ value, onChange, onBlur, error, disabled = false }: PasswordInputProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="w-full">
+      <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+        Password
+        <span className="text-red-600 ml-1">*</span>
+      </label>
       <div className="relative">
         <input
           id="password"
           type={showPassword ? 'text' : 'password'}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
           disabled={disabled}
-          placeholder="Password"
           aria-invalid={!!error}
           aria-describedby={error ? 'password-error' : undefined}
-          aria-label="Password"
-          className="w-full h-14 text-center bg-white/60 backdrop-blur-sm text-gray-800 placeholder-gray-500 border-2 border-white/80 rounded-xl focus:outline-none focus:border-white focus:bg-white/80 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
+          aria-required={true}
+          className="w-full h-12 px-4 bg-white/60 backdrop-blur-sm text-gray-800 placeholder-gray-500 border-2 rounded-xl focus:outline-none focus:bg-white/80 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all border-white/80 focus:border-white pr-12"
         />
         <button
           type="button"
