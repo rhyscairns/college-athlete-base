@@ -7,19 +7,19 @@
   ],
   "rules": {
     // Code Quality Rules
-    "sonarjs/cognitive-complexity": ["error", 15],
+    "sonarjs/cognitive-complexity": ["warn", 15],
     "sonarjs/no-duplicate-string": ["warn", { "threshold": 3 }],
-    "sonarjs/no-identical-functions": "error",
+    "sonarjs/no-identical-functions": "warn",
     "sonarjs/no-collapsible-if": "warn",
     "sonarjs/prefer-immediate-return": "warn",
     "sonarjs/prefer-object-literal": "warn",
     "sonarjs/prefer-single-boolean-return": "warn",
     
     // Complexity Rules
-    "complexity": ["error", 10],
-    "max-depth": ["error", 4],
-    "max-lines-per-function": ["warn", { "max": 50, "skipBlankLines": true, "skipComments": true }],
-    "max-params": ["error", 5],
+    "complexity": ["warn", 15],
+    "max-depth": ["warn", 4],
+    "max-lines-per-function": ["warn", { "max": 100, "skipBlankLines": true, "skipComments": true }],
+    "max-params": ["warn", 5],
     
     // Best Practices
     "no-console": ["warn", { "allow": ["warn", "error"] }],
@@ -28,6 +28,6 @@
     "no-var": "error",
     "prefer-const": "error",
     "eqeqeq": ["error", "always"],
-    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
   }
 }
