@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { LoginForm } from '@/authentication/components/LoginForm';
-import type { User } from '@/authentication/types';
+
+const exampleEmail = 'test@example.com'
 
 // Helper to get password input reliably
 const getPasswordInput = () => document.getElementById('password') as HTMLInputElement;
@@ -19,9 +20,9 @@ describe('LoginForm', () => {
     render(<LoginForm />);
     const emailInput = screen.getByLabelText(/email/i) as HTMLInputElement;
 
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
 
-    expect(emailInput.value).toBe('test@example.com');
+    expect(emailInput.value).toBe(exampleEmail);
   });
 
   it('updates password input value when user types', () => {
@@ -46,7 +47,7 @@ describe('LoginForm', () => {
     const passwordInput = getPasswordInput();
     const submitButton = screen.getByRole('button', { name: /sign in/i });
 
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
     expect(submitButton).not.toBeDisabled();
@@ -85,7 +86,7 @@ describe('LoginForm', () => {
     const emailInput = screen.getByLabelText(/email/i);
     const form = screen.getByRole('form');
 
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
     fireEvent.submit(form);
 
     await waitFor(() => {
@@ -99,7 +100,7 @@ describe('LoginForm', () => {
     const passwordInput = getPasswordInput();
     const form = screen.getByRole('form');
 
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
     fireEvent.change(passwordInput, { target: { value: 'short' } });
     fireEvent.submit(form);
 
@@ -114,7 +115,7 @@ describe('LoginForm', () => {
     const passwordInput = getPasswordInput();
     const form = screen.getByRole('form');
 
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.submit(form);
 
@@ -130,7 +131,7 @@ describe('LoginForm', () => {
     const submitButton = screen.getByRole('button', { name: /sign in/i });
     const form = screen.getByRole('form');
 
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.submit(form);
 
@@ -148,14 +149,14 @@ describe('LoginForm', () => {
     const passwordInput = getPasswordInput();
     const form = screen.getByRole('form');
 
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.submit(form);
 
     await waitFor(() => {
       expect(onSuccess).toHaveBeenCalledWith(
         expect.objectContaining({
-          email: 'test@example.com',
+          email: exampleEmail,
           role: 'player',
         })
       );
@@ -169,7 +170,7 @@ describe('LoginForm', () => {
     const form = screen.getByRole('form');
 
     // First submission with valid data
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.submit(form);
 
@@ -215,7 +216,7 @@ describe('LoginForm', () => {
     });
 
     // Correct the email and resubmit
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
     fireEvent.submit(form);
 
     await waitFor(() => {
@@ -243,7 +244,7 @@ describe('LoginForm', () => {
     const form = screen.getByRole('form');
 
     const validEmails = [
-      'test@example.com',
+      exampleEmail,
       'user.name@example.co.uk',
       'user+tag@example.com',
     ];

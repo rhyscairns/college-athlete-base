@@ -2,7 +2,9 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { CoachRegistrationForm } from '@/authentication/components/CoachRegistrationForm';
-import type { CoachRegistrationData } from '@/authentication/types';
+
+const exampleEmail = 'john.doe@university.edu'
+const examplePassword = 'Password123!'
 
 describe('CoachRegistrationForm', () => {
     const mockOnSubmit = jest.fn();
@@ -81,8 +83,8 @@ describe('CoachRegistrationForm', () => {
         // Fill in all fields except coaching category
         fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'John' } });
         fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Doe' } });
-        fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john.doe@university.edu' } });
-        fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: 'Password123!' } });
+        fireEvent.change(screen.getByLabelText(/email/i), { target: { value: exampleEmail } });
+        fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: examplePassword } });
         fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
         fireEvent.change(screen.getByLabelText(/university/i), { target: { value: 'State University' } });
 
@@ -99,8 +101,8 @@ describe('CoachRegistrationForm', () => {
         // Fill in all required fields
         fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'John' } });
         fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Doe' } });
-        fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john.doe@university.edu' } });
-        fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: 'Password123!' } });
+        fireEvent.change(screen.getByLabelText(/email/i), { target: { value: exampleEmail } });
+        fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: examplePassword } });
         fireEvent.change(screen.getByLabelText(/coaching category/i), { target: { value: 'mens' } });
         fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
         fireEvent.change(screen.getByLabelText(/university/i), { target: { value: 'State University' } });
@@ -112,8 +114,8 @@ describe('CoachRegistrationForm', () => {
             expect(mockOnSubmit).toHaveBeenCalledWith({
                 firstName: 'John',
                 lastName: 'Doe',
-                email: 'john.doe@university.edu',
-                password: 'Password123!',
+                email: exampleEmail,
+                password: examplePassword,
                 coachingCategory: 'mens',
                 sports: ['basketball'],
                 university: 'State University',
@@ -175,8 +177,8 @@ describe('CoachRegistrationForm', () => {
 
         fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'John' } });
         fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Doe' } });
-        fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john.doe@university.edu' } });
-        fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: 'Password123!' } });
+        fireEvent.change(screen.getByLabelText(/email/i), { target: { value: exampleEmail } });
+        fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: examplePassword } });
         fireEvent.change(screen.getByLabelText(/coaching category/i), { target: { value: 'mens' } });
         fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
         fireEvent.change(screen.getByLabelText(/university/i), { target: { value: 'State University' } });
@@ -203,8 +205,8 @@ describe('CoachRegistrationForm', () => {
         // Fill in all required fields
         fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'John' } });
         fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Doe' } });
-        fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john.doe@university.edu' } });
-        fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: 'Password123!' } });
+        fireEvent.change(screen.getByLabelText(/email/i), { target: { value: exampleEmail } });
+        fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: examplePassword } });
         fireEvent.change(screen.getByLabelText(/coaching category/i), { target: { value: 'mens' } });
         fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
         fireEvent.change(screen.getByLabelText(/university/i), { target: { value: 'State University' } });
@@ -224,8 +226,8 @@ describe('CoachRegistrationForm', () => {
         // Fill in all required fields
         fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'John' } });
         fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Doe' } });
-        fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john.doe@university.edu' } });
-        fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: 'Password123!' } });
+        fireEvent.change(screen.getByLabelText(/email/i), { target: { value: exampleEmail } });
+        fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: examplePassword } });
         fireEvent.change(screen.getByLabelText(/coaching category/i), { target: { value: 'mens' } });
         fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
         fireEvent.change(screen.getByLabelText(/university/i), { target: { value: 'State University' } });

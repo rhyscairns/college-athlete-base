@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PasswordInput } from '@/authentication/components/PasswordInput';
 
+const showPassword = 'Show password'
+
 describe('PasswordInput', () => {
   const mockOnChange = jest.fn();
 
@@ -41,14 +43,14 @@ describe('PasswordInput', () => {
 
   it('renders show/hide password toggle button', () => {
     render(<PasswordInput value="" onChange={mockOnChange} />);
-    expect(screen.getByLabelText('Show password')).toBeInTheDocument();
+    expect(screen.getByLabelText(showPassword)).toBeInTheDocument();
   });
 
   it('toggles password visibility when button is clicked', async () => {
     const user = userEvent.setup();
     render(<PasswordInput value="password123" onChange={mockOnChange} />);
     const input = getPasswordInput();
-    const toggleButton = screen.getByLabelText('Show password');
+    const toggleButton = screen.getByLabelText(showPassword);
 
     expect(input).toHaveAttribute('type', 'password');
 
@@ -63,7 +65,7 @@ describe('PasswordInput', () => {
     render(<PasswordInput value="password123" onChange={mockOnChange} />);
     const input = getPasswordInput();
 
-    await user.click(screen.getByLabelText('Show password'));
+    await user.click(screen.getByLabelText(showPassword));
     expect(input).toHaveAttribute('type', 'text');
 
     await user.click(screen.getByLabelText('Hide password'));
@@ -112,7 +114,7 @@ describe('PasswordInput', () => {
 
   it('disables toggle button when disabled prop is true', () => {
     render(<PasswordInput value="" onChange={mockOnChange} disabled={true} />);
-    const toggleButton = screen.getByLabelText('Show password');
+    const toggleButton = screen.getByLabelText(showPassword);
     expect(toggleButton).toBeDisabled();
   });
 

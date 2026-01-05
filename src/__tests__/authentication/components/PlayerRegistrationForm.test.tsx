@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '../../utils/test-utils';
 import { PlayerRegistrationForm } from '@/authentication/components/PlayerRegistrationForm';
-import type { PlayerRegistrationData } from '@/authentication/types';
 
+const examplePassword = 'Password123!'
 
 describe('PlayerRegistrationForm', () => {
     const mockOnSubmit = jest.fn();
@@ -219,7 +219,7 @@ describe('PlayerRegistrationForm', () => {
             fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'John' } });
             fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Doe' } });
             fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john.doe@example.com' } });
-            fireEvent.change(document.getElementById('password') as HTMLInputElement, { target: { value: 'Password123!' } });
+            fireEvent.change(document.getElementById('password') as HTMLInputElement, { target: { value: examplePassword } });
             fireEvent.change(screen.getByLabelText(/sex/i), { target: { value: 'male' } });
             fireEvent.change(screen.getByLabelText(/sport/i), { target: { value: 'basketball' } });
             fireEvent.change(screen.getByLabelText(/position/i), { target: { value: 'Point Guard' } });
@@ -247,7 +247,7 @@ describe('PlayerRegistrationForm', () => {
                     firstName: 'John',
                     lastName: 'Doe',
                     email: 'john.doe@example.com',
-                    password: 'Password123!',
+                    password: examplePassword,
                     gender: 'male',
                     sport: 'basketball',
                     position: 'Point Guard',
@@ -279,7 +279,7 @@ describe('PlayerRegistrationForm', () => {
                     firstName: 'John',
                     lastName: 'Doe',
                     email: 'john.doe@example.com',
-                    password: 'Password123!',
+                    password: examplePassword,
                     gender: 'male',
                     sport: 'basketball',
                     position: 'Point Guard',
@@ -312,7 +312,7 @@ describe('PlayerRegistrationForm', () => {
                     firstName: 'John',
                     lastName: 'Doe',
                     email: 'john.doe@example.com',
-                    password: 'Password123!',
+                    password: examplePassword,
                     gender: 'male',
                     sport: 'basketball',
                     position: 'Point Guard',
@@ -413,7 +413,7 @@ describe('PlayerRegistrationForm', () => {
                 fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'John' } });
                 fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Doe' } });
                 fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john.doe@example.com' } });
-                fireEvent.change(document.getElementById('password') as HTMLInputElement, { target: { value: 'Password123!' } });
+                fireEvent.change(document.getElementById('password') as HTMLInputElement, { target: { value: examplePassword } });
                 fireEvent.change(screen.getByLabelText(/sex/i), { target: { value: 'male' } });
                 fireEvent.change(screen.getByLabelText(/sport/i), { target: { value: 'basketball' } });
                 fireEvent.change(screen.getByLabelText(/position/i), { target: { value: 'Point Guard' } });
@@ -461,7 +461,7 @@ describe('PlayerRegistrationForm', () => {
             fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'John' } });
             fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Doe' } });
             fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john.doe@example.com' } });
-            fireEvent.change(document.getElementById('password') as HTMLInputElement, { target: { value: 'Password123!' } });
+            fireEvent.change(document.getElementById('password') as HTMLInputElement, { target: { value: examplePassword } });
             fireEvent.change(screen.getByLabelText(/sex/i), { target: { value: 'male' } });
             fireEvent.change(screen.getByLabelText(/sport/i), { target: { value: 'basketball' } });
             fireEvent.change(screen.getByLabelText(/position/i), { target: { value: 'Point Guard' } });
