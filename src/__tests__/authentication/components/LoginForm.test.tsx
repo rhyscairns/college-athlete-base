@@ -3,7 +3,7 @@ import { LoginForm } from '@/authentication/components/LoginForm';
 import type { User } from '@/authentication/types';
 
 // Helper to get password input reliably
-const getPasswordInput = () => screen.getByLabelText(/^password$/i);
+const getPasswordInput = () => document.getElementById('password') as HTMLInputElement;
 
 describe('LoginForm', () => {
   it('renders all form elements', () => {

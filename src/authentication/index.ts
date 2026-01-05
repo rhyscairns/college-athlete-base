@@ -15,6 +15,14 @@ export type {
     SubmitButtonProps,
     ErrorMessageProps,
     LoginLinkProps,
+    TextInputProps,
+    SelectInputProps,
+    MultiSelectInputProps,
+    UserRole,
+    PlayerRegistrationData,
+    CoachRegistrationData,
+    PlayerRegistrationFormProps,
+    CoachRegistrationFormProps,
 } from './types';
 
 // Components
@@ -25,6 +33,15 @@ export { ErrorMessage } from './components/ErrorMessage';
 export { LoginLink } from './components/LoginLink';
 export { LoginForm } from './components/LoginForm';
 export { LoginPage } from './pages/LoginPage';
+export { TextInput } from './components/TextInput';
+export { SelectInput } from './components/SelectInput';
+export { MultiSelectInput } from './components/MultiSelectInput';
+export { RoleSelector } from './components/RoleSelector';
+export { RegisterPage } from './pages/RegisterPage';
+export { PlayerRegistrationForm } from './components/PlayerRegistrationForm';
+export { PlayerRegisterPage } from './pages/PlayerRegisterPage';
+export { CoachRegistrationForm } from './components/CoachRegistrationForm';
+export { CoachRegisterPage } from './pages/CoachRegisterPage';
 
 // Hooks will be exported here as they are created
 // export { useLogin } from './hooks/useLogin';
