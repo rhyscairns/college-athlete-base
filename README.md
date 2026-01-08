@@ -42,7 +42,8 @@ npm install
 
 2. Get development environment credentials:
 ```bash
-./scripts/get-dev-credentials.sh
+npm run dev:setup
+# or: ./scripts/get-dev-credentials.sh
 ```
 
 This script will:
@@ -65,6 +66,7 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 **Your local app will connect to the shared dev database and Redis on AWS.**
 
 For detailed setup instructions, troubleshooting, and network configuration options, see:
+- [AWS Dev Environment Access Guide](docs/AWS_DEV_ENVIRONMENT_ACCESS.md) - **NEW!** Complete AWS connection guide
 - [Local Development Setup Guide](docs/LOCAL_DEVELOPMENT_SETUP.md)
 
 ### Alternative: Fully Local Development with Docker
@@ -90,6 +92,66 @@ The application will be available at [http://localhost:3000](http://localhost:30
 
 **Note**: With Docker, you'll have a local database that won't sync with other developers or the dev environment.
 
+### Local Database Setup (For API Development)
+
+If you're working on backend features (like the player registration API), you'll need a local PostgreSQL database.
+
+**Quick Setup:**
+
+1. **Start local PostgreSQL database:**
+```bash
+npm run db:local:start
+```
+
+2. **Create `.env.local` file:**
+```bash
+cp .env.local.example .env.local
+```
+
+3. **Run migrations:**
+```bash
+npm run db:migrate:local
+```
+
+4. **Seed test data:**
+```bash
+npm run db:seed:local
+```
+
+5. **Start development:**
+```bash
+npm run dev
+```
+
+**For complete workflow documentation, see:** [Local Database Workflow Guide](docs/LOCAL_DATABASE_WORKFLOW.md)
+
+This comprehensive guide covers:
+- Step-by-step setup instructions
+- Running migrations and seeding data
+- Switching between local and AWS dev databases
+- Database management commands
+- Troubleshooting common issues
+- Complete workflow examples
+
+**Test Your Setup:**
+```bash
+npm run db:test
+```
+
+This will verify that all database commands work correctly.
+
+**Quick Reference - Database Commands:**
+- `npm run db:local:start` - Start PostgreSQL container
+- `npm run db:local:stop` - Stop PostgreSQL container
+- `npm run db:local:reset` - Reset database (deletes all data)
+- `npm run db:local:logs` - View database logs
+- `npm run db:local:psql` - Connect to database with psql client
+- `npm run db:migrate:local` - Run database migrations
+- `npm run db:seed:local` - Seed test data
+- `npm run db:reset:local` - Complete reset and prepare
+
+**See also:** [Database Quick Reference Card](docs/DATABASE_QUICK_REFERENCE.md) - Printable cheat sheet
+
 ### Available Scripts
 
 - `npm run dev` - Start development server
@@ -102,12 +164,33 @@ The application will be available at [http://localhost:3000](http://localhost:30
 - `npm run test:coverage` - Run tests with coverage report
 - `npm run test:e2e` - Run end-to-end tests
 - `npm run test:all` - Run all tests (unit + E2E)
-- `npm run dev:setup` - Get AWS dev credentials
-- `npm run dev:test` - Test local development setup
+
+#### AWS Development Environment
+- `npm run dev:setup` - Get AWS dev credentials and create .env.local
+- `npm run dev:test-aws` - Test AWS connectivity (database & Redis)
+- `npm run db:switch:local` - Switch to local Docker database
+- `npm run db:switch:aws` - Switch to AWS dev database
+
+#### Logging and Monitoring
+- `npm run logs` - View application logs
+- `npm run logs:follow` - Follow logs in real-time
+- `npm run logs:error` - View error logs only
+- `npm run logs:docker` - View Docker container logs
+
+#### Docker & Local Database
 - `npm run docker:build` - Build Docker image
 - `npm run docker:up` - Start Docker Compose services
 - `npm run docker:down` - Stop Docker Compose services
 - `npm run docker:logs` - View Docker Compose logs
+- `npm run db:local:start` - Start local PostgreSQL database
+- `npm run db:local:stop` - Stop local PostgreSQL database
+- `npm run db:local:reset` - Reset local database (deletes all data)
+- `npm run db:local:logs` - View database logs
+- `npm run db:local:psql` - Connect to database with psql
+- `npm run db:migrate:local` - Run database migrations locally
+- `npm run db:seed:local` - Seed local database with test data
+- `npm run db:reset:local` - Reset and prepare local database
+- `npm run db:test` - Test local database workflow
 
 ### Git Hooks
 
@@ -278,6 +361,7 @@ npm run test:e2e          # Run E2E tests
 - **[Infrastructure Quick Reference](docs/INFRASTRUCTURE_QUICK_REFERENCE.md)** - Common commands
 - **[Production Deployment](docs/PRODUCTION_DEPLOYMENT.md)** - Deployment procedures
 - **[Deployment Quick Reference](docs/DEPLOYMENT_QUICK_REFERENCE.md)** - Deployment commands
+- **[Player Registration API Deployment](docs/PLAYER_REGISTRATION_DEPLOYMENT.md)** - Player registration feature deployment guide
 
 ### CI/CD & Quality
 

@@ -111,6 +111,65 @@ export interface ValidationError {
 export type UserRole = 'player' | 'coach';
 
 /**
+ * API Response types
+ */
+
+/**
+ * API error response
+ */
+export interface ApiErrorResponse {
+    success: false;
+    message?: string;
+    errors?: ValidationError[];
+}
+
+/**
+ * API success response for player registration
+ */
+export interface ApiSuccessResponse {
+    success: true;
+    message: string;
+    playerId: string;
+}
+
+/**
+ * Combined API response type
+ */
+export type ApiResponse = ApiSuccessResponse | ApiErrorResponse;
+
+/**
+ * Database record types
+ */
+
+/**
+ * Player record structure for database operations
+ */
+export interface PlayerRecord {
+    firstName: string;
+    lastName: string;
+    email: string;
+    passwordHash: string;
+    sex: string;
+    sport: string;
+    position: string;
+    gpa: number;
+    country: string;
+    state?: string;
+    region?: string;
+    scholarshipAmount?: number;
+    testScores?: string;
+}
+
+/**
+ * Player record as returned from database (with additional fields)
+ */
+export interface PlayerDatabaseRecord extends PlayerRecord {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+/**
  * Component prop interfaces
  */
 

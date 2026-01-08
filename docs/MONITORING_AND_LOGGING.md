@@ -1,468 +1,519 @@
 # Monitoring and Logging Guide
 
-This guide covers the monitoring, logging, and notification systems implemented for the College Athlete Base platform.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Health Checks](#health-checks)
-- [Logging System](#logging-system)
-- [Error Tracking](#error-tracking)
-- [Notifications](#notifications)
-- [Status Badges](#status-badges)
-- [Alerting](#alerting)
+This guide explains the monitoring and logging infrastructure for the College Athlete Base application.
 
 ## Overview
 
-The platform includes comprehensive monitoring and logging capabilities to ensure system health, track errors, and provide visibility into application performance.
+The application uses structured logging with different log levels and contexts to provide comprehensive observability. Logs are formatted differently for local development (human-readable) vs production (JSON for CloudWatch).
 
-### Key Features
+## Log Levels
 
-- **Health Check API**: Endpoint for deployment verification and monitoring
-- **Centralized Logging**: Structured logging for server and client-side events
-- **Error Boundaries**: Graceful error handling for React components
-- **Deployment Notifications**: Automated notifications for deployment events
-- **Status Badges**: Real-time pipeline status visibility
-- **Automated Alerting**: Notifications for pipeline failures and application issues
+### DEBUG
+- **Purpose**: Detailed information for debugging
+- **When to use**: Database queries, connection events, detailed flow tracking
+- **Example**: `Database query executed in 15ms`
+- **Enabled**: Only in development (LOG_LEVEL=debug)
 
-## Health Checks
+### INFO
+- **Purpose**: General informational messages
+- **When to use**: Successful operations, key events, normal flow
+- **Example**: `Player registered successfully`
+- **Enabled**: Development and production
 
-### Health Check Endpoint
+### WARN
+- **Purpose**: Warning messages that don't prevent operation
+- **When to use**: Validation failures, duplicate attempts, recoverable errors
+- **Example**: `Duplicate email registration attempt`
+- **Enabled**: Development and production
 
-The application provides a comprehensive health check endpoint at `/api/health`.
+### ERROR
+- **Purpose**: Error messages that prevent operation
+- **When to use**: Database errors, unexpected failures, system errors
+- **Example**: `Database connection failed`
+- **Enabled**: Development and production
 
-**Endpoint**: `GET /api/health`
+## Log Format
 
-**Response Format**:
+### Development (Local)
+Human-readable format with colors:
+```
+[10:30:45] INFO: Player registered successfully { playerId: "123", email: "test@example.com", executionTime: "45ms" }
+[10:30:46] ERROR: Database connection failed
+  Error: Connection timeout
+  at Database.connect (db.ts:45:10)
+```
+
+### Production (AWS)
+Structured JSON format for CloudWatch:
 ```json
 {
-  "status": "ok",
-  "timestamp": "2026-01-04T12:00:00.000Z",
-  "uptime": 3600,
-  "version": "0.1.0",
-  "environment": "production",
-  "checks": {
-    "server": {
-      "status": "ok",
-      "message": "Server is running"
-    },
-    "memory": {
-      "status": "ok",
-      "usage": 256,
-      "limit": 512,
-      "percentage": 50
-    }
+  "level": "info",
+  "message": "Player registered successfully",
+  "timestamp": "2026-01-08T17:30:45.123Z",
+  "context": {
+    "requestId": "abc-123",
+    "playerId": "456",
+    "email": "test@example.com",
+    "executionTime": "45ms"
   }
 }
 ```
 
-**Status Codes**:
-- `200`: System is healthy
-- `503`: System is degraded or experiencing errors
+## Using the Logger
 
-**Health Status Levels**:
-- `ok`: All systems operational
-- `degraded`: System operational but with warnings (e.g., high memory usage)
-- `error`: System experiencing critical issues
-
-### Using Health Checks
-
-**In Deployment Workflows**:
-```bash
-# Check application health
-curl -f https://collegeathletebase.com/api/health
-
-# With retry logic
-for i in {1..10}; do
-  if curl -f https://collegeathletebase.com/api/health; then
-    echo "Health check passed"
-    exit 0
-  fi
-  sleep 10
-done
-```
-
-**In Monitoring Systems**:
-- Configure uptime monitoring (e.g., UptimeRobot, Pingdom)
-- Set up CloudWatch alarms based on health check responses
-- Integrate with load balancer health checks
-
-## Logging System
-
-### Server-Side Logging
-
-The application uses a centralized logging utility (`src/lib/logger.ts`) for structured logging.
-
-**Usage**:
+### Import the Logger
 ```typescript
 import { logger } from '@/lib/logger';
-
-// Info logging
-logger.info('User logged in', { userId: '123', email: 'user@example.com' });
-
-// Error logging
-try {
-  // Some operation
-} catch (error) {
-  logger.error('Operation failed', error, { operation: 'userUpdate' });
-}
-
-// API error logging
-logger.apiError('/api/users', error, 500, { userId: '123' });
-
-// Deployment event logging
-logger.deployment('Application started', { version: '1.0.0' });
 ```
 
-**Log Levels**:
-- `debug`: Detailed debugging information
-- `info`: General informational messages
-- `warn`: Warning messages for potentially harmful situations
-- `error`: Error messages for serious problems
+### Basic Logging
+```typescript
+// Debug - detailed information
+logger.debug('Processing request', { userId: '123' });
 
-**Log Format**:
+// Info - general information
+logger.info('User logged in', { userId: '123', method: 'email' });
+
+// Warn - warnings
+logger.warn('Rate limit approaching', { userId: '123', requests: 95 });
+
+// Error - errors
+logger.error('Failed to save data', { userId: '123' }, error);
+```
+
+### API Logging
+```typescript
+// Log incoming request
+logger.apiRequest('POST', '/api/auth/register/player', { requestId });
+
+// Log response
+logger.apiResponse('POST', '/api/auth/register/player', 201, duration, { requestId });
+```
+
+### Database Logging
+```typescript
+// Log database operation
+logger.dbOperation('createPlayer', { email: 'test@example.com' });
+
+// Log database error
+logger.dbError('createPlayer', error, { email: 'test@example.com' });
+```
+
+### Validation Logging
+```typescript
+// Log validation failure
+logger.validationError('Registration validation failed', errors, { email: 'test@example.com' });
+```
+
+### Security Logging
+```typescript
+// Log security event
+logger.securityEvent('Duplicate email attempt', { email: 'test@example.com' });
+```
+
+## What Gets Logged
+
+### API Requests
+- ✅ Request method and path
+- ✅ Request ID (for tracing)
+- ✅ Response status code
+- ✅ Execution time
+- ❌ Request body (may contain sensitive data)
+- ❌ Passwords or tokens
+
+### Database Operations
+- ✅ Operation type (query, insert, update)
+- ✅ Execution time
+- ✅ Row count
+- ✅ Error messages
+- ❌ Sensitive data (passwords, tokens)
+- ❌ Full query text (only first 100 chars in errors)
+
+### Validation Errors
+- ✅ Field names
+- ✅ Error messages
+- ✅ Email (for context)
+- ❌ Password values
+- ❌ Other sensitive fields
+
+### Security Events
+- ✅ Event type (duplicate email, failed login, etc.)
+- ✅ Email or username
+- ✅ Timestamp
+- ❌ Passwords
+- ❌ Session tokens
+
+## Viewing Logs
+
+### Local Development
+
+**Option 1: Terminal Output**
+```bash
+# Logs appear in the terminal where you run:
+npm run dev
+```
+
+**Option 2: View Logs Script**
+```bash
+# View all logs
+./scripts/view-logs.sh
+
+# Follow logs in real-time
+./scripts/view-logs.sh --follow
+
+# Filter by level
+./scripts/view-logs.sh --level error
+
+# Filter by pattern
+./scripts/view-logs.sh --grep registration
+
+# Combine filters
+./scripts/view-logs.sh --follow --level warn
+```
+
+**Option 3: Docker Logs (if using local database)**
+```bash
+# View database logs
+docker-compose logs postgres
+
+# Follow database logs
+docker-compose logs -f postgres
+
+# View all service logs
+docker-compose logs
+
+# Follow all service logs
+docker-compose logs -f
+```
+
+### AWS Development Environment
+
+**Using AWS CLI:**
+```bash
+# Tail logs in real-time
+aws logs tail /ecs/development-college-athlete-base --follow
+
+# View logs from last hour
+aws logs tail /ecs/development-college-athlete-base --since 1h
+
+# Filter by pattern
+aws logs tail /ecs/development-college-athlete-base --filter-pattern "ERROR"
+
+# View specific time range
+aws logs tail /ecs/development-college-athlete-base \
+  --since "2026-01-08T10:00:00" \
+  --until "2026-01-08T11:00:00"
+```
+
+**Using AWS Console:**
+1. Go to CloudWatch → Log groups
+2. Select `/ecs/development-college-athlete-base`
+3. Click on a log stream
+4. Use the filter box to search logs
+
+### AWS Production Environment
+
+**Using AWS CLI:**
+```bash
+# Tail production logs
+aws logs tail /ecs/production-college-athlete-base --follow
+
+# View errors only
+aws logs tail /ecs/production-college-athlete-base \
+  --filter-pattern '{ $.level = "error" }'
+
+# View specific request
+aws logs tail /ecs/production-college-athlete-base \
+  --filter-pattern '{ $.context.requestId = "abc-123" }'
+```
+
+## Log Queries
+
+### CloudWatch Insights Queries
+
+**Find all errors in last hour:**
+```
+fields @timestamp, message, context.requestId, error.message
+| filter level = "error"
+| sort @timestamp desc
+| limit 100
+```
+
+**Find slow API requests (>1000ms):**
+```
+fields @timestamp, message, context.executionTime, context.requestId
+| filter message like /API Response/
+| parse context.executionTime /(?<duration>\d+)ms/
+| filter duration > 1000
+| sort duration desc
+```
+
+**Count registrations by sport:**
+```
+fields context.sport
+| filter message like /Player registered successfully/
+| stats count() by context.sport
+```
+
+**Find validation errors:**
+```
+fields @timestamp, message, context.errors
+| filter level = "warn" and message like /validation failed/
+| sort @timestamp desc
+```
+
+**Track request by ID:**
+```
+fields @timestamp, level, message, context
+| filter context.requestId = "abc-123"
+| sort @timestamp asc
+```
+
+## Monitoring Metrics
+
+### Key Metrics to Monitor
+
+**API Performance:**
+- Request count
+- Response time (p50, p95, p99)
+- Error rate (4xx, 5xx)
+- Success rate
+
+**Database:**
+- Connection pool usage
+- Query execution time
+- Failed queries
+- Connection errors
+
+**Application:**
+- Registration success rate
+- Validation error rate
+- Duplicate email attempts
+- Memory usage
+- CPU usage
+
+### Setting Up CloudWatch Dashboards
+
+**Create Dashboard:**
+```bash
+aws cloudwatch put-dashboard --dashboard-name PlayerRegistrationAPI \
+  --dashboard-body file://cloudwatch-dashboard.json
+```
+
+**Example Dashboard Configuration:**
 ```json
 {
-  "level": "error",
-  "message": "API Error: /api/users",
-  "timestamp": "2026-01-04T12:00:00.000Z",
-  "environment": "production",
-  "source": "server",
-  "context": {
-    "endpoint": "/api/users",
-    "statusCode": 500,
-    "userId": "123"
-  },
-  "error": {
-    "name": "DatabaseError",
-    "message": "Connection timeout",
-    "stack": "..."
-  }
-}
-```
-
-### Client-Side Logging
-
-Client-side errors can be logged using the `useClientLogger` hook.
-
-**Usage**:
-```typescript
-'use client';
-
-import { useClientLogger } from '@/hooks/useClientLogger';
-
-export function MyComponent() {
-  const logger = useClientLogger();
-
-  const handleAction = async () => {
-    try {
-      // Some operation
-      logger.info('Action completed', { action: 'buttonClick' });
-    } catch (error) {
-      logger.error('Action failed', error, { action: 'buttonClick' });
-    }
-  };
-
-  return <button onClick={handleAction}>Click Me</button>;
-}
-```
-
-**Client Log API**:
-
-Client logs are sent to the server via `/api/log` endpoint for centralized logging.
-
-```typescript
-// Automatic via useClientLogger hook
-const logger = useClientLogger();
-logger.error('Something went wrong', error);
-
-// Manual API call
-await fetch('/api/log', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    level: 'error',
-    message: 'Something went wrong',
-    error: {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
+  "widgets": [
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["AWS/ECS", "CPUUtilization", {"stat": "Average"}],
+          [".", "MemoryUtilization", {"stat": "Average"}]
+        ],
+        "period": 300,
+        "stat": "Average",
+        "region": "us-east-1",
+        "title": "ECS Resource Usage"
+      }
     },
-    context: { page: '/dashboard' }
-  })
-});
-```
-
-## Error Tracking
-
-### Error Boundary
-
-The application includes an Error Boundary component for graceful error handling in React.
-
-**Usage**:
-```typescript
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-
-export default function Layout({ children }) {
-  return (
-    <ErrorBoundary>
-      {children}
-    </ErrorBoundary>
-  );
-}
-```
-
-**Features**:
-- Catches React component errors
-- Logs errors to centralized logging system
-- Displays user-friendly error message
-- Shows detailed error info in development mode
-- Provides "Refresh Page" option for users
-
-**Custom Fallback UI**:
-```typescript
-<ErrorBoundary fallback={<CustomErrorPage />}>
-  <YourComponent />
-</ErrorBoundary>
-```
-
-### Integration with Error Tracking Services
-
-To integrate with services like Sentry, Datadog, or New Relic:
-
-1. **Update Logger** (`src/lib/logger.ts`):
-```typescript
-private sendToLoggingService(logEntry: LogEntry): void {
-  if (this.environment === 'production') {
-    // Sentry example
-    if (logEntry.level === 'error' && logEntry.error) {
-      Sentry.captureException(new Error(logEntry.error.message), {
-        contexts: {
-          custom: logEntry.context
-        }
-      });
-    }
-  }
-}
-```
-
-2. **Update Error Boundary**:
-```typescript
-componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-  // Send to Sentry
-  Sentry.captureException(error, {
-    contexts: {
-      react: {
-        componentStack: errorInfo.componentStack
+    {
+      "type": "log",
+      "properties": {
+        "query": "fields @timestamp, message | filter level = 'error' | sort @timestamp desc | limit 20",
+        "region": "us-east-1",
+        "title": "Recent Errors"
       }
     }
-  });
-  
-  // Also log to our system
-  logger.error('React Error Boundary caught an error', error, {
-    componentStack: errorInfo.componentStack
-  });
+  ]
 }
 ```
 
-## Notifications
+### Setting Up Alarms
 
-### Deployment Notifications
-
-Deployment workflows include notification steps for both successful and failed deployments.
-
-**Slack Integration** (example):
-
-1. Create a Slack webhook URL
-2. Add to GitHub Secrets as `SLACK_WEBHOOK_URL`
-3. Uncomment notification code in workflows:
-
-```yaml
-- name: Notify deployment status
-  run: |
-    curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
-      -H 'Content-Type: application/json' \
-      -d '{
-        "text": "✅ Production Deployment Successful",
-        "blocks": [
-          {
-            "type": "section",
-            "text": {
-              "type": "mrkdwn",
-              "text": "*Production Deployment*\n\nStatus: Success\nEnvironment: Production\nURL: https://collegeathletebase.com"
-            }
-          }
-        ]
-      }'
+**High Error Rate Alarm:**
+```bash
+aws cloudwatch put-metric-alarm \
+  --alarm-name high-error-rate \
+  --alarm-description "Alert when error rate exceeds 5%" \
+  --metric-name ErrorRate \
+  --namespace CollegeAthleteBase \
+  --statistic Average \
+  --period 300 \
+  --threshold 5 \
+  --comparison-operator GreaterThanThreshold \
+  --evaluation-periods 2
 ```
 
-**Email Notifications**:
-
-Configure GitHub Actions to send email notifications:
-
-1. Use a service like SendGrid, AWS SES, or Mailgun
-2. Add API credentials to GitHub Secrets
-3. Add notification step to workflows
-
-**Microsoft Teams Integration**:
-
-Similar to Slack, create an incoming webhook and use it in workflows.
-
-### PR Check Notifications
-
-The PR check workflow includes a notification job that reports the status of all checks.
-
-**Features**:
-- Summary of all check results
-- Links to failed checks
-- Author and PR information
-- Can be configured for Slack, Teams, or email
-
-## Status Badges
-
-### Available Badges
-
-The README includes status badges for:
-
-1. **CI/CD Pipeline**: Shows PR check status
-2. **Development Deployment**: Shows dev deployment status
-3. **Production Deployment**: Shows prod deployment status
-4. **Quality Gate**: Shows SonarCloud quality gate status
-5. **Coverage**: Shows code coverage percentage
-
-### Updating Badge URLs
-
-Replace placeholders in `README.md`:
-
-```markdown
-[![CI/CD Pipeline](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/pr-check.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/pr-check.yml)
+**Database Connection Failures:**
+```bash
+aws cloudwatch put-metric-alarm \
+  --alarm-name database-connection-failures \
+  --alarm-description "Alert on database connection failures" \
+  --metric-name DatabaseErrors \
+  --namespace CollegeAthleteBase \
+  --statistic Sum \
+  --period 60 \
+  --threshold 5 \
+  --comparison-operator GreaterThanThreshold \
+  --evaluation-periods 1
 ```
 
-Replace:
-- `YOUR_USERNAME` with your GitHub username or organization
-- `YOUR_REPO` with your repository name
-- `YOUR_PROJECT_KEY` with your SonarCloud project key
+## Log Retention
 
-### Custom Badges
+### Development
+- **CloudWatch**: 7 days
+- **Local Docker**: Until container is removed
+- **Cost**: ~$0.50/GB ingested + $0.03/GB stored
 
-Add custom badges using [shields.io](https://shields.io/):
+### Production
+- **CloudWatch**: 30 days
+- **Archive to S3**: After 30 days (optional)
+- **Cost**: ~$0.50/GB ingested + $0.03/GB stored
 
-```markdown
-![Uptime](https://img.shields.io/uptimerobot/ratio/m123456789-abcdef1234567890)
-![Response Time](https://img.shields.io/uptimerobot/response/m123456789-abcdef1234567890)
-```
-
-## Alerting
-
-### Pipeline Failure Alerts
-
-Configure alerts for pipeline failures:
-
-1. **GitHub Notifications**:
-   - Go to repository Settings → Notifications
-   - Enable notifications for workflow failures
-
-2. **Slack Alerts**:
-   - Use GitHub Slack app
-   - Subscribe to repository: `/github subscribe owner/repo workflows:{event:"pull_request","push"}`
-
-3. **Email Alerts**:
-   - Configure in GitHub notification settings
-   - Set up workflow-specific notifications
-
-### Application Alerts
-
-Set up alerts for application issues:
-
-1. **Health Check Monitoring**:
-   ```bash
-   # Example with UptimeRobot
-   # Monitor: https://collegeathletebase.com/api/health
-   # Alert when: Status code != 200
-   # Notification: Email, Slack, SMS
-   ```
-
-2. **Error Rate Monitoring**:
-   - Monitor error logs in CloudWatch
-   - Set up alarms for error rate thresholds
-   - Configure SNS topics for notifications
-
-3. **Performance Monitoring**:
-   - Monitor response times
-   - Set up alerts for slow responses
-   - Track memory and CPU usage
-
-### CloudWatch Alarms (AWS)
-
-Example CloudWatch alarm configuration:
-
-```typescript
-// In infrastructure/lib/college-athlete-base-stack.ts
-const errorAlarm = new cloudwatch.Alarm(this, 'ErrorAlarm', {
-  metric: logGroup.metricFilterPattern('ERROR', {
-    statistic: 'Sum',
-  }),
-  threshold: 10,
-  evaluationPeriods: 1,
-  alarmDescription: 'Alert when error count exceeds threshold',
-});
-
-// Send to SNS topic
-errorAlarm.addAlarmAction(new cloudwatchActions.SnsAction(snsTopic));
+### Configure Retention:
+```bash
+aws logs put-retention-policy \
+  --log-group-name /ecs/development-college-athlete-base \
+  --retention-in-days 7
 ```
 
 ## Best Practices
 
-### Logging Best Practices
+### Do's ✅
+- ✅ Use appropriate log levels
+- ✅ Include context (requestId, userId, etc.)
+- ✅ Log errors with stack traces
+- ✅ Log execution times for performance tracking
+- ✅ Use structured logging (JSON in production)
+- ✅ Include timestamps
+- ✅ Log security events
+- ✅ Monitor error rates
 
-1. **Use Structured Logging**: Always use the logger utility with context
-2. **Include Relevant Context**: Add user IDs, request IDs, etc.
-3. **Don't Log Sensitive Data**: Never log passwords, tokens, or PII
-4. **Use Appropriate Log Levels**: Reserve error for actual errors
-5. **Log Actionable Information**: Include enough detail to debug issues
-
-### Monitoring Best Practices
-
-1. **Monitor Key Metrics**: Response time, error rate, uptime
-2. **Set Realistic Thresholds**: Avoid alert fatigue
-3. **Test Alerts**: Verify notifications are working
-4. **Document Runbooks**: Create procedures for common alerts
-5. **Review Regularly**: Adjust thresholds and alerts as needed
-
-### Notification Best Practices
-
-1. **Prioritize Notifications**: Critical vs informational
-2. **Include Context**: Provide enough info to take action
-3. **Link to Resources**: Include links to logs, dashboards
-4. **Avoid Spam**: Don't notify for every minor event
-5. **Test Notification Channels**: Ensure they're working
+### Don'ts ❌
+- ❌ Log passwords or tokens
+- ❌ Log full request bodies (may contain sensitive data)
+- ❌ Log credit card numbers or PII
+- ❌ Use console.log directly (use logger instead)
+- ❌ Log in tight loops (causes performance issues)
+- ❌ Include sensitive data in error messages
+- ❌ Log at DEBUG level in production
 
 ## Troubleshooting
 
-### Logs Not Appearing
+### No Logs Appearing
 
-1. Check logger is imported correctly
-2. Verify log level is appropriate
-3. Check CloudWatch log group exists
-4. Verify IAM permissions for logging
+**Local Development:**
+```bash
+# Check if dev server is running
+ps aux | grep "next dev"
 
-### Health Checks Failing
+# Check LOG_LEVEL environment variable
+echo $LOG_LEVEL
 
-1. Check application is running
-2. Verify health endpoint is accessible
-3. Check memory/resource usage
-4. Review application logs for errors
+# Restart dev server
+npm run dev
+```
 
-### Notifications Not Sending
+**AWS:**
+```bash
+# Check if log group exists
+aws logs describe-log-groups --log-group-name-prefix /ecs/
 
-1. Verify webhook URLs are correct
-2. Check GitHub Secrets are set
-3. Test webhook manually with curl
-4. Review workflow logs for errors
+# Check if ECS task is running
+aws ecs list-tasks --cluster development-college-athlete-base
+
+# Check task logs
+aws ecs describe-tasks --cluster development-college-athlete-base --tasks <task-id>
+```
+
+### Logs Too Verbose
+
+**Reduce log level:**
+```bash
+# In .env.local
+LOG_LEVEL=info  # or warn, or error
+```
+
+**Filter in CloudWatch:**
+```bash
+# Show only errors
+aws logs tail /ecs/development-college-athlete-base \
+  --filter-pattern '{ $.level = "error" }'
+```
+
+### Can't Find Specific Log
+
+**Use request ID:**
+```bash
+# All logs for a specific request
+aws logs tail /ecs/development-college-athlete-base \
+  --filter-pattern '{ $.context.requestId = "abc-123" }'
+```
+
+**Use CloudWatch Insights:**
+```
+fields @timestamp, @message
+| filter context.email = "test@example.com"
+| sort @timestamp desc
+```
+
+## Cost Optimization
+
+### Reduce Log Volume
+1. Use appropriate log levels (avoid DEBUG in production)
+2. Don't log in tight loops
+3. Aggregate similar log messages
+4. Use sampling for high-volume logs
+
+### Reduce Storage Costs
+1. Set appropriate retention periods
+2. Archive old logs to S3
+3. Delete unnecessary log groups
+4. Use log filtering to reduce ingestion
+
+### Example Cost Calculation
+```
+Assumptions:
+- 1000 requests/day
+- 5 log entries per request
+- 500 bytes per log entry
+
+Daily volume: 1000 * 5 * 500 bytes = 2.5 MB
+Monthly volume: 2.5 MB * 30 = 75 MB
+
+Cost:
+- Ingestion: 0.075 GB * $0.50 = $0.04
+- Storage: 0.075 GB * $0.03 = $0.002
+- Total: ~$0.05/month
+```
+
+## Quick Reference
+
+```bash
+# Local development
+npm run dev                          # View logs in terminal
+./scripts/view-logs.sh              # View logs with script
+docker-compose logs -f postgres     # View database logs
+
+# AWS development
+aws logs tail /ecs/development-college-athlete-base --follow
+aws logs tail /ecs/development-college-athlete-base --filter-pattern "ERROR"
+
+# AWS production
+aws logs tail /ecs/production-college-athlete-base --follow
+aws logs tail /ecs/production-college-athlete-base --since 1h
+
+# CloudWatch Insights
+# Go to CloudWatch → Insights → Select log group → Run query
+```
 
 ## Additional Resources
 
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [AWS CloudWatch Documentation](https://docs.aws.amazon.com/cloudwatch/)
-- [Slack Incoming Webhooks](https://api.slack.com/messaging/webhooks)
-- [SonarCloud Documentation](https://docs.sonarcloud.io/)
+- [AWS CloudWatch Logs Documentation](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/)
+- [CloudWatch Insights Query Syntax](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_QuerySyntax.html)
+- [ECS Logging Best Practices](https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/logging.html)
+
+---
+
+**Last Updated**: January 8, 2026
