@@ -3,26 +3,73 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PlayerRegistrationForm } from '../components/PlayerRegistrationForm';
-import type { PlayerRegistrationData } from '../types';
+import type { PlayerRegistrationData, ApiResponse } from '../types';
 
 export function PlayerRegisterPage() {
     const router = useRouter();
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [apiError, setApiError] = useState<string | null>(null);
 
     const handleSubmit = async (data: PlayerRegistrationData) => {
-        // TODO: Replace with actual API call in future task
-        // Simulating API call for now
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        setApiError(null);
 
-        console.log('Player registration data:', data);
+        try {
+            // Map gender to sex for API compatibility
+            const apiData = {
+                ...data,
+                sex: data.gender,
+            };
+            // Remove gender field as API expects sex
+            delete (apiData as any).gender;
 
-        // Mock successful registration
-        setSuccessMessage('Registration successful! Redirecting to login...');
+            const response = await fetch('/api/auth/register/player', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(apiData),
+            });
 
-        // Redirect to login after 2 seconds
-        setTimeout(() => {
-            router.push('/login');
-        }, 2000);
+            const result: ApiResponse = await response.json();
+
+            if (!response.ok) {
+                // Handle validation errors
+                if (result.success === false && result.errors) {
+                    // Map API validation errors to form errors
+                    const errorMessages = result.errors
+                        .map((err) => `${err.field}: ${err.message}`)
+                        .join(', ');
+                    throw new Error(errorMessages);
+                }
+
+                // Handle other error responses
+                if (result.success === false && result.message) {
+                    throw new Error(result.message);
+                }
+
+                throw new Error('Registration failed. Please try again.');
+            }
+
+            // Success - show success message
+            setSuccessMessage('Registration successful! Redirecting to login...');
+
+            // Redirect to login after 2 seconds
+            setTimeout(() => {
+                router.push('/login');
+            }, 2000);
+        } catch (error) {
+            // Handle network errors and other exceptions
+            if (error instanceof TypeError && error.message.includes('fetch')) {
+                setApiError('Network error. Please check your connection and try again.');
+            } else if (error instanceof Error) {
+                setApiError(error.message);
+            } else {
+                setApiError('An unexpected error occurred. Please try again.');
+            }
+
+            // Re-throw to let the form handle it
+            throw error;
+        }
     };
 
     const handleCancel = () => {
@@ -79,6 +126,13 @@ export function PlayerRegisterPage() {
                 </h1>
             </div>
             <div className="w-full max-w-2xl relative z-10">
+                {apiError && (
+                    <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                        <p className="font-semibold">Registration Error</p>
+                        <p>{apiError}</p>
+                    </div>
+                )}
+
                 <PlayerRegistrationForm onSubmit={handleSubmit} onCancel={handleCancel} />
 
                 <div className="text-center mt-6">

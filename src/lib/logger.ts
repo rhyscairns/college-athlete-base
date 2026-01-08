@@ -1,139 +1,185 @@
 /**
- * Centralized logging utility for Next.js application
- * Provides structured logging for server and client-side errors
+ * Structured logging utility for the application
+ * Provides consistent log formatting and levels
  */
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export enum LogLevel {
+    DEBUG = 'debug',
+    INFO = 'info',
+    WARN = 'warn',
+    ERROR = 'error',
+}
+
+export interface LogContext {
+    [key: string]: any;
+}
 
 export interface LogEntry {
     level: LogLevel;
     message: string;
     timestamp: string;
-    context?: Record<string, unknown>;
+    context?: LogContext;
     error?: {
-        name: string;
         message: string;
         stack?: string;
+        name?: string;
     };
-    environment: string;
-    source: 'server' | 'client';
 }
 
 class Logger {
-    private environment: string;
-    private isServer: boolean;
+    private minLevel: LogLevel;
 
     constructor() {
-        this.environment = process.env.NODE_ENV || 'development';
-        this.isServer = typeof window === 'undefined';
+        // Set minimum log level based on environment
+        const envLevel = process.env.LOG_LEVEL?.toLowerCase();
+        this.minLevel = this.parseLogLevel(envLevel) || LogLevel.INFO;
     }
 
-    private formatLog(level: LogLevel, message: string, context?: Record<string, unknown>, error?: Error): LogEntry {
-        const logEntry: LogEntry = {
+    private parseLogLevel(level?: string): LogLevel | null {
+        switch (level) {
+            case 'debug':
+                return LogLevel.DEBUG;
+            case 'info':
+                return LogLevel.INFO;
+            case 'warn':
+                return LogLevel.WARN;
+            case 'error':
+                return LogLevel.ERROR;
+            default:
+                return null;
+        }
+    }
+
+    private shouldLog(level: LogLevel): boolean {
+        const levels = [LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR];
+        const minIndex = levels.indexOf(this.minLevel);
+        const currentIndex = levels.indexOf(level);
+        return currentIndex >= minIndex;
+    }
+
+    private formatLog(level: LogLevel, message: string, context?: LogContext, error?: Error): LogEntry {
+        const entry: LogEntry = {
             level,
             message,
             timestamp: new Date().toISOString(),
-            environment: this.environment,
-            source: this.isServer ? 'server' : 'client',
         };
 
-        if (context) {
-            logEntry.context = context;
+        if (context && Object.keys(context).length > 0) {
+            entry.context = context;
         }
 
         if (error) {
-            logEntry.error = {
-                name: error.name,
+            entry.error = {
                 message: error.message,
+                name: error.name,
                 stack: error.stack,
             };
         }
 
-        return logEntry;
+        return entry;
     }
 
-    private output(logEntry: LogEntry): void {
-        const logString = JSON.stringify(logEntry);
-
-        // In production, send to logging service
-        if (this.environment === 'production') {
-            // Send to logging aggregation service (e.g., CloudWatch, Datadog, etc.)
-            // This would be implemented based on your logging infrastructure
-            this.sendToLoggingService(logEntry);
+    private log(level: LogLevel, message: string, context?: LogContext, error?: Error): void {
+        if (!this.shouldLog(level)) {
+            return;
         }
 
-        // Console output for development and as fallback
-        switch (logEntry.level) {
-            case 'debug':
-                console.debug(logString);
-                break;
-            case 'info':
-                console.info(logString);
-                break;
-            case 'warn':
-                console.warn(logString);
-                break;
-            case 'error':
-                console.error(logString);
-                break;
-        }
-    }
+        const entry = this.formatLog(level, message, context, error);
 
-    private sendToLoggingService(logEntry: LogEntry): void {
-        // Implement integration with your logging service
-        // Examples:
-        // - AWS CloudWatch Logs
-        // - Datadog
-        // - New Relic
-        // - Sentry
-        // - LogRocket
-
-        // For now, this is a placeholder
-        // In a real implementation, you would send the log to your service
-        if (this.isServer) {
-            // Server-side logging (e.g., to CloudWatch)
-            // Example: cloudwatch.putLogEvents(logEntry)
+        // In production/CloudWatch, use JSON format
+        // In development, use more readable format
+        if (process.env.NODE_ENV === 'production' || process.env.ENVIRONMENT === 'production') {
+            console.log(JSON.stringify(entry));
         } else {
-            // Client-side logging (e.g., to browser monitoring service)
-            // Example: browserMonitoring.log(logEntry)
+            // Pretty print for local development
+            const timestamp = new Date().toLocaleTimeString();
+            const levelColor = this.getLevelColor(level);
+            const contextStr = context ? ` ${JSON.stringify(context)}` : '';
+            const errorStr = error ? `\n  Error: ${error.message}\n  ${error.stack}` : '';
+
+            console.log(`[${timestamp}] ${levelColor}${level.toUpperCase()}\x1b[0m: ${message}${contextStr}${errorStr}`);
         }
     }
 
-    debug(message: string, context?: Record<string, unknown>): void {
-        const logEntry = this.formatLog('debug', message, context);
-        this.output(logEntry);
+    private getLevelColor(level: LogLevel): string {
+        switch (level) {
+            case LogLevel.DEBUG:
+                return '\x1b[36m'; // Cyan
+            case LogLevel.INFO:
+                return '\x1b[32m'; // Green
+            case LogLevel.WARN:
+                return '\x1b[33m'; // Yellow
+            case LogLevel.ERROR:
+                return '\x1b[31m'; // Red
+            default:
+                return '';
+        }
     }
 
-    info(message: string, context?: Record<string, unknown>): void {
-        const logEntry = this.formatLog('info', message, context);
-        this.output(logEntry);
+    debug(message: string, context?: LogContext): void {
+        this.log(LogLevel.DEBUG, message, context);
     }
 
-    warn(message: string, context?: Record<string, unknown>): void {
-        const logEntry = this.formatLog('warn', message, context);
-        this.output(logEntry);
+    info(message: string, context?: LogContext): void {
+        this.log(LogLevel.INFO, message, context);
     }
 
-    error(message: string, error?: Error, context?: Record<string, unknown>): void {
-        const logEntry = this.formatLog('error', message, context, error);
-        this.output(logEntry);
+    warn(message: string, context?: LogContext, error?: Error): void {
+        this.log(LogLevel.WARN, message, context, error);
     }
 
-    // Specialized method for API errors
-    apiError(endpoint: string, error: Error, statusCode?: number, context?: Record<string, unknown>): void {
-        this.error(`API Error: ${endpoint}`, error, {
-            ...context,
-            endpoint,
+    error(message: string, context?: LogContext, error?: Error): void {
+        this.log(LogLevel.ERROR, message, context, error);
+    }
+
+    /**
+     * Log API request start
+     */
+    apiRequest(method: string, path: string, context?: LogContext): void {
+        this.info(`API Request: ${method} ${path}`, context);
+    }
+
+    /**
+     * Log API response
+     */
+    apiResponse(method: string, path: string, statusCode: number, duration: number, context?: LogContext): void {
+        const level = statusCode >= 500 ? LogLevel.ERROR : statusCode >= 400 ? LogLevel.WARN : LogLevel.INFO;
+        this.log(level, `API Response: ${method} ${path}`, {
             statusCode,
+            duration: `${duration}ms`,
+            ...context,
         });
     }
 
-    // Specialized method for deployment events
-    deployment(event: string, context?: Record<string, unknown>): void {
-        this.info(`Deployment Event: ${event}`, {
+    /**
+     * Log database operation
+     */
+    dbOperation(operation: string, context?: LogContext): void {
+        this.debug(`Database: ${operation}`, context);
+    }
+
+    /**
+     * Log database error
+     */
+    dbError(operation: string, error: Error, context?: LogContext): void {
+        this.error(`Database Error: ${operation}`, context, error);
+    }
+
+    /**
+     * Log validation failure
+     */
+    validationError(message: string, errors: any[], context?: LogContext): void {
+        this.warn(message, {
+            errors,
             ...context,
-            eventType: 'deployment',
         });
+    }
+
+    /**
+     * Log security event (e.g., duplicate email attempt)
+     */
+    securityEvent(event: string, context?: LogContext): void {
+        this.warn(`Security Event: ${event}`, context);
     }
 }
 

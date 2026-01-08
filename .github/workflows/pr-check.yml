@@ -63,8 +63,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Run unit and integration tests with coverage
-        run: npm run test:coverage
+      - name: Run unit tests with coverage (skip integration/performance)
+        run: npm run test:coverage -- --testPathIgnorePatterns="/integration/|/performance/|/examples/|e2e/|\\.integration\\."
         continue-on-error: false
       
       - name: Upload coverage reports

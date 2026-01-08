@@ -7,6 +7,9 @@ jest.mock('next/navigation', () => ({
     useRouter: jest.fn(),
 }));
 
+// Mock fetch
+global.fetch = jest.fn();
+
 describe('PlayerRegisterPage', () => {
     const mockPush = jest.fn();
 
@@ -15,6 +18,7 @@ describe('PlayerRegisterPage', () => {
         (useRouter as jest.Mock).mockReturnValue({
             push: mockPush,
         });
+        (global.fetch as jest.Mock).mockClear();
     });
 
     describe('Page Rendering', () => {
@@ -79,6 +83,16 @@ describe('PlayerRegisterPage', () => {
         };
 
         it('displays success message after successful registration', async () => {
+            // Mock successful API response
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    success: true,
+                    message: 'Player registered successfully',
+                    playerId: '123e4567-e89b-12d3-a456-426614174000',
+                }),
+            });
+
             render(<PlayerRegisterPage />);
 
             await fillValidForm();
@@ -95,6 +109,16 @@ describe('PlayerRegisterPage', () => {
         });
 
         it('redirects to login after successful registration', async () => {
+            // Mock successful API response
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    success: true,
+                    message: 'Player registered successfully',
+                    playerId: '123e4567-e89b-12d3-a456-426614174000',
+                }),
+            });
+
             render(<PlayerRegisterPage />);
 
             await fillValidForm();
@@ -113,8 +137,17 @@ describe('PlayerRegisterPage', () => {
             }, { timeout: 3000 });
         });
 
-        it('handles form submission successfully', async () => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+        it('calls API with correct data', async () => {
+            // Mock successful API response
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    success: true,
+                    message: 'Player registered successfully',
+                    playerId: '123e4567-e89b-12d3-a456-426614174000',
+                }),
+            });
+
             render(<PlayerRegisterPage />);
 
             await fillValidForm();
@@ -122,29 +155,169 @@ describe('PlayerRegisterPage', () => {
             const submitButton = screen.getByRole('button', { name: /create player account/i });
             fireEvent.click(submitButton);
 
-            // Wait for success message which indicates submission was successful
+            // Wait for API call
             await waitFor(() => {
+                expect(global.fetch).toHaveBeenCalledWith(
+                    '/api/auth/register/player',
+                    expect.objectContaining({
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: expect.any(String),
+                    })
+                );
+            });
+
+            // Verify the body contains correct data with sex instead of gender
+            const callArgs = (global.fetch as jest.Mock).mock.calls[0];
+            const body = JSON.parse(callArgs[1].body);
+            expect(body).toEqual({
+                firstName: 'John',
+                lastName: 'Doe',
+                email: 'john.doe@example.com',
+                password: 'Password123!',
+                sex: 'male', // Should be sex, not gender
+                sport: 'basketball',
+                position: 'Point Guard',
+                gpa: 3.5,
+                country: 'USA',
+                state: 'CA',
+            });
+        });
+
+        it('displays validation errors from API', async () => {
+            // Mock API validation error response
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: false,
+                json: async () => ({
+                    success: false,
+                    errors: [
+                        { field: 'email', message: 'Email is already registered' },
+                        { field: 'gpa', message: 'GPA must be between 0.0 and 4.0' },
+                    ],
+                }),
+            });
+
+            render(<PlayerRegisterPage />);
+
+            await fillValidForm();
+
+            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            fireEvent.click(submitButton);
+
+            // Wait for error message to appear
+            await waitFor(() => {
+                expect(screen.getByText(/registration error/i)).toBeInTheDocument();
+            });
+
+            expect(screen.getByText(/email: Email is already registered, gpa: GPA must be between 0\.0 and 4\.0/i)).toBeInTheDocument();
+        });
+
+        it('displays duplicate email error', async () => {
+            // Mock duplicate email error response
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: false,
+                json: async () => ({
+                    success: false,
+                    message: 'Email already registered',
+                }),
+            });
+
+            render(<PlayerRegisterPage />);
+
+            await fillValidForm();
+
+            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            fireEvent.click(submitButton);
+
+            // Wait for error message to appear
+            await waitFor(() => {
+                expect(screen.getByText(/registration error/i)).toBeInTheDocument();
+            });
+
+            expect(screen.getByText(/email already registered/i)).toBeInTheDocument();
+        });
+
+        it('displays network error message', async () => {
+            // Mock network error
+            (global.fetch as jest.Mock).mockRejectedValueOnce(new TypeError('Failed to fetch'));
+
+            render(<PlayerRegisterPage />);
+
+            await fillValidForm();
+
+            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            fireEvent.click(submitButton);
+
+            // Wait for error message to appear
+            await waitFor(() => {
+                expect(screen.getByText(/registration error/i)).toBeInTheDocument();
+            });
+
+            expect(screen.getByText(/network error\. please check your connection and try again\./i)).toBeInTheDocument();
+        });
+
+        it('displays generic error for unexpected errors', async () => {
+            // Mock unexpected error
+            (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Something went wrong'));
+
+            render(<PlayerRegisterPage />);
+
+            await fillValidForm();
+
+            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            fireEvent.click(submitButton);
+
+            // Wait for error message to appear
+            await waitFor(() => {
+                expect(screen.getByText(/registration error/i)).toBeInTheDocument();
+            });
+
+            expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+        });
+
+        it('clears previous error when submitting again', async () => {
+            // First submission fails
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: false,
+                json: async () => ({
+                    success: false,
+                    message: 'Email already registered',
+                }),
+            });
+
+            render(<PlayerRegisterPage />);
+
+            await fillValidForm();
+
+            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            fireEvent.click(submitButton);
+
+            // Wait for error message
+            await waitFor(() => {
+                expect(screen.getByText(/email already registered/i)).toBeInTheDocument();
+            });
+
+            // Second submission succeeds
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    success: true,
+                    message: 'Player registered successfully',
+                    playerId: '123e4567-e89b-12d3-a456-426614174000',
+                }),
+            });
+
+            // Change email and submit again
+            fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'new.email@example.com' } });
+            fireEvent.click(submitButton);
+
+            // Error should be cleared and success message should appear
+            await waitFor(() => {
+                expect(screen.queryByText(/email already registered/i)).not.toBeInTheDocument();
                 expect(screen.getByText(/success!/i)).toBeInTheDocument();
-            }, { timeout: 3000 });
-
-            // Verify console.log was called with registration data
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'Player registration data:',
-                expect.objectContaining({
-                    firstName: 'John',
-                    lastName: 'Doe',
-                    email: 'john.doe@example.com',
-                    password: 'Password123!',
-                    gender: 'male',
-                    sport: 'basketball',
-                    position: 'Point Guard',
-                    gpa: 3.5,
-                    country: 'USA',
-                    state: 'CA',
-                })
-            );
-
-            consoleSpy.mockRestore();
+            });
         });
     });
 

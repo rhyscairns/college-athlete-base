@@ -29,10 +29,17 @@ export class ErrorBoundary extends Component<Props, State> {
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
         // Log error to logging service
-        logger.error('React Error Boundary caught an error', error, {
+        // Create a custom error object with component stack information
+        const errorWithContext = Object.assign(new Error(error.message), {
+            name: error.name,
+            stack: error.stack,
             componentStack: errorInfo.componentStack,
-            errorBoundary: true,
         });
+
+        logger.error('React Error Boundary caught an error', {
+            errorBoundary: true,
+            componentStack: errorInfo.componentStack,
+        }, errorWithContext);
     }
 
     render(): ReactNode {
@@ -84,7 +91,6 @@ export class ErrorBoundary extends Component<Props, State> {
                 </div>
             );
         }
-
         return this.props.children;
     }
 }

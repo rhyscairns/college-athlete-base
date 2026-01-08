@@ -301,6 +301,17 @@ The script will:
 6. **Automate when possible**: Use scripts and workflows to reduce human error
 7. **Verify rollback procedures**: Regularly test rollback procedures in development
 
+## Feature-Specific Deployment Guides
+
+For detailed deployment procedures for specific features:
+
+- **[Player Registration API Deployment](PLAYER_REGISTRATION_DEPLOYMENT.md)** - Complete guide for deploying the player registration feature
+  - Environment configuration
+  - Database migrations
+  - Rollback procedures
+  - Monitoring and troubleshooting
+  - Security checklist
+
 ## Support and Escalation
 
 For deployment issues:

@@ -25,7 +25,7 @@ describe('ErrorBoundary', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         // Suppress console.error for these tests
-        jest.spyOn(console, 'error').mockImplementation(() => {});
+        jest.spyOn(console, 'error').mockImplementation(() => { });
     });
 
     afterEach(() => {
@@ -64,10 +64,11 @@ describe('ErrorBoundary', () => {
 
         expect(logger.error).toHaveBeenCalledWith(
             'React Error Boundary caught an error',
-            expect.any(Error),
             expect.objectContaining({
                 errorBoundary: true,
-            })
+                componentStack: expect.any(String),
+            }),
+            expect.any(Error)
         );
     });
 
@@ -97,7 +98,7 @@ describe('ErrorBoundary', () => {
 
     it('does not show error details in production', () => {
         const originalEnv = process.env.NODE_ENV;
-        
+
         // Override NODE_ENV using defineProperty
         Object.defineProperty(process.env, 'NODE_ENV', {
             value: 'production',

@@ -1,239 +1,220 @@
-/**
- * @jest-environment node
- */
-import { Logger } from '@/lib/logger';
+import { Logger, LogLevel } from '@/lib/logger';
 
 describe('Logger', () => {
     let logger: Logger;
-    let consoleDebugSpy: jest.SpyInstance;
-    let consoleInfoSpy: jest.SpyInstance;
-    let consoleWarnSpy: jest.SpyInstance;
-    let consoleErrorSpy: jest.SpyInstance;
+    let consoleLogSpy: jest.SpyInstance;
+    let originalEnv: NodeJS.ProcessEnv;
 
     beforeEach(() => {
+        // Save and set environment before creating logger
+        originalEnv = { ...process.env };
+        (process.env as any).NODE_ENV = 'test';
+        process.env.LOG_LEVEL = 'debug';
+
+        // Create a new logger instance AFTER setting env vars
         logger = new Logger();
-        consoleDebugSpy = jest.spyOn(console, 'debug').mockImplementation();
-        consoleInfoSpy = jest.spyOn(console, 'info').mockImplementation();
-        consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
-        consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+        // Spy on console.log
+        consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
     });
 
     afterEach(() => {
-        jest.restoreAllMocks();
+        consoleLogSpy.mockRestore();
+        // Restore original environment
+        process.env = originalEnv;
     });
 
-    describe('debug', () => {
-        it('logs debug messages', () => {
-            logger.debug('Debug message');
-
-            expect(consoleDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"level":"debug"')
-            );
-            expect(consoleDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"message":"Debug message"')
-            );
+    describe('Log Levels', () => {
+        it('should log debug messages', () => {
+            logger.debug('Test debug message', { key: 'value' });
+            expect(consoleLogSpy).toHaveBeenCalled();
         });
 
-        it('includes context in debug logs', () => {
-            logger.debug('Debug message', { userId: '123' });
-
-            expect(consoleDebugSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"context":{"userId":"123"}')
-            );
-        });
-    });
-
-    describe('info', () => {
-        it('logs info messages', () => {
-            logger.info('Info message');
-
-            expect(consoleInfoSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"level":"info"')
-            );
-            expect(consoleInfoSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"message":"Info message"')
-            );
+        it('should log info messages', () => {
+            logger.info('Test info message', { key: 'value' });
+            expect(consoleLogSpy).toHaveBeenCalled();
         });
 
-        it('includes context in info logs', () => {
-            logger.info('Info message', { action: 'test' });
-
-            expect(consoleInfoSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"context":{"action":"test"}')
-            );
-        });
-    });
-
-    describe('warn', () => {
-        it('logs warning messages', () => {
-            logger.warn('Warning message');
-
-            expect(consoleWarnSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"level":"warn"')
-            );
-            expect(consoleWarnSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"message":"Warning message"')
-            );
+        it('should log warn messages', () => {
+            logger.warn('Test warn message', { key: 'value' });
+            expect(consoleLogSpy).toHaveBeenCalled();
         });
 
-        it('includes context in warning logs', () => {
-            logger.warn('Warning message', { threshold: 90 });
-
-            expect(consoleWarnSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"context":{"threshold":90}')
-            );
-        });
-    });
-
-    describe('error', () => {
-        it('logs error messages', () => {
-            logger.error('Error message');
-
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"level":"error"')
-            );
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"message":"Error message"')
-            );
-        });
-
-        it('includes error object in logs', () => {
+        it('should log error messages', () => {
             const error = new Error('Test error');
-            logger.error('Error occurred', error);
-
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"error":{')
-            );
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"message":"Test error"')
-            );
-        });
-
-        it('includes context in error logs', () => {
-            const error = new Error('Test error');
-            logger.error('Error occurred', error, { operation: 'test' });
-
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"context":{"operation":"test"}')
-            );
+            logger.error('Test error message', { key: 'value' }, error);
+            expect(consoleLogSpy).toHaveBeenCalled();
         });
     });
 
-    describe('apiError', () => {
-        it('logs API errors with endpoint and status code', () => {
-            const error = new Error('API failed');
-            logger.apiError('/api/users', error, 500, { userId: '123' });
+    describe('Log Level Filtering', () => {
+        it('should not log debug when level is info', () => {
+            process.env.LOG_LEVEL = 'info';
+            const infoLogger = new Logger();
 
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"message":"API Error: /api/users"')
-            );
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"endpoint":"/api/users"')
-            );
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"statusCode":500')
-            );
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"userId":"123"')
-            );
+            infoLogger.debug('Should not appear');
+            expect(consoleLogSpy).not.toHaveBeenCalled();
+
+            infoLogger.info('Should appear');
+            expect(consoleLogSpy).toHaveBeenCalled();
         });
 
-        it('logs API errors without context', () => {
-            const error = new Error('API failed');
-            logger.apiError('/api/users', error, 500);
+        it('should only log errors when level is error', () => {
+            process.env.LOG_LEVEL = 'error';
+            const errorLogger = new Logger();
 
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"message":"API Error: /api/users"')
-            );
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"endpoint":"/api/users"')
-            );
+            consoleLogSpy.mockClear();
+
+            errorLogger.debug('Should not appear');
+            errorLogger.info('Should not appear');
+            errorLogger.warn('Should not appear');
+            expect(consoleLogSpy).not.toHaveBeenCalled();
+
+            errorLogger.error('Should appear');
+            expect(consoleLogSpy).toHaveBeenCalled();
         });
     });
 
-    describe('deployment', () => {
-        it('logs deployment events', () => {
-            logger.deployment('Application started', { version: '1.0.0' });
+    describe('Context Logging', () => {
+        it('should include context in log output', () => {
+            logger.info('Test message', { userId: '123', action: 'login' });
 
-            expect(consoleInfoSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"message":"Deployment Event: Application started"')
-            );
-            expect(consoleInfoSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"eventType":"deployment"')
-            );
-            expect(consoleInfoSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"version":"1.0.0"')
-            );
+            const logCall = consoleLogSpy.mock.calls[0][0];
+            expect(logCall).toContain('userId');
+            expect(logCall).toContain('123');
         });
 
-        it('logs deployment events without context', () => {
-            logger.deployment('Application started');
-
-            expect(consoleInfoSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"message":"Deployment Event: Application started"')
-            );
-            expect(consoleInfoSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"eventType":"deployment"')
-            );
-        });
-    });
-
-    describe('log format', () => {
-        it('includes timestamp in all logs', () => {
+        it('should handle empty context', () => {
             logger.info('Test message');
-
-            expect(consoleInfoSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"timestamp":"')
-            );
+            expect(consoleLogSpy).toHaveBeenCalled();
         });
 
-        it('includes environment in all logs', () => {
-            logger.info('Test message');
-
-            expect(consoleInfoSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"environment":"')
-            );
-        });
-
-        it('includes source as server', () => {
-            logger.info('Test message');
-
-            expect(consoleInfoSpy).toHaveBeenCalledWith(
-                expect.stringContaining('"source":"server"')
-            );
-        });
-
-        it('produces valid JSON', () => {
-            logger.info('Test message', { test: true });
-
-            const logCall = consoleInfoSpy.mock.calls[0][0];
-            expect(() => JSON.parse(logCall)).not.toThrow();
-        });
-    });
-
-    describe('production environment', () => {
-        it('calls sendToLoggingService in production', () => {
-            const originalEnv = process.env.NODE_ENV;
-
-            // Override NODE_ENV using defineProperty
-            Object.defineProperty(process.env, 'NODE_ENV', {
-                value: 'production',
-                writable: true,
-                configurable: true,
+        it('should handle complex context objects', () => {
+            logger.info('Test message', {
+                user: { id: '123', name: 'Test' },
+                metadata: { timestamp: Date.now() },
             });
+            expect(consoleLogSpy).toHaveBeenCalled();
+        });
+    });
 
+    describe('Error Logging', () => {
+        it('should include error details', () => {
+            const error = new Error('Test error');
+            error.stack = 'Error stack trace';
+
+            logger.error('Error occurred', {}, error);
+
+            const logCall = consoleLogSpy.mock.calls[0][0];
+            expect(logCall).toContain('Test error');
+        });
+
+        it('should handle errors without stack traces', () => {
+            const error = new Error('Test error');
+            delete error.stack;
+
+            logger.error('Error occurred', {}, error);
+            expect(consoleLogSpy).toHaveBeenCalled();
+        });
+    });
+
+    describe('Specialized Logging Methods', () => {
+        it('should log API requests', () => {
+            logger.apiRequest('POST', '/api/test', { requestId: '123' });
+
+            const logCall = consoleLogSpy.mock.calls[0][0];
+            expect(logCall).toContain('POST');
+            expect(logCall).toContain('/api/test');
+        });
+
+        it('should log API responses with status codes', () => {
+            logger.apiResponse('POST', '/api/test', 200, 150, { requestId: '123' });
+
+            const logCall = consoleLogSpy.mock.calls[0][0];
+            expect(logCall).toContain('200');
+            expect(logCall).toContain('150ms');
+        });
+
+        it('should log database operations', () => {
+            logger.dbOperation('SELECT', { table: 'users' });
+
+            const logCall = consoleLogSpy.mock.calls[0][0];
+            expect(logCall).toContain('SELECT');
+        });
+
+        it('should log database errors', () => {
+            const error = new Error('Connection failed');
+            logger.dbError('SELECT', error, { table: 'users' });
+
+            expect(consoleLogSpy).toHaveBeenCalled();
+        });
+
+        it('should log validation errors', () => {
+            const errors = [
+                { field: 'email', message: 'Invalid email' },
+                { field: 'password', message: 'Too short' },
+            ];
+
+            logger.validationError('Validation failed', errors);
+
+            const logCall = consoleLogSpy.mock.calls[0][0];
+            expect(logCall).toContain('Validation failed');
+        });
+
+        it('should log security events', () => {
+            logger.securityEvent('Failed login attempt', { email: 'test@example.com' });
+
+            const logCall = consoleLogSpy.mock.calls[0][0];
+            expect(logCall).toContain('Failed login attempt');
+        });
+    });
+
+    describe('Production Format', () => {
+        it('should use JSON format in production', () => {
+            (process.env as any).NODE_ENV = 'production';
             const prodLogger = new Logger();
-            prodLogger.info('Production log');
 
-            // In production, it should still log to console as fallback
-            expect(consoleInfoSpy).toHaveBeenCalled();
+            prodLogger.info('Test message', { key: 'value' });
 
-            // Restore original NODE_ENV
-            Object.defineProperty(process.env, 'NODE_ENV', {
-                value: originalEnv,
-                writable: true,
-                configurable: true,
-            });
+            const logCall = consoleLogSpy.mock.calls[0][0];
+
+            // Should be valid JSON
+            expect(() => JSON.parse(logCall)).not.toThrow();
+
+            const parsed = JSON.parse(logCall);
+            expect(parsed.level).toBe('info');
+            expect(parsed.message).toBe('Test message');
+            expect(parsed.context).toEqual({ key: 'value' });
+            expect(parsed.timestamp).toBeDefined();
+        });
+
+        it('should include error details in JSON format', () => {
+            (process.env as any).NODE_ENV = 'production';
+            const prodLogger = new Logger();
+
+            const error = new Error('Test error');
+            prodLogger.error('Error occurred', { key: 'value' }, error);
+
+            const logCall = consoleLogSpy.mock.calls[0][0];
+            const parsed = JSON.parse(logCall);
+
+            expect(parsed.error).toBeDefined();
+            expect(parsed.error.message).toBe('Test error');
+            expect(parsed.error.name).toBe('Error');
+        });
+    });
+
+    describe('Development Format', () => {
+        it('should use colored format in development', () => {
+            (process.env as any).NODE_ENV = 'development';
+            const devLogger = new Logger();
+
+            devLogger.info('Test message');
+
+            const logCall = consoleLogSpy.mock.calls[0][0];
+
+            // Should contain ANSI color codes
+            expect(logCall).toContain('\x1b[');
         });
     });
 });
