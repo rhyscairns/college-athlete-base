@@ -44,7 +44,7 @@ jobs:
           echo "✓ Playwright configuration found"
       
       - name: Run unit tests (skip integration/performance)
-        run: npm run test:coverage -- --testPathIgnorePatterns="/integration/|/performance/|/examples/|e2e/"
+        run: npm run test:coverage -- --testPathIgnorePatterns="/integration/|/performance/|/examples/|e2e/|\\.integration\\."
       
       - name: Verify coverage thresholds
         run: |

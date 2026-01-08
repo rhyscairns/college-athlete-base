@@ -64,7 +64,7 @@ jobs:
         run: npm ci
       
       - name: Run unit tests with coverage (skip integration/performance)
-        run: npm run test:coverage -- --testPathIgnorePatterns="/integration/|/performance/|/examples/|e2e/"
+        run: npm run test:coverage -- --testPathIgnorePatterns="/integration/|/performance/|/examples/|e2e/|\\.integration\\."
         continue-on-error: false
       
       - name: Upload coverage reports
