@@ -163,7 +163,7 @@ describe('API Endpoint Performance Tests', () => {
                 body: JSON.stringify(requestBody),
             });
 
-            const response1 = await POST(request1);
+            const response1 = await POST(request1 as any);
             expect(response1.status).toBe(201);
 
             // Duplicate registration
@@ -176,7 +176,7 @@ describe('API Endpoint Performance Tests', () => {
             });
 
             const startTime = Date.now();
-            const response2 = await POST(request2);
+            const response2 = await POST(request2 as any);
             const duration = Date.now() - startTime;
 
             expect(response2.status).toBe(409);
@@ -216,7 +216,7 @@ describe('API Endpoint Performance Tests', () => {
             });
 
             const startTime = Date.now();
-            const responses = await Promise.all(requests.map(req => POST(req)));
+            const responses = await Promise.all(requests.map(req => POST(req as any)));
             const duration = Date.now() - startTime;
 
             const successCount = responses.filter(r => r.status === 201).length;
@@ -274,7 +274,7 @@ describe('API Endpoint Performance Tests', () => {
             ];
 
             const startTime = Date.now();
-            const responses = await Promise.all(requests.map(req => POST(req)));
+            const responses = await Promise.all(requests.map(req => POST(req as any)));
             const duration = Date.now() - startTime;
 
             const successCount = responses.filter(r => r.status === 201).length;

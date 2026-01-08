@@ -14,6 +14,21 @@ jobs:
     name: Validate Test Infrastructure
     runs-on: ubuntu-latest
     
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: college_athlete_base_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,6 +41,23 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
+      
+      - name: Set up test database
+        env:
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_NAME: college_athlete_base_test
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres
+        run: |
+          # Wait for PostgreSQL
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+          
+          # Run database setup
+          PGPASSWORD=postgres psql -h localhost -U postgres -d college_athlete_base_test -f infrastructure/database/schema.sql || true
       
       - name: Verify Jest configuration
         run: |
@@ -44,6 +76,14 @@ jobs:
           echo "✓ Playwright configuration found"
       
       - name: Run unit tests
+        env:
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_NAME: college_athlete_base_test
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: postgres
+          DATABASE_SSL: false
+          DATABASE_MAX_CONNECTIONS: 10
         run: npm run test:coverage
       
       - name: Verify coverage thresholds
