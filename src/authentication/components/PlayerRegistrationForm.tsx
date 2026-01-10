@@ -222,7 +222,7 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                 gender,
                 sport,
                 position,
-                gpa: parseFloat(gpa),
+                gpa: Math.round(parseFloat(gpa) * 100) / 100, // Round to 2 decimal places
                 country,
                 ...(country === 'USA' ? { state } : { region }),
                 ...(scholarshipAmount && { scholarshipAmount: parseFloat(scholarshipAmount) }),

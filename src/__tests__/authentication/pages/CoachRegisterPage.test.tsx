@@ -1,6 +1,8 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
+/**
+ * Tests for CoachRegisterPage component
+ */
+
+import { render, screen, waitFor } from '../../utils/test-utils';
 import { CoachRegisterPage } from '@/authentication/pages/CoachRegisterPage';
 import { useRouter } from 'next/navigation';
 
@@ -9,14 +11,47 @@ jest.mock('next/navigation', () => ({
     useRouter: jest.fn(),
 }));
 
+// Mock CoachRegistrationForm
+jest.mock('@/authentication/components/CoachRegistrationForm', () => ({
+    CoachRegistrationForm: ({ onSubmit, onCancel }: any) => (
+        <div data-testid="coach-registration-form">
+            <button onClick={async () => {
+                try {
+                    await onSubmit({
+                        firstName: 'John',
+                        lastName: 'Coach',
+                        email: 'john@example.com',
+                        password: 'Password123!',
+                        coachingCategory: 'mens',
+                        sports: ['basketball'],
+                        university: 'UCLA'
+                    });
+                } catch (error) {
+                    // Form would handle error display
+                }
+            }}>
+                Submit Form
+            </button>
+            <button onClick={onCancel}>Cancel</button>
+        </div>
+    ),
+}));
+
 describe('CoachRegisterPage', () => {
     const mockPush = jest.fn();
+    const mockRouter = {
+        push: mockPush,
+        back: jest.fn(),
+        forward: jest.fn(),
+        refresh: jest.fn(),
+        replace: jest.fn(),
+        prefetch: jest.fn(),
+    };
 
     beforeEach(() => {
         jest.clearAllMocks();
-        (useRouter as jest.Mock).mockReturnValue({
-            push: mockPush,
-        });
+        (useRouter as jest.Mock).mockReturnValue(mockRouter);
+        global.fetch = jest.fn();
         jest.useFakeTimers();
     });
 
@@ -24,65 +59,231 @@ describe('CoachRegisterPage', () => {
         jest.runOnlyPendingTimers();
         jest.useRealTimers();
     });
-    it('renders the coach registration form', () => {
-        render(<CoachRegisterPage />);
 
-        expect(screen.getByText(/coach registration/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/first name/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/coaching category/i)).toBeInTheDocument();
-    });
+    describe('Component Rendering', () => {
+        it('renders the coach registration page', () => {
+            render(<CoachRegisterPage />);
 
-    it('displays success message after successful registration', async () => {
-        render(<CoachRegisterPage />);
+            expect(screen.getByText(/COACH REGISTRATION/i)).toBeInTheDocument();
+            expect(screen.getByTestId('coach-registration-form')).toBeInTheDocument();
+        });
 
-        // Fill in all required fields
-        fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'John' } });
-        fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Doe' } });
-        fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john.doe@university.edu' } });
-        fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: 'Password123!' } });
-        fireEvent.change(screen.getByLabelText(/coaching category/i), { target: { value: 'mens' } });
-        fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
-        fireEvent.change(screen.getByLabelText(/university/i), { target: { value: 'State University' } });
+        it('renders back to login button', () => {
+            render(<CoachRegisterPage />);
 
-        const submitButton = screen.getByRole('button', { name: /create coach account/i });
-        fireEvent.click(submitButton);
+            expect(screen.getByText(/Back to Login/i)).toBeInTheDocument();
+        });
 
-        // Fast-forward through the simulated API call
-        jest.advanceTimersByTime(1500);
+        it('navigates to login when back button is clicked', () => {
+            render(<CoachRegisterPage />);
 
-        await waitFor(() => {
-            expect(screen.getByText(/registration successful/i)).toBeInTheDocument();
+            const backButton = screen.getByText(/Back to Login/i);
+            backButton.click();
+
+            expect(mockPush).toHaveBeenCalledWith('/login');
         });
     });
 
-    it('successfully submits form with coaching category and both sports', async () => {
-        render(<CoachRegisterPage />);
+    describe('Form Submission', () => {
+        it('submits form data to API successfully', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    success: true,
+                    message: 'Coach registered successfully',
+                    coachId: 'coach-123',
+                }),
+            });
 
-        // Fill in all required fields including coaching category
-        fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'Jane' } });
-        fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Smith' } });
-        fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'jane.smith@college.edu' } });
-        fireEvent.change(document.getElementById('password') as HTMLElement, { target: { value: 'SecurePass456!' } });
-        fireEvent.change(screen.getByLabelText(/coaching category/i), { target: { value: 'womens' } });
-        fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'soccer' } });
-        fireEvent.change(screen.getByLabelText(/secondary sport/i), { target: { value: 'volleyball' } });
-        fireEvent.change(screen.getByLabelText(/university/i), { target: { value: 'Tech College' } });
+            render(<CoachRegisterPage />);
 
-        const submitButton = screen.getByRole('button', { name: /create coach account/i });
-        fireEvent.click(submitButton);
+            const submitButton = screen.getByText('Submit Form');
+            submitButton.click();
 
-        // Fast-forward through the simulated API call
-        jest.advanceTimersByTime(1500);
+            await waitFor(() => {
+                expect(global.fetch).toHaveBeenCalledWith(
+                    '/api/auth/register/coach',
+                    expect.objectContaining({
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            firstName: 'John',
+                            lastName: 'Coach',
+                            email: 'john@example.com',
+                            password: 'Password123!',
+                            coachingCategory: 'mens',
+                            sports: ['basketball'],
+                            university: 'UCLA',
+                        }),
+                    })
+                );
+            });
+        });
 
-        await waitFor(() => {
-            expect(screen.getByText(/registration successful/i)).toBeInTheDocument();
+        it('displays success message after successful registration', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    success: true,
+                    message: 'Coach registered successfully',
+                    coachId: 'coach-123',
+                }),
+            });
+
+            render(<CoachRegisterPage />);
+
+            const submitButton = screen.getByText('Submit Form');
+            submitButton.click();
+
+            await waitFor(() => {
+                expect(screen.getByText(/Success!/i)).toBeInTheDocument();
+                expect(screen.getByText(/Registration successful! Redirecting to login.../i)).toBeInTheDocument();
+            });
+        });
+
+        it('redirects to login after successful registration', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    success: true,
+                    message: 'Coach registered successfully',
+                    coachId: 'coach-123',
+                }),
+            });
+
+            render(<CoachRegisterPage />);
+
+            const submitButton = screen.getByText('Submit Form');
+            submitButton.click();
+
+            await waitFor(() => {
+                expect(screen.getByText(/Success!/i)).toBeInTheDocument();
+            });
+
+            // Fast-forward time by 2 seconds
+            jest.advanceTimersByTime(2000);
+
+            expect(mockPush).toHaveBeenCalledWith('/login');
         });
     });
 
-    it('displays link to return to login', () => {
-        render(<CoachRegisterPage />);
+    describe('Error Handling', () => {
+        it('handles validation errors from API', async () => {
+            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
-        const loginLink = screen.getByText(/back to login/i);
-        expect(loginLink).toBeInTheDocument();
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: false,
+                json: async () => ({
+                    success: false,
+                    message: 'Validation failed',
+                    errors: [
+                        { field: 'email', message: 'Invalid email address' },
+                        { field: 'password', message: 'Password too weak' },
+                    ],
+                }),
+            });
+
+            render(<CoachRegisterPage />);
+
+            const submitButton = screen.getByText('Submit Form');
+            submitButton.click();
+
+            await waitFor(() => {
+                expect(consoleErrorSpy).toHaveBeenCalledWith(
+                    'Coach registration error:',
+                    expect.any(Error)
+                );
+            });
+
+            consoleErrorSpy.mockRestore();
+        });
+
+        it('handles email already registered error', async () => {
+            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: false,
+                json: async () => ({
+                    success: false,
+                    message: 'Email already registered',
+                }),
+            });
+
+            render(<CoachRegisterPage />);
+
+            const submitButton = screen.getByText('Submit Form');
+            submitButton.click();
+
+            await waitFor(() => {
+                expect(consoleErrorSpy).toHaveBeenCalledWith(
+                    'Coach registration error:',
+                    expect.objectContaining({
+                        message: 'Email already registered',
+                    })
+                );
+            });
+
+            consoleErrorSpy.mockRestore();
+        });
+
+        it('handles network errors', async () => {
+            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+            (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+
+            render(<CoachRegisterPage />);
+
+            const submitButton = screen.getByText('Submit Form');
+            submitButton.click();
+
+            await waitFor(() => {
+                expect(consoleErrorSpy).toHaveBeenCalledWith(
+                    'Coach registration error:',
+                    expect.objectContaining({
+                        message: 'Network error',
+                    })
+                );
+            });
+
+            consoleErrorSpy.mockRestore();
+        });
+
+        it('handles generic API errors', async () => {
+            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: false,
+                json: async () => ({}),
+            });
+
+            render(<CoachRegisterPage />);
+
+            const submitButton = screen.getByText('Submit Form');
+            submitButton.click();
+
+            await waitFor(() => {
+                expect(consoleErrorSpy).toHaveBeenCalledWith(
+                    'Coach registration error:',
+                    expect.objectContaining({
+                        message: 'Registration failed. Please try again.',
+                    })
+                );
+            });
+
+            consoleErrorSpy.mockRestore();
+        });
+    });
+
+    describe('Cancel Functionality', () => {
+        it('navigates to login when cancel is clicked', () => {
+            render(<CoachRegisterPage />);
+
+            const cancelButton = screen.getByText('Cancel');
+            cancelButton.click();
+
+            expect(mockPush).toHaveBeenCalledWith('/login');
+        });
     });
 });

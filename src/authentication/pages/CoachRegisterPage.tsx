@@ -10,17 +10,46 @@ export function CoachRegisterPage() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     const handleSubmit = async (data: CoachRegistrationData) => {
-        // TODO: Replace with actual API call in future task
-        // Simulating API call for now
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            const response = await fetch('/api/auth/register/coach', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
 
-        // Mock successful registration
-        setSuccessMessage('Registration successful! Redirecting to login...');
+            const result = await response.json();
 
-        // Redirect to login after 2 seconds
-        setTimeout(() => {
-            router.push('/login');
-        }, 2000);
+            if (!response.ok) {
+                // Handle validation errors
+                if (result.success === false && result.errors) {
+                    const errorMessages = result.errors
+                        .map((err: any) => `${err.field}: ${err.message}`)
+                        .join(', ');
+                    throw new Error(errorMessages);
+                }
+
+                // Handle other error responses
+                if (result.success === false && result.message) {
+                    throw new Error(result.message);
+                }
+
+                throw new Error('Registration failed. Please try again.');
+            }
+
+            // Success - show success message
+            setSuccessMessage('Registration successful! Redirecting to login...');
+
+            // Redirect to login after 2 seconds
+            setTimeout(() => {
+                router.push('/login');
+            }, 2000);
+        } catch (error) {
+            // Handle network errors and other exceptions
+            console.error('Coach registration error:', error);
+            throw error;
+        }
     };
 
     const handleCancel = () => {

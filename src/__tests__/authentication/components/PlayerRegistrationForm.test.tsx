@@ -482,4 +482,72 @@ describe('PlayerRegistrationForm', () => {
             });
         });
     });
+
+    describe('GPA Rounding', () => {
+        it('rounds GPA to 2 decimal places on submission', async () => {
+            mockOnSubmit.mockResolvedValue(undefined);
+            render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
+
+            // Fill form with valid data
+            fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'John' } });
+            fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Doe' } });
+            fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john.doe@example.com' } });
+            fireEvent.change(document.getElementById('password') as HTMLInputElement, { target: { value: examplePassword } });
+            fireEvent.change(screen.getByLabelText(/sex/i), { target: { value: 'male' } });
+            fireEvent.change(screen.getByLabelText(/sport/i), { target: { value: 'basketball' } });
+            fireEvent.change(screen.getByLabelText(/position/i), { target: { value: 'Point Guard' } });
+            fireEvent.change(screen.getByLabelText(/gpa/i), { target: { value: '4.0' } });
+            fireEvent.change(screen.getByLabelText(/country/i), { target: { value: 'USA' } });
+
+            await waitFor(() => {
+                expect(screen.getByLabelText(/state/i)).toBeInTheDocument();
+            });
+
+            fireEvent.change(screen.getByLabelText(/state/i), { target: { value: 'CA' } });
+
+            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(mockOnSubmit).toHaveBeenCalled();
+            });
+
+            // Verify GPA is exactly 4.0, not 3.96 or similar floating point error
+            const submittedData = mockOnSubmit.mock.calls[0][0];
+            expect(submittedData.gpa).toBe(4.0);
+        });
+
+        it('correctly rounds GPA with floating point precision issues', async () => {
+            mockOnSubmit.mockResolvedValue(undefined);
+            render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
+
+            // Fill form with valid data
+            fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'Jane' } });
+            fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'Smith' } });
+            fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'jane.smith@example.com' } });
+            fireEvent.change(document.getElementById('password') as HTMLInputElement, { target: { value: examplePassword } });
+            fireEvent.change(screen.getByLabelText(/sex/i), { target: { value: 'female' } });
+            fireEvent.change(screen.getByLabelText(/sport/i), { target: { value: 'soccer' } });
+            fireEvent.change(screen.getByLabelText(/position/i), { target: { value: 'Forward' } });
+            fireEvent.change(screen.getByLabelText(/gpa/i), { target: { value: '3.72' } });
+            fireEvent.change(screen.getByLabelText(/country/i), { target: { value: 'USA' } });
+
+            await waitFor(() => {
+                expect(screen.getByLabelText(/state/i)).toBeInTheDocument();
+            });
+
+            fireEvent.change(screen.getByLabelText(/state/i), { target: { value: 'TX' } });
+
+            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            fireEvent.click(submitButton);
+
+            await waitFor(() => {
+                expect(mockOnSubmit).toHaveBeenCalled();
+            });
+
+            // Verify GPA is exactly 3.72, not 3.69 or similar floating point error
+            const submittedData = mockOnSubmit.mock.calls[0][0];
+            expect(submittedData.gpa).toBe(3.72);
+        });
+    });
 });
