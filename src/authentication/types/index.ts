@@ -111,6 +111,28 @@ export interface ValidationError {
 export type UserRole = 'player' | 'coach';
 
 /**
+ * JWT token payload structure
+ */
+export interface TokenPayload {
+    playerId: string;
+    email: string;
+    type: 'player' | 'coach';
+    iat: number;
+    exp: number;
+}
+
+/**
+ * Session validation result
+ */
+export interface SessionValidationResult {
+    isValid: boolean;
+    playerId?: string;
+    email?: string;
+    type?: 'player' | 'coach';
+    error?: string;
+}
+
+/**
  * API Response types
  */
 

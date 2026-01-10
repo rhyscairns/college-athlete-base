@@ -21,7 +21,7 @@ INSERT INTO players (
     test_scores
 ) VALUES
 -- Basketball Players
-('Michael', 'Johnson', 'michael.johnson@example.com', '$2b$10$rZ5L3KxGxGxGxGxGxGxGxOqK5L3KxGxGxGxGxGxGxGxGxGxGxGxGx', 'male', 'basketball', 'Point Guard', 3.8, 'USA', 'California', NULL, 25000.00, 'SAT: 1450, ACT: 32'),
+('Michael', 'Johnson', 'michael.johnson@example.com', 'oka', 'male', 'basketball', 'Point Guard', 3.8, 'USA', 'California', NULL, 25000.00, 'SAT: 1450, ACT: 32'),
 ('Sarah', 'Williams', 'sarah.williams@example.com', '$2b$10$rZ5L3KxGxGxGxGxGxGxGxOqK5L3KxGxGxGxGxGxGxGxGxGxGxGxGx', 'female', 'basketball', 'Shooting Guard', 3.9, 'USA', 'Texas', NULL, 30000.00, 'SAT: 1520, ACT: 34'),
 ('James', 'Davis', 'james.davis@example.com', '$2b$10$rZ5L3KxGxGxGxGxGxGxGxOqK5L3KxGxGxGxGxGxGxGxGxGxGxGxGx', 'male', 'basketball', 'Center', 3.2, 'USA', 'New York', NULL, 20000.00, 'SAT: 1200, ACT: 26'),
 ('Emily', 'Brown', 'emily.brown@example.com', '$2b$10$rZ5L3KxGxGxGxGxGxGxGxOqK5L3KxGxGxGxGxGxGxGxGxGxGxGxGx', 'female', 'basketball', 'Power Forward', 3.6, 'USA', 'Florida', NULL, 22000.00, 'SAT: 1350, ACT: 29'),

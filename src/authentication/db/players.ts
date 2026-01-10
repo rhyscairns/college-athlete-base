@@ -131,3 +131,52 @@ export async function getPlayerByEmail(email: string): Promise<PlayerDatabaseRec
         throw new Error('Failed to fetch player record');
     }
 }
+
+/**
+ * Get a player record by ID
+ * Used for dashboard and profile functionality
+ * 
+ * @param id - The player's UUID
+ * @returns Promise<PlayerDatabaseRecord | null> - The player record or null if not found
+ * @throws Error if database query fails
+ */
+export async function getPlayerById(id: string): Promise<PlayerDatabaseRecord | null> {
+    try {
+        const result = await query<any>(
+            `SELECT 
+                id, first_name, last_name, email, password_hash, sex, sport, position,
+                gpa, country, state, region, scholarship_amount, test_scores,
+                created_at, updated_at
+            FROM players 
+            WHERE id = $1`,
+            [id]
+        );
+
+        if (result.length === 0) {
+            return null;
+        }
+
+        const row = result[0];
+        return {
+            id: row.id,
+            firstName: row.first_name,
+            lastName: row.last_name,
+            email: row.email,
+            passwordHash: row.password_hash,
+            sex: row.sex,
+            sport: row.sport,
+            position: row.position,
+            gpa: parseFloat(row.gpa),
+            country: row.country,
+            state: row.state,
+            region: row.region,
+            scholarshipAmount: row.scholarship_amount ? parseFloat(row.scholarship_amount) : undefined,
+            testScores: row.test_scores,
+            createdAt: new Date(row.created_at),
+            updatedAt: new Date(row.updated_at),
+        };
+    } catch (error) {
+        console.error('Error fetching player by ID:', error);
+        throw new Error('Failed to fetch player record');
+    }
+}

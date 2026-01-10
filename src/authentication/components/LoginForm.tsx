@@ -8,6 +8,24 @@ import { ErrorMessage } from './ErrorMessage';
 import { LoginLink } from './LoginLink';
 import type { User, ValidationErrors, LoginFormProps } from '../types';
 
+/**
+ * Detect user role based on email domain
+ * @param email - User's email address
+ * @returns 'coach' if email ends with .edu, 'player' otherwise
+ */
+function getUserRole(email: string): 'player' | 'coach' {
+    return email.toLowerCase().endsWith('.edu') ? 'coach' : 'player';
+}
+
+/**
+ * Get the appropriate login endpoint based on user role
+ * @param role - User role (player or coach)
+ * @returns API endpoint path
+ */
+function getLoginEndpoint(role: 'player' | 'coach'): string {
+    return `/api/auth/login/${role}`;
+}
+
 export function LoginForm({ onSuccess, redirectTo }: LoginFormProps) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -47,27 +65,70 @@ export function LoginForm({ onSuccess, redirectTo }: LoginFormProps) {
         setLoading(true);
 
         try {
-            // TODO: Replace with actual API call in future task
-            // Simulating API call for now
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Detect user role based on email domain
+            const role = getUserRole(email);
+            const endpoint = getLoginEndpoint(role);
 
-            // Mock successful login
-            const mockUser: User = {
-                id: '1',
+            // Call login API
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include', // Include cookies for session management
+                body: JSON.stringify({
+                    email,
+                    password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Handle API errors
+                if (data.errors && Array.isArray(data.errors)) {
+                    // Handle validation errors from API
+                    const newErrors: ValidationErrors = {};
+                    data.errors.forEach((error: { field: string; message: string }) => {
+                        if (error.field === 'email' || error.field === 'password') {
+                            newErrors[error.field] = error.message;
+                        }
+                    });
+                    setErrors(newErrors);
+                    // Don't set general error if we have field-specific errors
+                    if (Object.keys(newErrors).length === 0 && data.message) {
+                        setGeneralError(data.message);
+                    }
+                } else if (data.message) {
+                    // Handle general error message
+                    setGeneralError(data.message);
+                } else {
+                    setGeneralError('An error occurred during login. Please try again.');
+                }
+                return;
+            }
+
+            // Extract user ID from response
+            const userId = role === 'player' ? data.playerId : data.coachId;
+
+            // Create user object for callback
+            const user: User = {
+                id: userId,
                 email,
-                name: 'Test User',
-                role: 'player',
+                name: '', // Name will be fetched from dashboard
+                role,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
             };
 
+            // Call onSuccess callback with user data
             if (onSuccess) {
-                onSuccess(mockUser);
+                onSuccess(user);
             }
 
-            // TODO: Handle redirect in future task
+            // Handle redirect if specified
             if (redirectTo) {
-                console.log(`Redirecting to ${redirectTo}`);
+                window.location.href = redirectTo;
             }
         } catch (error) {
             setGeneralError('An error occurred during login. Please try again.');
