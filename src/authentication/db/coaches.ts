@@ -137,3 +137,47 @@ export async function getCoachByEmail(email: string): Promise<CoachDatabaseRecor
         throw new Error('Failed to fetch coach record');
     }
 }
+
+/**
+ * Get a coach record by ID
+ * Used for dashboard and profile display
+ * 
+ * @param id - The coach's UUID
+ * @returns Promise<CoachDatabaseRecord | null> - The coach record or null if not found
+ * @throws Error if database query fails
+ */
+export async function getCoachById(id: string): Promise<CoachDatabaseRecord | null> {
+    try {
+        const result = await query<any>(
+            `SELECT 
+                id, first_name, last_name, email, password_hash, sport, coaching_level,
+                years_experience, phone, country, state, city,
+                current_organization, position_title, certifications, specializations, bio,
+                created_at, updated_at
+            FROM coaches 
+            WHERE id = $1`,
+            [id]
+        );
+
+        if (result.length === 0) {
+            return null;
+        }
+
+        const row = result[0];
+        return {
+            id: row.id,
+            firstName: row.first_name,
+            lastName: row.last_name,
+            email: row.email,
+            passwordHash: row.password_hash,
+            coachingCategory: row.coaching_level,
+            sports: row.specializations || [row.sport],  // Use specializations array, fallback to sport
+            university: row.current_organization,
+            createdAt: new Date(row.created_at),
+            updatedAt: new Date(row.updated_at),
+        };
+    } catch (error) {
+        console.error('Error fetching coach by ID:', error);
+        throw new Error('Failed to fetch coach record');
+    }
+}

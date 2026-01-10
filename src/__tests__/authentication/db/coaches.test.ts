@@ -7,7 +7,7 @@
 // Mock the database client module
 jest.mock('@/authentication/db/client');
 
-import { checkCoachEmailExists, createCoach, getCoachByEmail } from '@/authentication/db/coaches';
+import { checkCoachEmailExists, createCoach, getCoachByEmail, getCoachById } from '@/authentication/db/coaches';
 import { query } from '@/authentication/db/client';
 
 const mockQuery = query as jest.MockedFunction<typeof query>;
@@ -210,6 +210,113 @@ describe('Coach Database Operations', () => {
                 sports: ['basketball', 'volleyball'],
                 university: 'UCLA'
             });
+        });
+    });
+
+    describe('getCoachById', () => {
+        const mockCoachRow = {
+            id: 'coach-uuid-456',
+            first_name: 'Michael',
+            last_name: 'Johnson',
+            email: 'michael.johnson@example.com',
+            password_hash: 'hashed_password_456',
+            sport: 'football',
+            coaching_level: 'mens',
+            years_experience: 15,
+            phone: '555-5678',
+            country: 'USA',
+            state: 'TX',
+            city: 'Austin',
+            current_organization: 'University of Texas',
+            position_title: 'Offensive Coordinator',
+            certifications: ['AFCA', 'CPR'],
+            specializations: ['football', 'strength training'],
+            bio: 'Veteran coach',
+            created_at: '2024-01-15T00:00:00Z',
+            updated_at: '2024-01-15T00:00:00Z'
+        };
+
+        it('should return coach record when ID exists', async () => {
+            mockQuery.mockResolvedValueOnce([mockCoachRow]);
+
+            const coach = await getCoachById('coach-uuid-456');
+
+            expect(coach).not.toBeNull();
+            expect(coach?.id).toBe('coach-uuid-456');
+            expect(coach?.firstName).toBe('Michael');
+            expect(coach?.lastName).toBe('Johnson');
+            expect(coach?.email).toBe('michael.johnson@example.com');
+            expect(coach?.coachingCategory).toBe('mens');
+            expect(coach?.sports).toEqual(['football', 'strength training']);
+            expect(coach?.university).toBe('University of Texas');
+        });
+
+        it('should return null when ID does not exist', async () => {
+            mockQuery.mockResolvedValueOnce([]);
+
+            const coach = await getCoachById('nonexistent-id');
+
+            expect(coach).toBeNull();
+        });
+
+        it('should query database with correct ID parameter', async () => {
+            mockQuery.mockResolvedValueOnce([mockCoachRow]);
+
+            await getCoachById('coach-uuid-456');
+
+            expect(mockQuery).toHaveBeenCalledWith(
+                expect.stringContaining('WHERE id = $1'),
+                ['coach-uuid-456']
+            );
+        });
+
+        it('should throw error when database query fails', async () => {
+            mockQuery.mockRejectedValueOnce(new Error('Database connection failed'));
+
+            await expect(getCoachById('coach-uuid-456')).rejects.toThrow(
+                'Failed to fetch coach record'
+            );
+        });
+
+        it('should correctly map database columns to camelCase', async () => {
+            mockQuery.mockResolvedValueOnce([mockCoachRow]);
+
+            const coach = await getCoachById('coach-uuid-456');
+
+            expect(coach).toMatchObject({
+                firstName: 'Michael',
+                lastName: 'Johnson',
+                coachingCategory: 'mens',
+                sports: ['football', 'strength training'],
+                university: 'University of Texas'
+            });
+        });
+
+        it('should handle coach with null specializations by using sport as fallback', async () => {
+            const coachWithNullSpecializations = {
+                ...mockCoachRow,
+                specializations: null,
+            };
+
+            mockQuery.mockResolvedValueOnce([coachWithNullSpecializations]);
+
+            const coach = await getCoachById('coach-uuid-456');
+
+            expect(coach?.sports).toEqual(['football']); // Should fallback to sport field
+        });
+
+        it('should handle coach with empty specializations array', async () => {
+            const coachWithEmptySpecializations = {
+                ...mockCoachRow,
+                specializations: [],
+            };
+
+            mockQuery.mockResolvedValueOnce([coachWithEmptySpecializations]);
+
+            const coach = await getCoachById('coach-uuid-456');
+
+            // Empty array is truthy in JavaScript, so it returns the empty array
+            expect(coach?.sports).toEqual([]);
         });
     });
 });
