@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import CoachDashboardPage from '@/app/coach/dashboard/[coachId]/page';
 import { verifyToken } from '@/authentication/utils/jwt';
 import { getCoachById } from '@/authentication/db/coaches';
-import { CoachDatabaseRecord } from '@/authentication/types';
+import { CoachDatabaseRecord } from '@/authentication/db/coaches';
 
 // Mock Next.js modules
 jest.mock('next/navigation', () => ({
