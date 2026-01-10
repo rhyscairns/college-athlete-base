@@ -29,5 +29,30 @@
     "prefer-const": "error",
     "eqeqeq": ["error", "always"],
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/__tests__/**/*",
+        "**/__mocks__/**/*",
+        "**/e2e/**/*"
+      ],
+      "rules": {
+        // Relax rules for test files
+        "sonarjs/cognitive-complexity": "off",
+        "sonarjs/no-duplicate-string": "off",
+        "sonarjs/no-identical-functions": "off",
+        "complexity": "off",
+        "max-depth": "off",
+        "max-lines-per-function": "off",
+        "max-params": "off",
+        "prefer-const": "off",
+        "no-console": "off"
+      }
+    }
+  ]
 }

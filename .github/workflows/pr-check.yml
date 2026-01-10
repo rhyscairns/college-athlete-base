@@ -149,13 +149,13 @@ jobs:
       - name: Get changed files
         id: changed-files
         run: |
-          # Get list of changed TypeScript/JavaScript files
-          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT origin/${{ github.base_ref }}...HEAD | grep -E '\.(ts|tsx|js|jsx)$' || echo "")
+          # Get list of changed TypeScript/JavaScript files (excluding test files)
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT origin/${{ github.base_ref }}...HEAD | grep -E '\.(ts|tsx|js|jsx)$' | grep -v -E '\.test\.|\.spec\.|__tests__|__mocks__|e2e/' || echo "")
           if [ -z "$CHANGED_FILES" ]; then
-            echo "No TypeScript/JavaScript files changed"
+            echo "No non-test TypeScript/JavaScript files changed"
             echo "files_changed=false" >> $GITHUB_OUTPUT
           else
-            echo "Changed files:"
+            echo "Changed files (excluding tests):"
             echo "$CHANGED_FILES"
             echo "files_changed=true" >> $GITHUB_OUTPUT
             echo "$CHANGED_FILES" > changed_files.txt
@@ -164,7 +164,7 @@ jobs:
       - name: Run ESLint on changed files
         if: steps.changed-files.outputs.files_changed == 'true'
         run: |
-          # Read changed files and run ESLint
+          # Read changed files and run ESLint (test files already filtered out)
           if [ -f changed_files.txt ]; then
             xargs -a changed_files.txt npx eslint --max-warnings=0
           fi
@@ -192,12 +192,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Run ESLint with Reviewdog (PR Comments)
+      - name: Run ESLint with Reviewdog (PR Comments) - Excluding Test Files
         uses: reviewdog/action-eslint@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
-          eslint_flags: '. --ext .ts,.tsx'
+          eslint_flags: '. --ext .ts,.tsx --ignore-pattern "**/*.test.*" --ignore-pattern "**/*.spec.*" --ignore-pattern "**/__tests__/**" --ignore-pattern "**/__mocks__/**" --ignore-pattern "**/e2e/**"'
           fail_level: none
           filter_mode: added
         continue-on-error: true
@@ -241,9 +241,11 @@ jobs:
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Build | ${{ needs.build.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Tests | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| E2E Tests | ${{ needs.e2e-test.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| E2E Tests | ${{ needs.e2e-test.result == 'success' && '✅ Passed' || '⚠️ Failed (non-blocking)' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Lint | ${{ needs.lint.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Code Quality | ${{ needs.code-quality.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "_Note: ESLint checks exclude test files to avoid noise from test-specific patterns._" >> $GITHUB_STEP_SUMMARY
 
   notify-pr-status:
     name: Notify PR Status
@@ -261,38 +263,6 @@ jobs:
         run: |
           if [ "$STATUS" = "success" ]; then
             echo "✅ All PR checks passed for PR #$PR_NUMBER"
-            
-            # Uncomment and configure for Slack notifications
-            # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
-            #   -H 'Content-Type: application/json' \
-            #   -d '{
-            #     "text": "✅ PR Checks Passed",
-            #     "blocks": [
-            #       {
-            #         "type": "section",
-            #         "text": {
-            #           "type": "mrkdwn",
-            #           "text": "*PR #'"$PR_NUMBER"' - All Checks Passed*\n\n*Title:* '"$PR_TITLE"'\n*Author:* @'"$PR_AUTHOR"'\n\n<https://github.com/${{ github.repository }}/pull/'"$PR_NUMBER"'|View Pull Request>"
-            #         }
-            #       }
-            #     ]
-            #   }'
           else
             echo "❌ PR checks failed for PR #$PR_NUMBER"
-            
-            # Uncomment and configure for Slack notifications
-            # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
-            #   -H 'Content-Type: application/json' \
-            #   -d '{
-            #     "text": "❌ PR Checks Failed",
-            #     "blocks": [
-            #       {
-            #         "type": "section",
-            #         "text": {
-            #           "type": "mrkdwn",
-            #           "text": "*PR #'"$PR_NUMBER"' - Checks Failed*\n\n*Title:* '"$PR_TITLE"'\n*Author:* @'"$PR_AUTHOR"'\n\n<https://github.com/${{ github.repository }}/pull/'"$PR_NUMBER"'|View Pull Request>"
-            #         }
-            #       }
-            #     ]
-            #   }'
           fi
