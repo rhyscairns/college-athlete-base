@@ -342,9 +342,12 @@ skipIfNoDb('Player Registration - Complete Integration Flow', () => {
 
     describe('Validation Errors', () => {
         it('should return validation errors for missing required fields', async () => {
+            // Use a unique email that will be cleaned up
+            const testEmail = `incomplete.${Date.now()}@integration-test.com`;
             const invalidData = {
                 firstName: 'Test',
-                // Missing lastName, email, password, etc.
+                email: testEmail,
+                // Missing lastName, password, etc.
             };
 
             const request = createMockRequest(invalidData);
@@ -357,8 +360,8 @@ skipIfNoDb('Player Registration - Complete Integration Flow', () => {
             expect(Array.isArray(data.errors)).toBe(true);
             expect(data.errors.length).toBeGreaterThan(0);
 
-            // Verify no data was saved
-            const players = await query('SELECT COUNT(*) as count FROM players WHERE first_name = $1', ['Test']);
+            // Verify no data was saved (check by the specific email)
+            const players = await query('SELECT COUNT(*) as count FROM players WHERE email = $1', [testEmail]);
             expect(parseInt(players[0].count)).toBe(0);
         });
 
