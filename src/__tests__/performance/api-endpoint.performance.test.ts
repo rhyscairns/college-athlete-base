@@ -6,10 +6,15 @@
  * For full HTTP stack testing, use Playwright e2e tests
  * 
  * Run with: npm test -- api-endpoint.performance.test.ts
+ * 
+ * These tests are skipped in CI environments as they are environment-dependent
  */
 
 import { POST } from '@/app/api/auth/register/player/route';
 import { query, closePool } from '@/authentication/db/client';
+
+// Skip performance tests in CI environments
+const describePerformance = process.env.CI ? describe.skip : describe;
 
 // Mock NextRequest for testing
 class MockNextRequest {
@@ -53,7 +58,7 @@ const THRESHOLDS = {
     DUPLICATE_EMAIL: 100,           // Duplicate check should be < 100ms
 };
 
-describe('API Endpoint Performance Tests', () => {
+describePerformance('API Endpoint Performance Tests', () => {
     afterAll(async () => {
         // Clean up test data
         await query('DELETE FROM players WHERE email LIKE $1', ['api-perf-%@example.com']);

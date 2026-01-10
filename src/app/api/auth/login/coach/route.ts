@@ -4,6 +4,12 @@ import { verifyPassword } from '@/authentication/utils/password';
 import { generateToken } from '@/authentication/utils/jwt';
 import { logger } from '@/lib/logger';
 
+// Constants
+const API_ROUTE = '/api/auth/login/coach';
+const ERROR_MESSAGE_LOGIN = 'An error occurred during login';
+const ERROR_MESSAGE_INVALID_CREDENTIALS = 'Invalid email or password. Please try again.';
+const SESSION_MAX_AGE = 7 * 24 * 60 * 60; // 7 days in seconds
+
 /**
  * Get allowed origin for CORS
  */
@@ -65,161 +71,164 @@ function validateLoginRequest(body: any): { isValid: boolean; errors: Array<{ fi
 }
 
 /**
+ * Create error response with CORS headers
+ */
+// eslint-disable-next-line max-params
+function createErrorResponse(
+    request: NextRequest,
+    message: string,
+    status: number,
+    requestId: string,
+    startTime: number,
+    errors?: Array<{ field: string; message: string }>
+): NextResponse {
+    const response = NextResponse.json(
+        errors ? { success: false, errors } : { success: false, message },
+        { status }
+    );
+
+    logger.apiResponse('POST', API_ROUTE, status, Date.now() - startTime, { requestId });
+    return addCorsHeaders(response, request);
+}
+
+/**
+ * Set session cookie on response
+ */
+function setSessionCookie(response: NextResponse, token: string): void {
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    response.cookies.set('session', token, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'strict',
+        maxAge: SESSION_MAX_AGE,
+        path: '/',
+    });
+}
+
+/**
+ * Parse and validate request body
+ */
+async function parseRequestBody(request: NextRequest, requestId: string, startTime: number): Promise<
+    { success: true; body: any } | { success: false; response: NextResponse }
+> {
+    try {
+        const body = await request.json();
+        return { success: true, body };
+    } catch (error) {
+        logger.error('Failed to parse request body', { requestId },
+            error instanceof Error ? error : new Error('Unknown parsing error'));
+
+        return {
+            success: false,
+            response: createErrorResponse(request, 'Invalid JSON in request body', 400, requestId, startTime),
+        };
+    }
+}
+
+/**
+ * Authenticate coach credentials
+ */
+async function authenticateCoach(
+    email: string,
+    password: string,
+    requestId: string,
+    request: NextRequest,
+    startTime: number
+): Promise<{ success: true; coach: any; token: string } | { success: false; response: NextResponse }> {
+    // Fetch coach by email
+    let coach;
+    try {
+        logger.dbOperation('getCoachByEmail', { requestId, email });
+        coach = await getCoachByEmail(email);
+    } catch (error) {
+        logger.dbError('getCoachByEmail', error instanceof Error ? error : new Error('Unknown database error'), { requestId });
+        return {
+            success: false,
+            response: createErrorResponse(request, ERROR_MESSAGE_LOGIN, 500, requestId, startTime),
+        };
+    }
+
+    // Check if coach exists
+    if (!coach) {
+        logger.securityEvent('Login attempt with non-existent email', { requestId, email });
+        return {
+            success: false,
+            response: createErrorResponse(request, ERROR_MESSAGE_INVALID_CREDENTIALS, 401, requestId, startTime),
+        };
+    }
+
+    // Verify password
+    let isPasswordValid;
+    try {
+        isPasswordValid = await verifyPassword(password, coach.passwordHash);
+    } catch (error) {
+        logger.error('Password verification error', { requestId },
+            error instanceof Error ? error : new Error('Unknown verification error'));
+        return {
+            success: false,
+            response: createErrorResponse(request, ERROR_MESSAGE_LOGIN, 500, requestId, startTime),
+        };
+    }
+
+    if (!isPasswordValid) {
+        logger.securityEvent('Login attempt with invalid password', { requestId, email, coachId: coach.id });
+        return {
+            success: false,
+            response: createErrorResponse(request, ERROR_MESSAGE_INVALID_CREDENTIALS, 401, requestId, startTime),
+        };
+    }
+
+    // Generate JWT token
+    let token;
+    try {
+        logger.dbOperation('generateToken', { requestId, coachId: coach.id });
+        token = await generateToken(coach.id, coach.email, 'coach');
+    } catch (error) {
+        logger.error('Token generation error', { requestId, coachId: coach.id },
+            error instanceof Error ? error : new Error('Unknown token generation error'));
+        return {
+            success: false,
+            response: createErrorResponse(request, ERROR_MESSAGE_LOGIN, 500, requestId, startTime),
+        };
+    }
+
+    return { success: true, coach, token };
+}
+
+/**
  * Handle POST request for coach login
  */
 export async function POST(request: NextRequest) {
     const startTime = Date.now();
     const requestId = crypto.randomUUID();
 
-    // Log incoming request
-    logger.apiRequest('POST', '/api/auth/login/coach', { requestId });
+    logger.apiRequest('POST', API_ROUTE, { requestId });
 
     try {
         // Parse request body
-        let body;
-        try {
-            body = await request.json();
-        } catch (error) {
-            logger.error('Failed to parse request body', {
-                requestId,
-            }, error instanceof Error ? error : new Error('Unknown parsing error'));
-
-            const response = NextResponse.json(
-                {
-                    success: false,
-                    message: 'Invalid JSON in request body',
-                },
-                { status: 400 }
-            );
-
-            logger.apiResponse('POST', '/api/auth/login/coach', 400, Date.now() - startTime, { requestId });
-            return addCorsHeaders(response, request);
+        const parseResult = await parseRequestBody(request, requestId, startTime);
+        if (!parseResult.success) {
+            return parseResult.response;
         }
+        const { body } = parseResult;
 
         // Validate request data
         const validationResult = validateLoginRequest(body);
         if (!validationResult.isValid) {
             logger.validationError('Coach login validation failed', validationResult.errors, {
                 requestId,
-                email: body.email, // Safe to log email for validation errors
-            });
-
-            const response = NextResponse.json(
-                {
-                    success: false,
-                    errors: validationResult.errors,
-                },
-                { status: 400 }
-            );
-
-            logger.apiResponse('POST', '/api/auth/login/coach', 400, Date.now() - startTime, { requestId });
-            return addCorsHeaders(response, request);
-        }
-
-        // Fetch coach by email
-        let coach;
-        try {
-            logger.dbOperation('getCoachByEmail', { requestId, email: body.email });
-            coach = await getCoachByEmail(body.email);
-        } catch (error) {
-            logger.dbError('getCoachByEmail', error instanceof Error ? error : new Error('Unknown database error'), {
-                requestId,
-            });
-
-            const response = NextResponse.json(
-                {
-                    success: false,
-                    message: 'An error occurred during login',
-                },
-                { status: 500 }
-            );
-
-            logger.apiResponse('POST', '/api/auth/login/coach', 500, Date.now() - startTime, { requestId });
-            return addCorsHeaders(response, request);
-        }
-
-        // Check if coach exists and verify password
-        // Use same error message for both cases to prevent email enumeration
-        if (!coach) {
-            logger.securityEvent('Login attempt with non-existent email', {
-                requestId,
                 email: body.email,
             });
-
-            const response = NextResponse.json(
-                {
-                    success: false,
-                    message: 'Invalid email or password. Please try again.',
-                },
-                { status: 401 }
-            );
-
-            logger.apiResponse('POST', '/api/auth/login/coach', 401, Date.now() - startTime, { requestId });
-            return addCorsHeaders(response, request);
+            return createErrorResponse(request, '', 400, requestId, startTime, validationResult.errors);
         }
 
-        // Verify password
-        let isPasswordValid;
-        try {
-            isPasswordValid = await verifyPassword(body.password, coach.passwordHash);
-        } catch (error) {
-            logger.error('Password verification error', {
-                requestId,
-            }, error instanceof Error ? error : new Error('Unknown verification error'));
-
-            const response = NextResponse.json(
-                {
-                    success: false,
-                    message: 'An error occurred during login',
-                },
-                { status: 500 }
-            );
-
-            logger.apiResponse('POST', '/api/auth/login/coach', 500, Date.now() - startTime, { requestId });
-            return addCorsHeaders(response, request);
+        // Authenticate coach
+        const authResult = await authenticateCoach(body.email, body.password, requestId, request, startTime);
+        if (!authResult.success) {
+            return authResult.response;
         }
-
-        if (!isPasswordValid) {
-            logger.securityEvent('Login attempt with invalid password', {
-                requestId,
-                email: body.email,
-                coachId: coach.id,
-            });
-
-            const response = NextResponse.json(
-                {
-                    success: false,
-                    message: 'Invalid email or password. Please try again.',
-                },
-                { status: 401 }
-            );
-
-            logger.apiResponse('POST', '/api/auth/login/coach', 401, Date.now() - startTime, { requestId });
-            return addCorsHeaders(response, request);
-        }
-
-        // Generate JWT token
-        let token;
-        try {
-            logger.dbOperation('generateToken', { requestId, coachId: coach.id });
-            token = await generateToken(coach.id, coach.email, 'coach');
-        } catch (error) {
-            logger.error('Token generation error', {
-                requestId,
-                coachId: coach.id,
-            }, error instanceof Error ? error : new Error('Unknown token generation error'));
-
-            const response = NextResponse.json(
-                {
-                    success: false,
-                    message: 'An error occurred during login',
-                },
-                { status: 500 }
-            );
-
-            logger.apiResponse('POST', '/api/auth/login/coach', 500, Date.now() - startTime, { requestId });
-            return addCorsHeaders(response, request);
-        }
+        const { coach, token } = authResult;
 
         // Log successful login
         const executionTime = Date.now() - startTime;
@@ -240,19 +249,9 @@ export async function POST(request: NextRequest) {
             { status: 200 }
         );
 
-        // Set HTTP-only cookie with session token
-        const isProduction = process.env.NODE_ENV === 'production';
-        const maxAge = 7 * 24 * 60 * 60; // 7 days in seconds
+        setSessionCookie(response, token);
 
-        response.cookies.set('session', token, {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: 'strict',
-            maxAge,
-            path: '/',
-        });
-
-        logger.apiResponse('POST', '/api/auth/login/coach', 200, executionTime, { requestId, coachId: coach.id });
+        logger.apiResponse('POST', API_ROUTE, 200, executionTime, { requestId, coachId: coach.id });
         return addCorsHeaders(response, request);
     } catch (error) {
         // Catch any unexpected errors
@@ -262,15 +261,6 @@ export async function POST(request: NextRequest) {
             executionTime: `${executionTime}ms`,
         }, error instanceof Error ? error : new Error('Unknown error'));
 
-        const response = NextResponse.json(
-            {
-                success: false,
-                message: 'An error occurred during login',
-            },
-            { status: 500 }
-        );
-
-        logger.apiResponse('POST', '/api/auth/login/coach', 500, executionTime, { requestId });
-        return addCorsHeaders(response, request);
+        return createErrorResponse(request, ERROR_MESSAGE_LOGIN, 500, requestId, startTime);
     }
 }
