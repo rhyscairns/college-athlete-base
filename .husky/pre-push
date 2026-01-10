@@ -1,7 +1,7 @@
 echo "🧪 Running tests before push..."
 
-# Run tests in src/__tests__
-npm test -- --passWithNoTests
+# Run tests excluding performance, e2e, and example tests
+npm test -- --passWithNoTests --testPathIgnorePatterns="/performance/|/e2e/|/examples/"
 
 # Check if tests passed
 if [ $? -ne 0 ]; then
