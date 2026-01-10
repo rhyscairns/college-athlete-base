@@ -166,8 +166,9 @@ describe('Coach Database Operations', () => {
             expect(coach?.firstName).toBe('Jane');
             expect(coach?.lastName).toBe('Smith');
             expect(coach?.email).toBe('jane.smith@example.com');
-            expect(coach?.coachingLevel).toBe('womens');
-            expect(coach?.specializations).toEqual(['basketball', 'volleyball']);
+            expect(coach?.coachingCategory).toBe('womens');
+            expect(coach?.sports).toEqual(['basketball', 'volleyball']);
+            expect(coach?.university).toBe('UCLA');
         });
 
         it('should return null when email does not exist', async () => {
@@ -205,10 +206,9 @@ describe('Coach Database Operations', () => {
             expect(coach).toMatchObject({
                 firstName: 'Jane',
                 lastName: 'Smith',
-                coachingLevel: 'womens',
-                yearsExperience: 10,
-                currentOrganization: 'UCLA',
-                positionTitle: 'Head Coach'
+                coachingCategory: 'womens',
+                sports: ['basketball', 'volleyball'],
+                university: 'UCLA'
             });
         });
     });
