@@ -18,8 +18,26 @@ src/
 │   │   ├── layout.test.tsx
 │   │   ├── page.test.tsx
 │   │   └── api/
-│   │       └── health/
-│   │           └── route.test.ts
+│   │       ├── health/
+│   │       │   └── route.test.ts
+│   │       └── auth/
+│   │           ├── login/
+│   │           │   └── player/
+│   │           │       └── route.test.ts
+│   │           └── register/
+│   │               └── player/
+│   │                   └── route.test.ts
+│   ├── authentication/
+│   │   ├── components/
+│   │   │   └── LoginForm.test.tsx
+│   │   ├── middleware/
+│   │   │   └── session.test.ts
+│   │   └── utils/
+│   │       ├── jwt.test.ts
+│   │       └── password.test.ts
+│   └── integration/
+│       ├── player-login.test.ts
+│       └── player-registration.test.ts
 e2e/                     # End-to-end tests
 ├── home.spec.ts
 └── api-health.spec.ts
@@ -38,6 +56,12 @@ npm run test:watch
 
 # Run tests with coverage
 npm run test:coverage
+
+# Run specific feature tests
+npm run test -- login              # All login-related tests
+npm run test -- jwt.test.ts        # JWT utility tests
+npm run test -- session.test.ts    # Session middleware tests
+npm run test -- integration        # All integration tests
 ```
 
 ### End-to-End Tests
@@ -162,6 +186,140 @@ Tests run automatically on:
 - Test all response codes (success and error cases)
 - Verify response structure and data types
 - Test authentication and authorization
+
+## Testing Authentication Features
+
+### Player Login Tests
+
+The player login feature includes comprehensive test coverage:
+
+**Unit Tests**:
+- `src/__tests__/authentication/utils/jwt.test.ts` - JWT token generation and verification
+- `src/__tests__/app/api/auth/login/player/route.test.ts` - Login API endpoint
+- `src/__tests__/authentication/middleware/session.test.ts` - Session validation
+- `src/__tests__/authentication/components/LoginForm.test.tsx` - Login form component
+
+**Integration Tests**:
+- `src/__tests__/integration/player-login.test.ts` - Complete login flow
+
+**Running Login Tests**:
+```bash
+# All login-related tests
+npm run test -- login
+
+# Specific test files
+npm run test -- jwt.test.ts
+npm run test -- route.test.ts
+npm run test -- session.test.ts
+npm run test -- player-login.test.ts
+```
+
+**Testing JWT Utilities**:
+```typescript
+import { generateToken, verifyToken } from '@/authentication/utils/jwt';
+
+describe('JWT Utilities', () => {
+  it('generates valid token', async () => {
+    const token = await generateToken('player-id', 'test@example.com');
+    expect(token).toBeDefined();
+    expect(typeof token).toBe('string');
+  });
+
+  it('verifies valid token', async () => {
+    const token = await generateToken('player-id', 'test@example.com');
+    const payload = await verifyToken(token);
+    
+    expect(payload).toBeDefined();
+    expect(payload?.playerId).toBe('player-id');
+    expect(payload?.email).toBe('test@example.com');
+  });
+});
+```
+
+**Testing Login API**:
+```typescript
+import { POST } from '@/app/api/auth/login/player/route';
+
+describe('POST /api/auth/login/player', () => {
+  it('authenticates valid credentials', async () => {
+    const request = new Request('http://localhost/api/auth/login/player', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test@example.com',
+        password: 'Password123!'
+      })
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.playerId).toBeDefined();
+  });
+});
+```
+
+**Testing Session Middleware**:
+```typescript
+import { validateSession } from '@/authentication/middleware/session';
+import { NextRequest } from 'next/server';
+
+describe('Session Validation', () => {
+  it('validates valid session token', async () => {
+    const token = await generateToken('player-id', 'test@example.com');
+    const request = new NextRequest('http://localhost', {
+      headers: {
+        cookie: `session=${token}`
+      }
+    });
+
+    const session = await validateSession(request);
+
+    expect(session.isValid).toBe(true);
+    expect(session.playerId).toBe('player-id');
+  });
+});
+```
+
+**Integration Test Example**:
+```typescript
+describe('Player Login Flow', () => {
+  it('completes full login flow', async () => {
+    // 1. Register player
+    const registerResponse = await fetch('/api/auth/register/player', {
+      method: 'POST',
+      body: JSON.stringify({ /* player data */ })
+    });
+    
+    // 2. Login with credentials
+    const loginResponse = await fetch('/api/auth/login/player', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test@example.com',
+        password: 'Password123!'
+      })
+    });
+    
+    expect(loginResponse.status).toBe(200);
+    
+    // 3. Verify session cookie is set
+    const cookies = loginResponse.headers.get('set-cookie');
+    expect(cookies).toContain('session=');
+    
+    // 4. Access protected route with session
+    const dashboardResponse = await fetch('/player/dashboard/player-id', {
+      headers: { cookie: cookies }
+    });
+    
+    expect(dashboardResponse.status).toBe(200);
+  });
+});
+```
+
+For complete testing documentation, see:
+- [Player Login Guide](./PLAYER_LOGIN_GUIDE.md) - Complete feature documentation
+- [Player Login Quick Reference](./PLAYER_LOGIN_QUICK_REFERENCE.md) - Quick testing commands
 
 ## Debugging Tests
 

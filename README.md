@@ -355,6 +355,13 @@ npm run test:e2e          # Run E2E tests
 - **[Local Development Setup](docs/LOCAL_DEVELOPMENT_SETUP.md)** - Detailed setup instructions
 - **[Local Dev Architecture](docs/LOCAL_DEV_ARCHITECTURE.md)** - How local dev connects to AWS
 
+### Features
+
+- **[Player Login Guide](docs/PLAYER_LOGIN_GUIDE.md)** - Complete player authentication documentation
+- **[Player Login Quick Reference](docs/PLAYER_LOGIN_QUICK_REFERENCE.md)** - Quick commands and API reference
+- **[Player Registration Testing](docs/LOCAL_PLAYER_REGISTRATION_TESTING.md)** - Player registration guide
+- **[Coach Registration Setup](docs/COACH_REGISTRATION_SETUP.md)** - Coach registration guide
+
 ### Infrastructure & Deployment
 
 - **[Infrastructure Setup](docs/INFRASTRUCTURE_SETUP.md)** - AWS infrastructure setup

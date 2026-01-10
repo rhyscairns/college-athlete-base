@@ -1,12 +1,22 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { LoginForm } from '@/authentication/components/LoginForm';
 
-const exampleEmail = 'test@example.com'
+const exampleEmail = 'test@example.com';
+const exampleCoachEmail = 'coach@university.edu';
 
 // Helper to get password input reliably
 const getPasswordInput = () => document.getElementById('password') as HTMLInputElement;
 
+// Mock fetch globally
+global.fetch = jest.fn();
+
 describe('LoginForm', () => {
+  beforeEach(() => {
+    // Clear all mocks before each test
+    jest.clearAllMocks();
+    (global.fetch as jest.Mock).mockClear();
+  });
+
   it('renders all form elements', () => {
     render(<LoginForm />);
 
@@ -110,6 +120,18 @@ describe('LoginForm', () => {
   });
 
   it('shows loading state during form submission', async () => {
+    // Mock API response with delay
+    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+      new Promise(resolve => setTimeout(() => resolve({
+        ok: true,
+        json: async () => ({
+          success: true,
+          message: 'Login successful',
+          playerId: 'player-123',
+        }),
+      }), 100))
+    );
+
     render(<LoginForm />);
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = getPasswordInput();
@@ -125,6 +147,18 @@ describe('LoginForm', () => {
   });
 
   it('disables form inputs during submission', async () => {
+    // Mock API response with delay
+    (global.fetch as jest.Mock).mockImplementationOnce(() =>
+      new Promise(resolve => setTimeout(() => resolve({
+        ok: true,
+        json: async () => ({
+          success: true,
+          message: 'Login successful',
+          playerId: 'player-123',
+        }),
+      }), 100))
+    );
+
     render(<LoginForm />);
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = getPasswordInput();
@@ -142,8 +176,20 @@ describe('LoginForm', () => {
     });
   });
 
-  it('calls onSuccess callback with user data on successful submission', async () => {
+  it('calls onSuccess callback with user data on successful player login', async () => {
     const onSuccess = jest.fn();
+    const mockPlayerId = 'player-123';
+
+    // Mock successful API response
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        message: 'Login successful',
+        playerId: mockPlayerId,
+      }),
+    });
+
     render(<LoginForm onSuccess={onSuccess} />);
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = getPasswordInput();
@@ -156,38 +202,70 @@ describe('LoginForm', () => {
     await waitFor(() => {
       expect(onSuccess).toHaveBeenCalledWith(
         expect.objectContaining({
+          id: mockPlayerId,
           email: exampleEmail,
           role: 'player',
         })
       );
-    }, { timeout: 2000 });
+    });
+
+    // Verify correct endpoint was called
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/auth/login/player',
+      expect.objectContaining({
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: exampleEmail,
+          password: 'password123',
+        }),
+      })
+    );
   });
 
   it('clears general error when form is resubmitted', async () => {
+    // Mock failed API response first
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({
+        success: false,
+        message: 'Invalid email or password. Please try again.',
+      }),
+    });
+
     render(<LoginForm />);
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = getPasswordInput();
     const form = screen.getByRole('form');
 
-    // First submission with valid data
+    // First submission with valid data but wrong credentials
     fireEvent.change(emailInput, { target: { value: exampleEmail } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.submit(form);
 
+    // Wait for error message to appear
     await waitFor(() => {
-      expect(screen.getByText(/loading/i)).toBeInTheDocument();
+      expect(screen.getByText(/invalid email or password/i)).toBeInTheDocument();
     });
 
-    // Wait for submission to complete with increased timeout
-    await waitFor(() => {
-      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
-    }, { timeout: 3000 });
+    // Mock successful response for second attempt
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        message: 'Login successful',
+        playerId: 'player-123',
+      }),
+    });
 
-    // Second submission should clear any previous errors
+    // Second submission should clear the error
     fireEvent.submit(form);
 
     await waitFor(() => {
-      expect(screen.getByText(/loading/i)).toBeInTheDocument();
+      expect(screen.queryByText(/invalid email or password/i)).not.toBeInTheDocument();
     });
   });
 
@@ -258,5 +336,263 @@ describe('LoginForm', () => {
         expect(screen.queryByText(/please enter a valid email address/i)).not.toBeInTheDocument();
       });
     }
+  });
+
+  // API Integration Tests
+  it('calls player login API for non-.edu email addresses', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        message: 'Login successful',
+        playerId: 'player-123',
+      }),
+    });
+
+    render(<LoginForm />);
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = getPasswordInput();
+    const form = screen.getByRole('form');
+
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/auth/login/player',
+        expect.objectContaining({
+          method: 'POST',
+          credentials: 'include',
+        })
+      );
+    });
+  });
+
+  it('calls coach login API for .edu email addresses', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        message: 'Login successful',
+        coachId: 'coach-123',
+      }),
+    });
+
+    render(<LoginForm />);
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = getPasswordInput();
+    const form = screen.getByRole('form');
+
+    fireEvent.change(emailInput, { target: { value: exampleCoachEmail } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/auth/login/coach',
+        expect.objectContaining({
+          method: 'POST',
+          credentials: 'include',
+        })
+      );
+    });
+  });
+
+  it('calls onSuccess with coach role for .edu email', async () => {
+    const onSuccess = jest.fn();
+    const mockCoachId = 'coach-123';
+
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        message: 'Login successful',
+        coachId: mockCoachId,
+      }),
+    });
+
+    render(<LoginForm onSuccess={onSuccess} />);
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = getPasswordInput();
+    const form = screen.getByRole('form');
+
+    fireEvent.change(emailInput, { target: { value: exampleCoachEmail } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(onSuccess).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: mockCoachId,
+          email: exampleCoachEmail,
+          role: 'coach',
+        })
+      );
+    });
+  });
+
+  it('displays API error message on authentication failure', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: async () => ({
+        success: false,
+        message: 'Invalid email or password. Please try again.',
+      }),
+    });
+
+    render(<LoginForm />);
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = getPasswordInput();
+    const form = screen.getByRole('form');
+
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
+    fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(screen.getByText(/invalid email or password/i)).toBeInTheDocument();
+    });
+  });
+
+  it('displays validation errors from API response', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      json: async () => ({
+        success: false,
+        errors: [
+          { field: 'email', message: 'Invalid email format' },
+          { field: 'password', message: 'Password is too weak' },
+        ],
+      }),
+    });
+
+    render(<LoginForm />);
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = getPasswordInput();
+    const form = screen.getByRole('form');
+
+    // Use valid format to pass client-side validation
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(screen.getByText(/invalid email format/i)).toBeInTheDocument();
+      expect(screen.getByText(/password is too weak/i)).toBeInTheDocument();
+    });
+  });
+
+  it('handles network errors gracefully', async () => {
+    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+
+    render(<LoginForm />);
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = getPasswordInput();
+    const form = screen.getByRole('form');
+
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.submit(form);
+
+    // Wait for loading to finish
+    await waitFor(() => {
+      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+    });
+
+    // Check for error message
+    await waitFor(() => {
+      expect(screen.getByText(/an error occurred during login/i)).toBeInTheDocument();
+    });
+  });
+
+  it('handles server errors (500) gracefully', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: async () => ({
+        success: false,
+        message: 'An error occurred during login',
+      }),
+    });
+
+    render(<LoginForm />);
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = getPasswordInput();
+    const form = screen.getByRole('form');
+
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(screen.getByText(/an error occurred during login/i)).toBeInTheDocument();
+    });
+  });
+
+  it('includes credentials in API request', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        message: 'Login successful',
+        playerId: 'player-123',
+      }),
+    });
+
+    render(<LoginForm />);
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = getPasswordInput();
+    const form = screen.getByRole('form');
+
+    fireEvent.change(emailInput, { target: { value: exampleEmail } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          credentials: 'include',
+        })
+      );
+    });
+  });
+
+  it('sends correct request body to API', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        message: 'Login successful',
+        playerId: 'player-123',
+      }),
+    });
+
+    render(<LoginForm />);
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = getPasswordInput();
+    const form = screen.getByRole('form');
+
+    const testEmail = 'test@example.com';
+    const testPassword = 'testpassword123';
+
+    fireEvent.change(emailInput, { target: { value: testEmail } });
+    fireEvent.change(passwordInput, { target: { value: testPassword } });
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          body: JSON.stringify({
+            email: testEmail,
+            password: testPassword,
+          }),
+        })
+      );
+    });
   });
 });
