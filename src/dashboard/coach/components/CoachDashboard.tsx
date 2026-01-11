@@ -2,7 +2,7 @@
 
 import { CoachDashboardProps } from '../types';
 
-export default function CoachDashboard({ coachId }: CoachDashboardProps) {
+export default function CoachDashboard({ coachId: _coachId }: CoachDashboardProps) {
     return (
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="w-full p-8 sm:p-10 lg:p-12 bg-white/90 rounded-3xl shadow-2xl border border-white/50 backdrop-blur-sm">

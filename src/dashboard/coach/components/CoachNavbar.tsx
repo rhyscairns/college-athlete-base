@@ -3,15 +3,36 @@
 import { useState } from 'react';
 import type { CoachNavbarProps } from '../types';
 
+// Constants
+const COLORS = {
+    LIGHT_GRAY: '#d1d5db',
+    DARK_GRAY: '#1f2937',
+    DARKER_GRAY: '#374151',
+    RED: '#dc2626',
+    DARK_RED: '#b91c1c',
+} as const;
+
+// Shared hover handlers
+const createHoverHandlers = (activeColor: string, inactiveColor: string) => ({
+    onMouseEnter: (_e: React.MouseEvent<HTMLElement>) => {
+        _e.currentTarget.style.backgroundColor = activeColor;
+        _e.currentTarget.style.color = 'white';
+    },
+    onMouseLeave: (_e: React.MouseEvent<HTMLElement>) => {
+        _e.currentTarget.style.backgroundColor = 'transparent';
+        _e.currentTarget.style.color = inactiveColor;
+    },
+});
+
+const navItemHoverHandlers = createHoverHandlers(COLORS.DARK_GRAY, COLORS.LIGHT_GRAY);
+const mobileItemHoverHandlers = createHoverHandlers(COLORS.DARKER_GRAY, COLORS.LIGHT_GRAY);
+
 export function CoachNavbar({ coachId }: CoachNavbarProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const handleLogout = async () => {
         try {
-            // Clear session cookie by calling logout endpoint or clearing client-side
             document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-
-            // Redirect to login page
             window.location.href = '/login';
         } catch (error) {
             console.error('Logout error:', error);
@@ -20,13 +41,11 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
 
     const handleSearchClick = (e: React.MouseEvent) => {
         e.preventDefault();
-        // Placeholder for future modal functionality
         setMobileMenuOpen(false);
     };
 
     const handleProfileClick = (e: React.MouseEvent) => {
         e.preventDefault();
-        // Placeholder for future profile page navigation
         setMobileMenuOpen(false);
     };
 
@@ -44,298 +63,237 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
                 paddingLeft: '24px',
                 paddingRight: '24px'
             }}>
-                {/* CAB Branding */}
-                <div>
-                    <span style={{
-                        fontSize: '28px',
-                        fontWeight: 'bold',
-                        color: 'white',
-                        letterSpacing: '-0.5px'
-                    }}>
-                        CAB
-                    </span>
-                </div>
-
-                {/* Mobile Hamburger Menu */}
-                <button
-                    onClick={toggleMobileMenu}
-                    aria-label="Toggle menu"
-                    aria-expanded={mobileMenuOpen}
-                    style={{
-                        display: 'none',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '44px',
-                        height: '44px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: '8px'
-                    }}
-                    className="mobile-menu-button"
-                >
-                    <span style={{
-                        width: '24px',
-                        height: '2px',
-                        backgroundColor: 'white',
-                        marginBottom: '5px',
-                        transition: 'all 0.3s',
-                        transform: mobileMenuOpen ? 'rotate(45deg) translateY(7px)' : 'none'
-                    }} />
-                    <span style={{
-                        width: '24px',
-                        height: '2px',
-                        backgroundColor: 'white',
-                        marginBottom: '5px',
-                        transition: 'all 0.3s',
-                        opacity: mobileMenuOpen ? 0 : 1
-                    }} />
-                    <span style={{
-                        width: '24px',
-                        height: '2px',
-                        backgroundColor: 'white',
-                        transition: 'all 0.3s',
-                        transform: mobileMenuOpen ? 'rotate(-45deg) translateY(-7px)' : 'none'
-                    }} />
-                </button>
-
-                {/* Desktop Navigation */}
-                <div
-                    className="desktop-nav"
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '24px'
-                    }}
-                >
-                    <a
-                        href={`/coach/dashboard/${coachId}`}
-                        style={{
-                            padding: '12px 24px',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            color: '#d1d5db',
-                            backgroundColor: 'transparent',
-                            borderRadius: '8px',
-                            textDecoration: 'none',
-                            transition: 'all 0.2s',
-                            cursor: 'pointer'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#1f2937';
-                            e.currentTarget.style.color = 'white';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = '#d1d5db';
-                        }}
-                    >
-                        Home
-                    </a>
-                    <button
-                        onClick={handleSearchClick}
-                        style={{
-                            padding: '12px 24px',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            color: '#d1d5db',
-                            backgroundColor: 'transparent',
-                            border: 'none',
-                            borderRadius: '8px',
-                            transition: 'all 0.2s',
-                            cursor: 'pointer'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#1f2937';
-                            e.currentTarget.style.color = 'white';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = '#d1d5db';
-                        }}
-                    >
-                        Search
-                    </button>
-                    <button
-                        onClick={handleProfileClick}
-                        style={{
-                            padding: '12px 24px',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            color: '#d1d5db',
-                            backgroundColor: 'transparent',
-                            border: 'none',
-                            borderRadius: '8px',
-                            transition: 'all 0.2s',
-                            cursor: 'pointer'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#1f2937';
-                            e.currentTarget.style.color = 'white';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = '#d1d5db';
-                        }}
-                    >
-                        Profile
-                    </button>
-                    <button
-                        onClick={handleLogout}
-                        style={{
-                            padding: '12px 24px',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            color: 'white',
-                            backgroundColor: '#dc2626',
-                            border: 'none',
-                            borderRadius: '8px',
-                            transition: 'all 0.2s',
-                            cursor: 'pointer'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#b91c1c';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#dc2626';
-                        }}
-                    >
-                        Log Out
-                    </button>
-                </div>
+                <CABBranding />
+                <HamburgerButton isOpen={mobileMenuOpen} onClick={toggleMobileMenu} />
+                <DesktopNav
+                    coachId={coachId}
+                    onSearchClick={handleSearchClick}
+                    onProfileClick={handleProfileClick}
+                    onLogout={handleLogout}
+                />
             </div>
 
-            {/* Mobile Dropdown Menu */}
             {mobileMenuOpen && (
-                <div
-                    className="mobile-dropdown"
-                    style={{
-                        display: 'none',
-                        flexDirection: 'column',
-                        backgroundColor: '#1f2937',
-                        borderTop: '1px solid #374151',
-                        paddingTop: '8px',
-                        paddingBottom: '8px'
-                    }}
-                >
-                    <a
-                        href={`/coach/dashboard/${coachId}`}
-                        style={{
-                            padding: '16px 24px',
-                            fontSize: '16px',
-                            fontWeight: '500',
-                            color: '#d1d5db',
-                            backgroundColor: 'transparent',
-                            textDecoration: 'none',
-                            transition: 'all 0.2s',
-                            cursor: 'pointer',
-                            borderBottom: '1px solid #374151'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#374151';
-                            e.currentTarget.style.color = 'white';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = '#d1d5db';
-                        }}
-                    >
-                        Home
-                    </a>
-                    <button
-                        onClick={handleSearchClick}
-                        style={{
-                            padding: '16px 24px',
-                            fontSize: '16px',
-                            fontWeight: '500',
-                            color: '#d1d5db',
-                            backgroundColor: 'transparent',
-                            border: 'none',
-                            borderBottom: '1px solid #374151',
-                            textAlign: 'left',
-                            transition: 'all 0.2s',
-                            cursor: 'pointer',
-                            width: '100%'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#374151';
-                            e.currentTarget.style.color = 'white';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = '#d1d5db';
-                        }}
-                    >
-                        Search
-                    </button>
-                    <button
-                        onClick={handleProfileClick}
-                        style={{
-                            padding: '16px 24px',
-                            fontSize: '16px',
-                            fontWeight: '500',
-                            color: '#d1d5db',
-                            backgroundColor: 'transparent',
-                            border: 'none',
-                            borderBottom: '1px solid #374151',
-                            textAlign: 'left',
-                            transition: 'all 0.2s',
-                            cursor: 'pointer',
-                            width: '100%'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#374151';
-                            e.currentTarget.style.color = 'white';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                            e.currentTarget.style.color = '#d1d5db';
-                        }}
-                    >
-                        Profile
-                    </button>
-                    <button
-                        onClick={handleLogout}
-                        style={{
-                            padding: '16px 24px',
-                            fontSize: '16px',
-                            fontWeight: '500',
-                            color: 'white',
-                            backgroundColor: '#dc2626',
-                            border: 'none',
-                            textAlign: 'left',
-                            transition: 'all 0.2s',
-                            cursor: 'pointer',
-                            width: '100%',
-                            marginTop: '8px'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#b91c1c';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#dc2626';
-                        }}
-                    >
-                        Log Out
-                    </button>
-                </div>
+                <MobileDropdown
+                    coachId={coachId}
+                    onSearchClick={handleSearchClick}
+                    onProfileClick={handleProfileClick}
+                    onLogout={handleLogout}
+                />
             )}
 
-            {/* Responsive Styles */}
-            <style jsx>{`
-                @media (max-width: 768px) {
-                    .mobile-menu-button {
-                        display: flex !important;
-                    }
-                    .desktop-nav {
-                        display: none !important;
-                    }
-                    .mobile-dropdown {
-                        display: flex !important;
-                    }
-                }
-            `}</style>
+            <ResponsiveStyles />
         </nav>
+    );
+}
+
+function CABBranding() {
+    return (
+        <div>
+            <span style={{
+                fontSize: '28px',
+                fontWeight: 'bold',
+                color: 'white',
+                letterSpacing: '-0.5px'
+            }}>
+                CAB
+            </span>
+        </div>
+    );
+}
+
+function HamburgerButton({ isOpen, onClick }: { isOpen: boolean; onClick: () => void }) {
+    return (
+        <button
+            onClick={onClick}
+            aria-label="Toggle menu"
+            aria-expanded={isOpen}
+            style={{
+                display: 'none',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: '44px',
+                height: '44px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '8px'
+            }}
+            className="mobile-menu-button"
+        >
+            <span style={{
+                width: '24px',
+                height: '2px',
+                backgroundColor: 'white',
+                marginBottom: '5px',
+                transition: 'all 0.3s',
+                transform: isOpen ? 'rotate(45deg) translateY(7px)' : 'none'
+            }} />
+            <span style={{
+                width: '24px',
+                height: '2px',
+                backgroundColor: 'white',
+                marginBottom: '5px',
+                transition: 'all 0.3s',
+                opacity: isOpen ? 0 : 1
+            }} />
+            <span style={{
+                width: '24px',
+                height: '2px',
+                backgroundColor: 'white',
+                transition: 'all 0.3s',
+                transform: isOpen ? 'rotate(-45deg) translateY(-7px)' : 'none'
+            }} />
+        </button>
+    );
+}
+
+interface NavProps {
+    coachId: string;
+    onSearchClick: (_e: React.MouseEvent) => void;
+    onProfileClick: (_e: React.MouseEvent) => void;
+    onLogout: () => void;
+}
+
+function DesktopNav({ coachId, onSearchClick, onProfileClick, onLogout }: NavProps) {
+    const baseStyle = {
+        padding: '12px 24px',
+        fontSize: '14px',
+        fontWeight: '500',
+        color: COLORS.LIGHT_GRAY,
+        backgroundColor: 'transparent',
+        borderRadius: '8px',
+        transition: 'all 0.2s',
+        cursor: 'pointer'
+    };
+
+    return (
+        <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+            <a
+                href={`/coach/dashboard/${coachId}`}
+                style={{ ...baseStyle, textDecoration: 'none' }}
+                {...navItemHoverHandlers}
+            >
+                Home
+            </a>
+            <button onClick={onSearchClick} style={{ ...baseStyle, border: 'none' }} {...navItemHoverHandlers}>
+                Search
+            </button>
+            <button onClick={onProfileClick} style={{ ...baseStyle, border: 'none' }} {...navItemHoverHandlers}>
+                Profile
+            </button>
+            <button
+                onClick={onLogout}
+                style={{
+                    ...baseStyle,
+                    color: 'white',
+                    backgroundColor: COLORS.RED,
+                    border: 'none'
+                }}
+                onMouseEnter={(_e) => { _e.currentTarget.style.backgroundColor = COLORS.DARK_RED; }}
+                onMouseLeave={(_e) => { _e.currentTarget.style.backgroundColor = COLORS.RED; }}
+            >
+                Log Out
+            </button>
+        </div>
+    );
+}
+
+function MobileDropdown({ coachId, onSearchClick, onProfileClick, onLogout }: NavProps) {
+    const baseStyle = {
+        padding: '16px 24px',
+        fontSize: '16px',
+        fontWeight: '500',
+        color: COLORS.LIGHT_GRAY,
+        backgroundColor: 'transparent',
+        transition: 'all 0.2s',
+        cursor: 'pointer'
+    };
+
+    return (
+        <div
+            className="mobile-dropdown"
+            style={{
+                display: 'none',
+                flexDirection: 'column',
+                backgroundColor: COLORS.DARK_GRAY,
+                borderTop: `1px solid ${COLORS.DARKER_GRAY}`,
+                paddingTop: '8px',
+                paddingBottom: '8px'
+            }}
+        >
+            <a
+                href={`/coach/dashboard/${coachId}`}
+                style={{
+                    ...baseStyle,
+                    textDecoration: 'none',
+                    borderBottom: `1px solid ${COLORS.DARKER_GRAY}`
+                }}
+                {...mobileItemHoverHandlers}
+            >
+                Home
+            </a>
+            <button
+                onClick={onSearchClick}
+                style={{
+                    ...baseStyle,
+                    border: 'none',
+                    borderBottom: `1px solid ${COLORS.DARKER_GRAY}`,
+                    textAlign: 'left',
+                    width: '100%'
+                }}
+                {...mobileItemHoverHandlers}
+            >
+                Search
+            </button>
+            <button
+                onClick={onProfileClick}
+                style={{
+                    ...baseStyle,
+                    border: 'none',
+                    borderBottom: `1px solid ${COLORS.DARKER_GRAY}`,
+                    textAlign: 'left',
+                    width: '100%'
+                }}
+                {...mobileItemHoverHandlers}
+            >
+                Profile
+            </button>
+            <button
+                onClick={onLogout}
+                style={{
+                    ...baseStyle,
+                    color: 'white',
+                    backgroundColor: COLORS.RED,
+                    border: 'none',
+                    textAlign: 'left',
+                    width: '100%',
+                    marginTop: '8px'
+                }}
+                onMouseEnter={(_e) => { _e.currentTarget.style.backgroundColor = COLORS.DARK_RED; }}
+                onMouseLeave={(_e) => { _e.currentTarget.style.backgroundColor = COLORS.RED; }}
+            >
+                Log Out
+            </button>
+        </div>
+    );
+}
+
+function ResponsiveStyles() {
+    return (
+        <style jsx>{`
+            @media (max-width: 768px) {
+                .mobile-menu-button {
+                    display: flex !important;
+                }
+                .desktop-nav {
+                    display: none !important;
+                }
+                .mobile-dropdown {
+                    display: flex !important;
+                }
+            }
+        `}</style>
     );
 }
