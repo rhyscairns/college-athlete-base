@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { CoachNavbarProps } from '../types';
+import type { PlayerNavbarProps } from '../types';
 
 // Constants
 const COLORS = {
@@ -27,7 +27,7 @@ const createHoverHandlers = (activeColor: string, inactiveColor: string) => ({
 const navItemHoverHandlers = createHoverHandlers(COLORS.DARK_GRAY, COLORS.LIGHT_GRAY);
 const mobileItemHoverHandlers = createHoverHandlers(COLORS.DARKER_GRAY, COLORS.LIGHT_GRAY);
 
-export function CoachNavbar({ coachId }: CoachNavbarProps) {
+export function PlayerNavbar({ playerId }: PlayerNavbarProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const handleLogout = async () => {
@@ -39,13 +39,8 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
         }
     };
 
-    const handleSearchClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        setMobileMenuOpen(false);
-    };
-
-    const handleProfileClick = (e: React.MouseEvent) => {
-        e.preventDefault();
+    const handleProfileClick = (_e: React.MouseEvent) => {
+        _e.preventDefault();
         setMobileMenuOpen(false);
     };
 
@@ -66,8 +61,7 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
                 <CABBranding />
                 <HamburgerButton isOpen={mobileMenuOpen} onClick={toggleMobileMenu} />
                 <DesktopNav
-                    coachId={coachId}
-                    onSearchClick={handleSearchClick}
+                    playerId={playerId}
                     onProfileClick={handleProfileClick}
                     onLogout={handleLogout}
                 />
@@ -75,8 +69,7 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
 
             {mobileMenuOpen && (
                 <MobileDropdown
-                    coachId={coachId}
-                    onSearchClick={handleSearchClick}
+                    playerId={playerId}
                     onProfileClick={handleProfileClick}
                     onLogout={handleLogout}
                 />
@@ -150,13 +143,12 @@ function HamburgerButton({ isOpen, onClick }: { isOpen: boolean; onClick: () => 
 }
 
 interface NavProps {
-    coachId: string;
-    onSearchClick: (_e: React.MouseEvent) => void;
+    playerId: string;
     onProfileClick: (_e: React.MouseEvent) => void;
     onLogout: () => void;
 }
 
-function DesktopNav({ coachId, onSearchClick, onProfileClick, onLogout }: NavProps) {
+function DesktopNav({ playerId, onProfileClick, onLogout }: NavProps) {
     const baseStyle = {
         padding: '12px 24px',
         fontSize: '14px',
@@ -171,15 +163,12 @@ function DesktopNav({ coachId, onSearchClick, onProfileClick, onLogout }: NavPro
     return (
         <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
             <a
-                href={`/coach/dashboard/${coachId}`}
+                href={`/player/dashboard/${playerId}`}
                 style={{ ...baseStyle, textDecoration: 'none' }}
                 {...navItemHoverHandlers}
             >
                 Home
             </a>
-            <button onClick={onSearchClick} style={{ ...baseStyle, border: 'none' }} {...navItemHoverHandlers}>
-                Search
-            </button>
             <button onClick={onProfileClick} style={{ ...baseStyle, border: 'none' }} {...navItemHoverHandlers}>
                 Profile
             </button>
@@ -200,7 +189,7 @@ function DesktopNav({ coachId, onSearchClick, onProfileClick, onLogout }: NavPro
     );
 }
 
-function MobileDropdown({ coachId, onSearchClick, onProfileClick, onLogout }: NavProps) {
+function MobileDropdown({ playerId, onProfileClick, onLogout }: NavProps) {
     const baseStyle = {
         padding: '16px 24px',
         fontSize: '16px',
@@ -224,7 +213,7 @@ function MobileDropdown({ coachId, onSearchClick, onProfileClick, onLogout }: Na
             }}
         >
             <a
-                href={`/coach/dashboard/${coachId}`}
+                href={`/player/dashboard/${playerId}`}
                 style={{
                     ...baseStyle,
                     textDecoration: 'none',
@@ -234,19 +223,6 @@ function MobileDropdown({ coachId, onSearchClick, onProfileClick, onLogout }: Na
             >
                 Home
             </a>
-            <button
-                onClick={onSearchClick}
-                style={{
-                    ...baseStyle,
-                    border: 'none',
-                    borderBottom: `1px solid ${COLORS.DARKER_GRAY}`,
-                    textAlign: 'left',
-                    width: '100%'
-                }}
-                {...mobileItemHoverHandlers}
-            >
-                Search
-            </button>
             <button
                 onClick={onProfileClick}
                 style={{
