@@ -8,7 +8,7 @@ describe('/api/health', () => {
     beforeAll(() => {
         // Mock process methods if they don't exist (shouldn't happen, but defensive)
         if (typeof process.uptime !== 'function') {
-            process.uptime = jest.fn(() => 0);
+            process.uptime = jest.fn(() => 0) as any;
         }
         if (typeof process.memoryUsage !== 'function') {
             process.memoryUsage = jest.fn(() => ({
@@ -17,7 +17,7 @@ describe('/api/health', () => {
                 heapUsed: 50 * 1024 * 1024,
                 external: 0,
                 arrayBuffers: 0,
-            }));
+            })) as any;
         }
     });
 
