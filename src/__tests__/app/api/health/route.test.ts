@@ -4,6 +4,23 @@
 import { GET } from '@/app/api/health/route';
 
 describe('/api/health', () => {
+    // Ensure process methods are available before tests
+    beforeAll(() => {
+        // Mock process methods if they don't exist (shouldn't happen, but defensive)
+        if (typeof process.uptime !== 'function') {
+            process.uptime = jest.fn(() => 0);
+        }
+        if (typeof process.memoryUsage !== 'function') {
+            process.memoryUsage = jest.fn(() => ({
+                rss: 100 * 1024 * 1024,
+                heapTotal: 100 * 1024 * 1024,
+                heapUsed: 50 * 1024 * 1024,
+                external: 0,
+                arrayBuffers: 0,
+            }));
+        }
+    });
+
     it('returns 200 status', async () => {
         const response = await GET();
 
