@@ -51,7 +51,7 @@ describe('Login Route Page', () => {
 
         capturedOnSuccess?.(playerUser);
 
-        expect(mockPush).toHaveBeenCalledWith('/player/dashboard/test-player-id');
+        expect(mockPush).toHaveBeenCalledWith('/player/test-player-id/dashboard');
     });
 
     it('redirects to coach dashboard on successful coach login', () => {

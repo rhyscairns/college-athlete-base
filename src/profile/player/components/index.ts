@@ -1,0 +1,10 @@
+export { default as PlayerProfile } from './PlayerProfile';
+export * from './sections/BasicInformationSection';
+export * from './sections/PhysicalAttributesSection';
+export * from './sections/AcademicInformationSection';
+export * from './sections/AthleticInformationSection';
+export * from './sections/StatsSection';
+export * from './sections/RecruitmentSection';
+export * from './sections/ContactInformationSection';
+export * from './sections/VideosSection';
+export * from './sections/SocialMediaSection';

@@ -10,7 +10,7 @@ export default function Login() {
     const handleSuccess = (user: User) => {
         // Redirect to appropriate dashboard based on role
         if (user.role === 'player') {
-            router.push(`/player/dashboard/${user.id}`);
+            router.push(`/player/${user.id}/dashboard`);
         } else if (user.role === 'coach') {
             router.push(`/coach/dashboard/${user.id}`);
         } else {

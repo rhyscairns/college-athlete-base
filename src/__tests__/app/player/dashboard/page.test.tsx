@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import PlayerDashboardPage from '@/app/player/dashboard/[playerId]/page';
+import PlayerDashboardPage from '@/app/player/[playerId]/dashboard/page';
 import { verifyToken } from '@/authentication/utils/jwt';
 import { getPlayerById } from '@/authentication/db/players';
 import { PlayerDatabaseRecord } from '@/authentication/types';
