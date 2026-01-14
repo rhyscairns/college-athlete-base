@@ -1,13 +1,4 @@
-interface EmailInputProps {
-    label?: string;
-    name?: string;
-    value: string;
-    onChange: (value: string) => void;
-    onBlur?: () => void;
-    error?: string;
-    placeholder?: string;
-    disabled?: boolean;
-}
+import type { EmailInputProps } from '../../types';
 
 export function EmailInput({
     label = 'Email',

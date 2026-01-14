@@ -1,25 +1,7 @@
 'use client';
 
 import { TextInput } from '../inputs';
-import type { PlayerProfileFormData, VideoLink, ProfileValidationErrors } from '../../types';
-
-interface VideosSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
-
-interface VideoItemProps {
-    video: VideoLink;
-    index: number;
-    isEditing: boolean;
-    errors?: ProfileValidationErrors;
-    onUpdate: (index: number, field: keyof VideoLink, value: string | boolean) => void;
-    onRemove: (index: number) => void;
-    onBlur?: (field: string, value: string) => void;
-}
+import type { VideosSectionProps, VideoItemProps, VideoLink } from '../../types';
 
 function VideoItem({ video, index, isEditing, errors, onUpdate, onRemove, onBlur }: VideoItemProps) {
     return (

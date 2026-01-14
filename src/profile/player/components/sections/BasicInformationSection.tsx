@@ -1,16 +1,8 @@
 'use client';
 
-import type { PlayerProfileFormData, ProfileValidationErrors } from '../../types';
+import type { BasicInformationSectionProps, PlayerProfileFormData } from '../../types';
 import { SPORTS_LIST, COUNTRIES_LIST, US_STATES_LIST, SEX_OPTIONS } from '@/authentication/constants';
 import { TextInput, SelectInput, EmailInput } from '../inputs';
-
-interface BasicInformationSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
 
 export function BasicInformationSection({ formData, setFormData, errors, handleBlur, isEditing }: BasicInformationSectionProps) {
     const handleChange = (field: keyof PlayerProfileFormData, value: string) => {

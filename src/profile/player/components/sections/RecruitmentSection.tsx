@@ -1,15 +1,7 @@
 'use client';
 
-import type { PlayerProfileFormData, ProfileValidationErrors } from '../../types';
+import type { PlayerProfileFormData, RecruitmentSectionProps } from '../../types';
 import { TextInput, SelectInput } from '../inputs';
-
-interface RecruitmentSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
 
 const RECRUITMENT_STATUS_OPTIONS = [
     { value: 'open', label: 'Open to Recruitment' },

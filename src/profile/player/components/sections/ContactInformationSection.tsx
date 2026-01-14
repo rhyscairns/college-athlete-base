@@ -1,15 +1,7 @@
 'use client';
 
-import type { PlayerProfileFormData, ProfileValidationErrors } from '../../types';
+import type { ContactInformationSectionProps, PlayerProfileFormData } from '../../types';
 import { TextInput, EmailInput } from '../inputs';
-
-interface ContactInformationSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
 
 export function ContactInformationSection({ formData, setFormData, errors, handleBlur, isEditing }: ContactInformationSectionProps) {
     const handleChange = (field: keyof PlayerProfileFormData, value: string) => {

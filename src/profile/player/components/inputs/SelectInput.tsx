@@ -1,15 +1,4 @@
-interface SelectInputProps {
-    label: string;
-    name: string;
-    value: string;
-    onChange: (value: string) => void;
-    onBlur?: () => void;
-    error?: string;
-    options: ReadonlyArray<{ readonly value: string; readonly label: string }>;
-    required?: boolean;
-    placeholder?: string;
-    disabled?: boolean;
-}
+import type { SelectInputProps } from '../../types';
 
 export function SelectInput({
     label,

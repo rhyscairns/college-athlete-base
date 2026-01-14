@@ -1,10 +1,4 @@
-interface SubmitButtonProps {
-    loading?: boolean;
-    disabled?: boolean;
-    children: React.ReactNode;
-    onClick?: () => void;
-    type?: 'button' | 'submit';
-}
+import type { SubmitButtonProps } from '../../types';
 
 export function SubmitButton({
     loading = false,

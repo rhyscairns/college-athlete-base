@@ -1,18 +1,4 @@
-interface TextInputProps {
-    label: string;
-    name: string;
-    type?: 'text' | 'number' | 'date' | 'tel';
-    value: string;
-    onChange: (value: string) => void;
-    onBlur?: () => void;
-    error?: string;
-    required?: boolean;
-    placeholder?: string;
-    disabled?: boolean;
-    min?: number;
-    max?: number;
-    step?: number;
-}
+import type { TextInputProps } from '../../types';
 
 export function TextInput({
     label,

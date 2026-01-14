@@ -1,15 +1,7 @@
 'use client';
 
 import { TextInput } from '../inputs';
-import type { PlayerProfileFormData, ProfileValidationErrors } from '../../types';
-
-interface PhysicalAttributesSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
+import type { PhysicalAttributesSectionProps, PlayerProfileFormData } from '../../types';
 
 export function PhysicalAttributesSection({
     formData,

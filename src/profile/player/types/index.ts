@@ -152,3 +152,139 @@ export interface PlayerProfileFormData {
 export interface ProfileValidationErrors {
     [key: string]: string;
 }
+
+// ============================================
+// Component Props Interfaces
+// ============================================
+
+// Input Component Props
+export interface TextInputProps {
+    label: string;
+    name: string;
+    type?: 'text' | 'number' | 'date' | 'tel';
+    value: string;
+    onChange: (value: string) => void;
+    onBlur?: () => void;
+    error?: string;
+    required?: boolean;
+    placeholder?: string;
+    disabled?: boolean;
+    min?: number;
+    max?: number;
+    step?: number;
+}
+
+export interface SelectInputProps {
+    label: string;
+    name: string;
+    value: string;
+    onChange: (value: string) => void;
+    onBlur?: () => void;
+    error?: string;
+    options: ReadonlyArray<{ readonly value: string; readonly label: string }>;
+    required?: boolean;
+    placeholder?: string;
+    disabled?: boolean;
+}
+
+export interface EmailInputProps {
+    label?: string;
+    name?: string;
+    value: string;
+    onChange: (value: string) => void;
+    onBlur?: () => void;
+    error?: string;
+    placeholder?: string;
+    disabled?: boolean;
+}
+
+export interface SubmitButtonProps {
+    loading?: boolean;
+    disabled?: boolean;
+    children: React.ReactNode;
+    onClick?: () => void;
+    type?: 'button' | 'submit';
+}
+
+// Section Component Props
+export interface BasicInformationSectionProps {
+    formData: PlayerProfileFormData;
+    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
+    errors?: ProfileValidationErrors;
+    handleBlur?: (field: string, value: string | undefined | null) => void;
+    isEditing: boolean;
+}
+
+export interface PhysicalAttributesSectionProps {
+    formData: PlayerProfileFormData;
+    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
+    errors?: ProfileValidationErrors;
+    handleBlur?: (field: string, value: string | undefined | null) => void;
+    isEditing: boolean;
+}
+
+export interface AcademicInformationSectionProps {
+    formData: PlayerProfileFormData;
+    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
+    errors?: ProfileValidationErrors;
+    handleBlur?: (field: string, value: string | undefined | null) => void;
+    isEditing: boolean;
+}
+
+export interface AthleticInformationSectionProps {
+    formData: PlayerProfileFormData;
+    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
+    errors?: ProfileValidationErrors;
+    handleBlur?: (field: string, value: string | undefined | null) => void;
+    isEditing: boolean;
+}
+
+export interface StatsSectionProps {
+    formData: PlayerProfileFormData;
+    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
+    errors?: ProfileValidationErrors;
+    handleBlur?: (field: string, value: string | undefined | null) => void;
+    isEditing: boolean;
+}
+
+export interface RecruitmentSectionProps {
+    formData: PlayerProfileFormData;
+    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
+    errors?: ProfileValidationErrors;
+    handleBlur?: (field: string, value: string | undefined | null) => void;
+    isEditing: boolean;
+}
+
+export interface ContactInformationSectionProps {
+    formData: PlayerProfileFormData;
+    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
+    errors?: ProfileValidationErrors;
+    handleBlur?: (field: string, value: string | undefined | null) => void;
+    isEditing: boolean;
+}
+
+export interface VideosSectionProps {
+    formData: PlayerProfileFormData;
+    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
+    errors?: ProfileValidationErrors;
+    handleBlur?: (field: string, value: string | undefined | null) => void;
+    isEditing: boolean;
+}
+
+export interface VideoItemProps {
+    video: VideoLink;
+    index: number;
+    isEditing: boolean;
+    errors?: ProfileValidationErrors;
+    onUpdate: (index: number, field: keyof VideoLink, value: string | boolean) => void;
+    onRemove: (index: number) => void;
+    onBlur?: (field: string, value: string) => void;
+}
+
+export interface SocialMediaSectionProps {
+    formData: PlayerProfileFormData;
+    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
+    errors?: ProfileValidationErrors;
+    handleBlur?: (field: string, value: string | undefined | null) => void;
+    isEditing: boolean;
+}
