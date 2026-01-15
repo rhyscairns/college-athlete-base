@@ -16,10 +16,10 @@ export default function PlayerLayout({ children }: PlayerLayoutProps) {
     // Extract playerId from the URL path using client-side hook
     const pathname = usePathname();
 
-    // Extract playerId from path like /player/dashboard/[playerId]
+    // Extract playerId from path like /player/[playerId]/dashboard or /player/[playerId]/profile
     const pathSegments = pathname.split('/').filter(Boolean);
-    const playerIdIndex = pathSegments.indexOf('dashboard') + 1;
-    const playerId = pathSegments[playerIdIndex] || '';
+    // Path structure: ['player', playerId, 'dashboard'] or ['player', playerId, 'profile']
+    const playerId = pathSegments[1] || '';
 
     return (
         <div

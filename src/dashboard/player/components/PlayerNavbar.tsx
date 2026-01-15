@@ -41,6 +41,7 @@ export function PlayerNavbar({ playerId }: PlayerNavbarProps) {
 
     const handleProfileClick = (_e: React.MouseEvent) => {
         _e.preventDefault();
+        window.location.href = `/player/${playerId}/profile`;
         setMobileMenuOpen(false);
     };
 
@@ -49,7 +50,9 @@ export function PlayerNavbar({ playerId }: PlayerNavbarProps) {
     };
 
     return (
-        <nav style={{ width: '100%', backgroundColor: '#111827', borderBottom: '1px solid #1f2937' }}>
+        <nav style={{
+            width: '100%', backgroundColor: '#111827', borderBottom: '1px solid #1f2937'
+        }}>
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -67,16 +70,18 @@ export function PlayerNavbar({ playerId }: PlayerNavbarProps) {
                 />
             </div>
 
-            {mobileMenuOpen && (
-                <MobileDropdown
-                    playerId={playerId}
-                    onProfileClick={handleProfileClick}
-                    onLogout={handleLogout}
-                />
-            )}
+            {
+                mobileMenuOpen && (
+                    <MobileDropdown
+                        playerId={playerId}
+                        onProfileClick={handleProfileClick}
+                        onLogout={handleLogout}
+                    />
+                )
+            }
 
             <ResponsiveStyles />
-        </nav>
+        </nav >
     );
 }
 
@@ -163,7 +168,7 @@ function DesktopNav({ playerId, onProfileClick, onLogout }: NavProps) {
     return (
         <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
             <a
-                href={`/player/dashboard/${playerId}`}
+                href={`/player/${playerId}/dashboard`}
                 style={{ ...baseStyle, textDecoration: 'none' }}
                 {...navItemHoverHandlers}
             >
@@ -213,7 +218,7 @@ function MobileDropdown({ playerId, onProfileClick, onLogout }: NavProps) {
             }}
         >
             <a
-                href={`/player/dashboard/${playerId}`}
+                href={`/player/${playerId}/dashboard`}
                 style={{
                     ...baseStyle,
                     textDecoration: 'none',

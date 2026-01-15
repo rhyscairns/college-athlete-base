@@ -79,20 +79,20 @@ describe('PlayerNavbar', () => {
             render(<PlayerNavbar playerId={mockPlayerId} />);
 
             const homeLink = screen.getByText('Home').closest('a');
-            expect(homeLink).toHaveAttribute('href', `/player/dashboard/${mockPlayerId}`);
+            expect(homeLink).toHaveAttribute('href', `/player/${mockPlayerId}/dashboard`);
         });
 
         it('updates href when playerId changes', () => {
             const { rerender } = render(<PlayerNavbar playerId={mockPlayerId} />);
 
             let homeLink = screen.getByText('Home').closest('a');
-            expect(homeLink).toHaveAttribute('href', `/player/dashboard/${mockPlayerId}`);
+            expect(homeLink).toHaveAttribute('href', `/player/${mockPlayerId}/dashboard`);
 
             const newPlayerId = 'player-456';
             rerender(<PlayerNavbar playerId={newPlayerId} />);
 
             homeLink = screen.getByText('Home').closest('a');
-            expect(homeLink).toHaveAttribute('href', `/player/dashboard/${newPlayerId}`);
+            expect(homeLink).toHaveAttribute('href', `/player/${newPlayerId}/dashboard`);
         });
     });
 
@@ -354,7 +354,7 @@ describe('PlayerNavbar', () => {
             render(<PlayerNavbar playerId={mockPlayerId} />);
 
             const homeLink = screen.getByText('Home').closest('a');
-            expect(homeLink).toHaveAttribute('href', `/player/dashboard/${mockPlayerId}`);
+            expect(homeLink).toHaveAttribute('href', `/player/${mockPlayerId}/dashboard`);
         });
 
         it('handles different playerId formats', () => {
@@ -364,7 +364,7 @@ describe('PlayerNavbar', () => {
                 const { unmount } = render(<PlayerNavbar playerId={playerId} />);
 
                 const homeLink = screen.getByText('Home').closest('a');
-                expect(homeLink).toHaveAttribute('href', `/player/dashboard/${playerId}`);
+                expect(homeLink).toHaveAttribute('href', `/player/${playerId}/dashboard`);
 
                 unmount();
             });
