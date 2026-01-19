@@ -1,4 +1,4 @@
-import type { TextInputProps } from '../../types';
+import type { TextInputProps } from '../../../types';
 
 export function TextInput({
     label,

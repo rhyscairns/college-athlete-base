@@ -1,7 +1,7 @@
 'use client';
 
 import { TextInput } from '../inputs';
-import type { StatsSectionProps } from '../../types';
+import type { StatsSectionProps } from '../../../types';
 
 export function StatsSection({ formData, setFormData, isEditing }: StatsSectionProps) {
     const handleStatChange = (field: string, value: string) => {

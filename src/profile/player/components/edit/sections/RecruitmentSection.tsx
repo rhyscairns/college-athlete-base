@@ -1,6 +1,6 @@
 'use client';
 
-import type { PlayerProfileFormData, RecruitmentSectionProps } from '../../types';
+import type { PlayerProfileFormData, RecruitmentSectionProps } from '../../../types';
 import { TextInput, SelectInput } from '../inputs';
 
 const RECRUITMENT_STATUS_OPTIONS = [

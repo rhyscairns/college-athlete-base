@@ -1,6 +1,6 @@
 'use client';
 
-import type { AthleticInformationSectionProps, PlayerProfileFormData } from '../../types';
+import type { AthleticInformationSectionProps, PlayerProfileFormData } from '../../../types';
 import { TextInput } from '../inputs';
 
 export function AthleticInformationSection({ formData, setFormData, isEditing }: AthleticInformationSectionProps) {

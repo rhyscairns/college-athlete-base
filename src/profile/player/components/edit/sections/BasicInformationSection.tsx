@@ -1,6 +1,6 @@
 'use client';
 
-import type { BasicInformationSectionProps, PlayerProfileFormData } from '../../types';
+import type { BasicInformationSectionProps, PlayerProfileFormData } from '../../../types';
 import { SPORTS_LIST, COUNTRIES_LIST, US_STATES_LIST, SEX_OPTIONS } from '@/authentication/constants';
 import { TextInput, SelectInput, EmailInput } from '../inputs';
 

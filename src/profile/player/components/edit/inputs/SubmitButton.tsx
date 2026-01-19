@@ -1,4 +1,4 @@
-import type { SubmitButtonProps } from '../../types';
+import type { SubmitButtonProps } from '../../../types';
 
 export function SubmitButton({
     loading = false,

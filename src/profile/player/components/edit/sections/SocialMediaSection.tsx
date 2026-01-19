@@ -1,7 +1,7 @@
 'use client';
 
 import { TextInput } from '../inputs';
-import type { SocialMediaSectionProps } from '../../types';
+import type { SocialMediaSectionProps } from '../../../types';
 
 export function SocialMediaSection({ formData, setFormData, errors, handleBlur, isEditing }: SocialMediaSectionProps) {
     const handleSocialMediaChange = (platform: string, value: string) => {
