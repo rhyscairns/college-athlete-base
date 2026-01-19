@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ContactInformationSection } from '../ContactInformationSection';
-import type { PlayerProfileFormData, ProfileValidationErrors } from '../../../types';
+import type { PlayerProfileFormData, ProfileValidationErrors } from '../../../../types';
 
 describe('ContactInformationSection', () => {
     const mockSetFormData = jest.fn();
@@ -20,9 +20,9 @@ describe('ContactInformationSection', () => {
         parentGuardianName: 'Jane Doe',
         parentGuardianPhone: '555-987-6543',
         parentGuardianEmail: 'jane.doe@example.com',
-        coachReferences: JSON.stringify([
-            { name: 'Coach Smith', email: 'smith@example.com', phone: '555-111-2222' }
-        ]),
+        coachReferences: [
+            { id: '1', name: 'Coach Smith', email: 'smith@example.com', phone: '555-111-2222' }
+        ],
     };
 
     beforeEach(() => {

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SocialMediaSection } from '../SocialMediaSection';
-import type { PlayerProfileFormData, ProfileValidationErrors } from '../../../types';
+import type { PlayerProfileFormData, ProfileValidationErrors } from '../../../../types';
 
 describe('SocialMediaSection', () => {
     const mockSetFormData = jest.fn();
