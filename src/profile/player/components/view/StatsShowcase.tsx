@@ -1,10 +1,6 @@
 'use client';
 
-import type { MockPlayerData } from '../../data/mockPlayerData';
-
-interface StatsShowcaseProps {
-    stats: MockPlayerData['stats'];
-}
+import type { StatsShowcaseProps } from '../../types';
 
 export function StatsShowcase({ stats }: StatsShowcaseProps) {
     const statCards = [

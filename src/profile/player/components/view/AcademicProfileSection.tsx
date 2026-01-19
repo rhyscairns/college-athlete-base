@@ -1,10 +1,6 @@
 'use client';
 
-import type { MockPlayerData } from '../../data/mockPlayerData';
-
-interface AcademicProfileSectionProps {
-    academic: MockPlayerData['academic'];
-}
+import type { AcademicProfileSectionProps } from '../../types';
 
 export function AcademicProfileSection({ academic }: AcademicProfileSectionProps) {
     return (

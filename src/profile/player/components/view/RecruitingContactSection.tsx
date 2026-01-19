@@ -1,10 +1,6 @@
 'use client';
 
-import type { MockPlayerData } from '../../data/mockPlayerData';
-
-interface RecruitingContactSectionProps {
-    contact: MockPlayerData['contact'];
-}
+import type { RecruitingContactSectionProps } from '../../types';
 
 export function RecruitingContactSection({ contact }: RecruitingContactSectionProps) {
     return (

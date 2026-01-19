@@ -1,10 +1,6 @@
 'use client';
 
-import type { MockPlayerData } from '../../data/mockPlayerData';
-
-interface CoachesPerspectiveSectionProps {
-    testimonials: MockPlayerData['coachTestimonials'];
-}
+import type { CoachesPerspectiveSectionProps } from '../../types';
 
 export function CoachesPerspectiveSection({ testimonials }: CoachesPerspectiveSectionProps) {
     return (

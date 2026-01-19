@@ -1,10 +1,6 @@
 'use client';
 
-import type { MockPlayerData } from '../../data/mockPlayerData';
-
-interface AthleticAchievementsSectionProps {
-    achievements: MockPlayerData['achievements'];
-}
+import type { AthleticAchievementsSectionProps } from '../../types';
 
 export function AthleticAchievementsSection({ achievements }: AthleticAchievementsSectionProps) {
     const iconMap: Record<string, string> = {

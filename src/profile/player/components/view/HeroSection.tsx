@@ -1,10 +1,6 @@
 'use client';
 
-import type { MockPlayerData } from '../../data/mockPlayerData';
-
-interface HeroSectionProps {
-    player: MockPlayerData;
-}
+import type { HeroSectionProps } from '../../types';
 
 export function HeroSection({ player }: HeroSectionProps) {
     return (

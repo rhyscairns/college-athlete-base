@@ -1,10 +1,6 @@
 'use client';
 
-import type { MockPlayerData } from '../../data/mockPlayerData';
-
-interface GameHighlightsSectionProps {
-    videos: MockPlayerData['videos'];
-}
+import type { GameHighlightsSectionProps } from '../../types';
 
 export function GameHighlightsSection({ videos }: GameHighlightsSectionProps) {
     const featured = videos.find(v => v.isFeatured);
