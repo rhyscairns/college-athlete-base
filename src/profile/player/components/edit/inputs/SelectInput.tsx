@@ -1,4 +1,4 @@
-import type { SelectInputProps } from '../../types';
+import type { SelectInputProps } from '../../../types';
 
 export function SelectInput({
     label,

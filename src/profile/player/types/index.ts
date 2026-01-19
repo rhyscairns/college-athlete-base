@@ -288,3 +288,37 @@ export interface SocialMediaSectionProps {
     handleBlur?: (field: string, value: string | undefined | null) => void;
     isEditing: boolean;
 }
+
+// ============================================
+// View Component Props Interfaces
+// ============================================
+
+import type { MockPlayerData } from '../data/mockPlayerData';
+
+export interface HeroSectionProps {
+    player: MockPlayerData;
+}
+
+export interface StatsShowcaseProps {
+    stats: MockPlayerData['stats'];
+}
+
+export interface AthleticAchievementsSectionProps {
+    achievements: MockPlayerData['achievements'];
+}
+
+export interface AcademicProfileSectionProps {
+    academic: MockPlayerData['academic'];
+}
+
+export interface GameHighlightsSectionProps {
+    videos: MockPlayerData['videos'];
+}
+
+export interface CoachesPerspectiveSectionProps {
+    testimonials: MockPlayerData['coachTestimonials'];
+}
+
+export interface RecruitingContactSectionProps {
+    contact: MockPlayerData['contact'];
+}

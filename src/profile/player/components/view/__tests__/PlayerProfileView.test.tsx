@@ -1,0 +1,62 @@
+import { render, screen } from '@testing-library/react';
+import { PlayerProfileView } from '../PlayerProfileView';
+
+// Mock all child components
+jest.mock('../HeroSection', () => ({
+    HeroSection: () => <div data-testid="hero-section">Hero Section</div>,
+}));
+
+jest.mock('../StatsShowcase', () => ({
+    StatsShowcase: () => <div data-testid="stats-section">Stats Section</div>,
+}));
+
+jest.mock('../AthleticAchievementsSection', () => ({
+    AthleticAchievementsSection: () => <div data-testid="achievements-section">Achievements Section</div>,
+}));
+
+jest.mock('../AcademicProfileSection', () => ({
+    AcademicProfileSection: () => <div data-testid="academics-section">Academics Section</div>,
+}));
+
+jest.mock('../GameHighlightsSection', () => ({
+    GameHighlightsSection: () => <div data-testid="highlights-section">Highlights Section</div>,
+}));
+
+jest.mock('../CoachesPerspectiveSection', () => ({
+    CoachesPerspectiveSection: () => <div data-testid="coaches-section">Coaches Section</div>,
+}));
+
+jest.mock('../RecruitingContactSection', () => ({
+    RecruitingContactSection: () => <div data-testid="contact-section">Contact Section</div>,
+}));
+
+jest.mock('../ProfileSideNav', () => ({
+    ProfileSideNav: () => <div data-testid="side-nav">Side Nav</div>,
+}));
+
+describe('PlayerProfileView', () => {
+    it('renders all sections', () => {
+        render(<PlayerProfileView />);
+
+        expect(screen.getByTestId('hero-section')).toBeInTheDocument();
+        expect(screen.getByTestId('stats-section')).toBeInTheDocument();
+        expect(screen.getByTestId('achievements-section')).toBeInTheDocument();
+        expect(screen.getByTestId('academics-section')).toBeInTheDocument();
+        expect(screen.getByTestId('highlights-section')).toBeInTheDocument();
+        expect(screen.getByTestId('coaches-section')).toBeInTheDocument();
+        expect(screen.getByTestId('contact-section')).toBeInTheDocument();
+    });
+
+    it('renders the side navigation', () => {
+        render(<PlayerProfileView />);
+
+        expect(screen.getByTestId('side-nav')).toBeInTheDocument();
+    });
+
+    it('applies correct layout classes', () => {
+        const { container } = render(<PlayerProfileView />);
+
+        const mainContainer = container.firstChild;
+        expect(mainContainer).toHaveClass('relative');
+    });
+});

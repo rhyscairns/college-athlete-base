@@ -51,7 +51,14 @@ export function PlayerNavbar({ playerId }: PlayerNavbarProps) {
 
     return (
         <nav style={{
-            width: '100%', backgroundColor: '#111827', borderBottom: '1px solid #1f2937'
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            width: '100%',
+            backgroundColor: '#111827',
+            borderBottom: '1px solid #1f2937',
+            zIndex: 50
         }}>
             <div style={{
                 display: 'flex',

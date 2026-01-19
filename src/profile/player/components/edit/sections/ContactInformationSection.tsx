@@ -1,6 +1,6 @@
 'use client';
 
-import type { ContactInformationSectionProps, PlayerProfileFormData } from '../../types';
+import type { ContactInformationSectionProps, PlayerProfileFormData } from '../../../types';
 import { TextInput, EmailInput } from '../inputs';
 
 export function ContactInformationSection({ formData, setFormData, errors, handleBlur, isEditing }: ContactInformationSectionProps) {

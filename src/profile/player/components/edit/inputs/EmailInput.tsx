@@ -1,41 +1,30 @@
-import type { TextInputProps } from '../../types';
+import type { EmailInputProps } from '../../../types';
 
-export function TextInput({
-    label,
-    name,
-    type = 'text',
+export function EmailInput({
+    label = 'Email',
+    name = 'email',
     value,
     onChange,
     onBlur,
     error,
-    required = false,
     placeholder,
-    disabled = false,
-    min,
-    max,
-    step,
-}: TextInputProps) {
-    const inputId = `input-${name}`;
-
+    disabled = false
+}: EmailInputProps) {
     return (
         <div className="w-full">
-            <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
                 {label}
-                {required && <span className="text-red-600 ml-1">*</span>}
+                <span className="text-red-600 ml-1">*</span>
             </label>
             <input
-                id={inputId}
+                id={name}
                 name={name}
-                type={type}
+                type="email"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 onBlur={onBlur}
-                disabled={disabled}
                 placeholder={placeholder}
-                required={required}
-                min={min}
-                max={max}
-                step={step}
+                disabled={disabled}
                 className={`w-full h-12 px-4 bg-white/60 backdrop-blur-sm text-gray-800 placeholder-gray-500 border-2 ${error ? 'border-red-500' : 'border-white/80'
                     } rounded-xl focus:outline-none focus:bg-white/80 focus:border-white disabled:opacity-50 disabled:cursor-not-allowed transition-all`}
             />

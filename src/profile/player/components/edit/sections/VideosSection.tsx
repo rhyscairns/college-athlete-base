@@ -1,7 +1,7 @@
 'use client';
 
 import { TextInput } from '../inputs';
-import type { VideosSectionProps, VideoItemProps, VideoLink } from '../../types';
+import type { VideosSectionProps, VideoItemProps, VideoLink } from '../../../types';
 
 function VideoItem({ video, index, isEditing, errors, onUpdate, onRemove, onBlur }: VideoItemProps) {
     return (

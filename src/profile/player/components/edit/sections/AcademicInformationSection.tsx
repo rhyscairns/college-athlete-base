@@ -1,6 +1,6 @@
 'use client';
 
-import type { AcademicInformationSectionProps, PlayerProfileFormData } from '../../types';
+import type { AcademicInformationSectionProps, PlayerProfileFormData } from '../../../types';
 import { TextInput } from '../inputs';
 
 export function AcademicInformationSection({

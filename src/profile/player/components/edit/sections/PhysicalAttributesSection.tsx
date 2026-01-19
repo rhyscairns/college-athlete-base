@@ -1,7 +1,7 @@
 'use client';
 
 import { TextInput } from '../inputs';
-import type { PhysicalAttributesSectionProps, PlayerProfileFormData } from '../../types';
+import type { PhysicalAttributesSectionProps, PlayerProfileFormData } from '../../../types';
 
 export function PhysicalAttributesSection({
     formData,
