@@ -22,25 +22,14 @@ export default function PlayerLayout({ children }: PlayerLayoutProps) {
     const playerId = pathSegments[1] || '';
 
     return (
-        <div
-            className="min-h-screen bg-gray-900"
-            style={{
-                backgroundImage: `url('https://images.unsplash.com/photo-1459865264687-595d652de67e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundAttachment: 'fixed',
-            }}
-        >
-            {/* Semi-transparent overlay for content readability */}
-            <div className="min-h-screen bg-black/20">
-                {/* Navigation Bar */}
-                <PlayerNavbar playerId={playerId} />
+        <div className="min-h-screen bg-gradient-to-br from-[#0A1628] via-[#1a2942] to-[#0A1628]">
+            {/* Navigation Bar */}
+            <PlayerNavbar playerId={playerId} />
 
-                {/* Content Area */}
-                <main>
-                    {children}
-                </main>
-            </div>
+            {/* Content Area */}
+            <main className="pt-20">
+                {children}
+            </main>
         </div>
     );
 }
