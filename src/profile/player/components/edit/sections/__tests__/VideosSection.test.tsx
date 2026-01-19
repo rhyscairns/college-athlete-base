@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { VideosSection } from '../VideosSection';
-import type { PlayerProfileFormData, VideoLink, ProfileValidationErrors } from '../../../types';
+import type { PlayerProfileFormData, VideoLink, ProfileValidationErrors } from '../../../../types';
 
 describe('VideosSection', () => {
     const mockSetFormData = jest.fn();

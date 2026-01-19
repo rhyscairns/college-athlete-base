@@ -8,6 +8,7 @@ describe('AcademicProfileSection', () => {
         satScore: 1350,
         satMath: 680,
         satReading: 670,
+        actScore: undefined,
         classRank: 'Top 10%',
         classRankDetail: '45 out of 450 Students',
         ncaaEligibilityCenter: '#2345678901',

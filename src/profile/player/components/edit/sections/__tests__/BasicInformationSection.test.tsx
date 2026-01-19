@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BasicInformationSection } from '../BasicInformationSection';
-import type { PlayerProfileFormData, ProfileValidationErrors } from '../../../types';
+import type { PlayerProfileFormData, ProfileValidationErrors } from '../../../../types';
 
 describe('BasicInformationSection', () => {
     const mockSetFormData = jest.fn();
