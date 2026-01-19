@@ -1,4 +1,4 @@
-import type { EmailInputProps } from '../../types';
+import type { EmailInputProps } from '../../../types';
 
 export function EmailInput({
     label = 'Email',
