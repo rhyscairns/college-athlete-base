@@ -19,9 +19,9 @@ export function TextInput({
 
     return (
         <div className="w-full">
-            <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={inputId} className="block text-sm font-medium text-white mb-1">
                 {label}
-                {required && <span className="text-red-600 ml-1">*</span>}
+                {required && <span className="text-white ml-1">*</span>}
             </label>
             <input
                 id={inputId}

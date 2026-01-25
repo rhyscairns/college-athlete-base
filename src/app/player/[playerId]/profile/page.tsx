@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { verifyToken } from '@/authentication/utils/jwt';
 import { PlayerProfileView } from '@/profile/player/components/view/PlayerProfileView';
+import { mockPlayerData } from '@/profile/player/data/mockPlayerData';
 
 interface PlayerProfilePageProps {
     params: Promise<{
@@ -42,5 +43,11 @@ export default async function PlayerProfilePage({ params }: PlayerProfilePagePro
     // TODO: Fetch real player data from database
     // For now, using mock data for UI development
 
-    return <PlayerProfileView />;
+    return (
+        <PlayerProfileView
+            playerId={playerId}
+            currentUserId={tokenPayload.playerId}
+            initialData={mockPlayerData}
+        />
+    );
 }
