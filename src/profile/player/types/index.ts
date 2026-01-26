@@ -206,119 +206,196 @@ export interface SubmitButtonProps {
     type?: 'button' | 'submit';
 }
 
-// Section Component Props
-export interface BasicInformationSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
-
-export interface PhysicalAttributesSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
-
-export interface AcademicInformationSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
-
-export interface AthleticInformationSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
-
-export interface StatsSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
-
-export interface RecruitmentSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
-
-export interface ContactInformationSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
-
-export interface VideosSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
-
-export interface VideoItemProps {
-    video: VideoLink;
-    index: number;
-    isEditing: boolean;
-    errors?: ProfileValidationErrors;
-    onUpdate: (index: number, field: keyof VideoLink, value: string | boolean) => void;
-    onRemove: (index: number) => void;
-    onBlur?: (field: string, value: string) => void;
-}
-
-export interface SocialMediaSectionProps {
-    formData: PlayerProfileFormData;
-    setFormData: React.Dispatch<React.SetStateAction<PlayerProfileFormData>>;
-    errors?: ProfileValidationErrors;
-    handleBlur?: (field: string, value: string | undefined | null) => void;
-    isEditing: boolean;
-}
-
 // ============================================
 // View Component Props Interfaces
 // ============================================
 
 import type { MockPlayerData } from '../data/mockPlayerData';
 
+// Re-export MockPlayerData for convenience
+export type { MockPlayerData };
+
 export interface HeroSectionProps {
     player: MockPlayerData;
+    isOwner?: boolean;
+    isEditing?: boolean;
+    isAnyOtherSectionEditing?: boolean;
+    onEdit?: () => void;
+    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onCancel?: () => void;
 }
 
 export interface StatsShowcaseProps {
     stats: MockPlayerData['stats'];
+    isOwner?: boolean;
+    isEditing?: boolean;
+    isAnyOtherSectionEditing?: boolean;
+    onEdit?: () => void;
+    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onCancel?: () => void;
 }
 
 export interface AthleticAchievementsSectionProps {
     achievements: MockPlayerData['achievements'];
+    isOwner?: boolean;
+    isEditing?: boolean;
+    isAnyOtherSectionEditing?: boolean;
+    onEdit?: () => void;
+    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onCancel?: () => void;
 }
 
 export interface AcademicProfileSectionProps {
     academic: MockPlayerData['academic'];
+    isOwner?: boolean;
+    isEditing?: boolean;
+    isAnyOtherSectionEditing?: boolean;
+    onEdit?: () => void;
+    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onCancel?: () => void;
 }
 
 export interface GameHighlightsSectionProps {
     videos: MockPlayerData['videos'];
+    isOwner?: boolean;
+    isEditing?: boolean;
+    isAnyOtherSectionEditing?: boolean;
+    onEdit?: () => void;
+    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onCancel?: () => void;
 }
 
 export interface CoachesPerspectiveSectionProps {
     testimonials: MockPlayerData['coachTestimonials'];
+    isOwner?: boolean;
+    isEditing?: boolean;
+    isAnyOtherSectionEditing?: boolean;
+    onEdit?: () => void;
+    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onCancel?: () => void;
 }
 
 export interface RecruitingContactSectionProps {
     contact: MockPlayerData['contact'];
+    isOwner?: boolean;
+    isEditing?: boolean;
+    isAnyOtherSectionEditing?: boolean;
+    onEdit?: () => void;
+    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onCancel?: () => void;
+}
+
+// ============================================
+// Inline Editing Type Definitions
+// ============================================
+
+// Validation errors type
+export type ValidationErrors = Record<string, string>;
+
+// Hero Section Data
+export interface HeroData {
+    firstName: string;
+    lastName: string;
+    position: string;
+    school: string;
+    location: string;
+    classYear: string;
+    height: string;
+    weight: string;
+}
+
+// Academic Section Data
+export interface AcademicData {
+    gpa: number;
+    gpaScale: string;
+    satScore?: number;
+    satMath?: number;
+    satReading?: number;
+    actScore?: number;
+    classRank: string;
+    classRankDetail: string;
+    ncaaEligibilityCenter: string;
+    ncaaQualifier: boolean;
+    coursework: string[];
+}
+
+// Stats Section Data
+export interface StatsData {
+    stats: Record<string, number | string>;
+}
+
+// Videos Section Data
+export interface VideosData {
+    videos: Array<{
+        id: string;
+        title: string;
+        url: string;
+        thumbnail?: string;
+    }>;
+}
+
+// Contact Section Data
+export interface ContactData {
+    email: string;
+    phone: string;
+    parentGuardianName?: string;
+    parentGuardianPhone?: string;
+    parentGuardianEmail?: string;
+    socialMedia: {
+        twitter?: string;
+        instagram?: string;
+        youtube?: string;
+        tiktok?: string;
+    };
+    preferredContactMethod: string;
+}
+
+// Achievements Section Data
+export interface AchievementsData {
+    achievements: Array<{
+        id: string;
+        title: string;
+        description: string;
+        date: string;
+    }>;
+}
+
+// Testimonials Section Data
+export interface TestimonialsData {
+    coachTestimonials: Array<{
+        id: string;
+        coachName: string;
+        coachTitle: string;
+        testimonial: string;
+        date: string;
+    }>;
+}
+
+// Union type for all section data types
+export type SectionData =
+    | HeroData
+    | AcademicData
+    | StatsData
+    | VideosData
+    | ContactData
+    | AchievementsData
+    | TestimonialsData;
+
+// Editable Section Props
+export interface EditableSectionProps<T = SectionData> {
+    data: T;
+    isOwner: boolean;
+    isEditing: boolean;
+    isAnyOtherSectionEditing: boolean;
+    onEdit: () => void;
+    onSave: (updatedData: T) => void;
+    onCancel: () => void;
+}
+
+// Player Profile View Props
+export interface PlayerProfileViewProps {
+    playerId: string;
+    currentUserId?: string;
+    initialData: MockPlayerData;
+    onDataUpdate?: (updatedData: Partial<MockPlayerData>) => void;
 }

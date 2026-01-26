@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { PlayerProfileView } from '../PlayerProfileView';
+import { mockPlayerData } from '../../../data/mockPlayerData';
 
 // Mock all child components
 jest.mock('../HeroSection', () => ({
@@ -34,9 +35,23 @@ jest.mock('../ProfileSideNav', () => ({
     ProfileSideNav: () => <div data-testid="side-nav">Side Nav</div>,
 }));
 
+jest.mock('../SuccessNotification', () => ({
+    SuccessNotification: ({ message, onDismiss }: { message: string; onDismiss: () => void }) => (
+        <div data-testid="success-notification" onClick={onDismiss}>
+            {message}
+        </div>
+    ),
+}));
+
 describe('PlayerProfileView', () => {
+    const defaultProps = {
+        playerId: 'player-123',
+        currentUserId: 'player-123',
+        initialData: mockPlayerData,
+    };
+
     it('renders all sections', () => {
-        render(<PlayerProfileView />);
+        render(<PlayerProfileView {...defaultProps} />);
 
         expect(screen.getByTestId('hero-section')).toBeInTheDocument();
         expect(screen.getByTestId('stats-section')).toBeInTheDocument();
@@ -48,15 +63,21 @@ describe('PlayerProfileView', () => {
     });
 
     it('renders the side navigation', () => {
-        render(<PlayerProfileView />);
+        render(<PlayerProfileView {...defaultProps} />);
 
         expect(screen.getByTestId('side-nav')).toBeInTheDocument();
     });
 
     it('applies correct layout classes', () => {
-        const { container } = render(<PlayerProfileView />);
+        const { container } = render(<PlayerProfileView {...defaultProps} />);
 
         const mainContainer = container.firstChild;
         expect(mainContainer).toHaveClass('relative');
+    });
+
+    it('does not show success notification initially', () => {
+        render(<PlayerProfileView {...defaultProps} />);
+
+        expect(screen.queryByTestId('success-notification')).not.toBeInTheDocument();
     });
 });
