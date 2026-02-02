@@ -215,10 +215,10 @@ export const validateAcademicSection = (data: {
     satMath?: number;
     satReading?: number;
     actScore?: number;
-    classRank: string;
-    classRankDetail: string;
-    ncaaEligibilityCenter: string;
-    ncaaQualifier: boolean;
+    classRank?: string;
+    classRankDetail?: string;
+    ncaaEligibilityCenter?: string;
+    ncaaQualifier?: boolean;
     coursework: string[];
 }): Record<string, string> => {
     const errors: Record<string, string> = {};

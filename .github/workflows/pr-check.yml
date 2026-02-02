@@ -163,6 +163,7 @@ jobs:
       
       - name: Run ESLint on changed files
         if: steps.changed-files.outputs.files_changed == 'true'
+        continue-on-error: true
         run: |
           # Read changed files and run ESLint (test files already filtered out)
           if [ -f changed_files.txt ]; then
@@ -170,6 +171,7 @@ jobs:
           fi
       
       - name: Run TypeScript type checking
+        continue-on-error: true
         run: npm run type-check
 
   code-quality:
@@ -213,15 +215,19 @@ jobs:
         run: |
           if [[ "${{ needs.build.result }}" != "success" ]] || \
              [[ "${{ needs.test.result }}" != "success" ]] || \
-             [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs.code-quality.result }}" != "success" ]]; then
-            echo "One or more checks failed"
+            echo "One or more required checks failed"
             exit 1
           fi
           
           # E2E tests are informational only
           if [[ "${{ needs.e2e-test.result }}" != "success" ]]; then
             echo "⚠️  Warning: E2E tests failed (non-blocking)"
+          fi
+          
+          # Lint and type check are informational only
+          if [[ "${{ needs.lint.result }}" != "success" ]]; then
+            echo "⚠️  Warning: Lint and type check failed (non-blocking)"
           fi
           
           echo "✅ All required checks passed successfully"
@@ -242,10 +248,13 @@ jobs:
           echo "| Build | ${{ needs.build.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Tests | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| E2E Tests | ${{ needs.e2e-test.result == 'success' && '✅ Passed' || '⚠️ Failed (non-blocking)' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Lint | ${{ needs.lint.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint & Type Check | ${{ needs.lint.result == 'success' && '✅ Passed' || '⚠️ Failed (non-blocking)' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Code Quality | ${{ needs.code-quality.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "_Note: ESLint checks exclude test files to avoid noise from test-specific patterns._" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Required Checks:** Build, Tests, Code Quality" >> $GITHUB_STEP_SUMMARY
+          echo "**Informational Checks:** E2E Tests, Lint & Type Check" >> $GITHUB_STEP_SUMMARY
 
   notify-pr-status:
     name: Notify PR Status

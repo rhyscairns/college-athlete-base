@@ -1,4 +1,5 @@
 // View components
-export { PlayerProfileView } from './view/PlayerProfileView';
-export { EditButton } from './view/EditButton';
-export { ActionButtons } from './view/ActionButtons';
+export { PlayerProfileView } from './view-page/PlayerProfileView';
+export { EditButton } from './view-page/EditButton';
+export { EmptySection } from './EmptySection';
+export { ActionButtons } from './edit/components/sections/ActionButtons';
