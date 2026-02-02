@@ -1,163 +1,139 @@
-// Player profile data structure
-export interface PlayerProfileData {
-    // Basic Information (from registration)
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    sex: string;
-    sport: string;
-    position: string;
-    gpa: number;
-    country: string;
-    state?: string;
-    region?: string;
-    scholarshipAmount?: number;
-    testScores?: string;
+/**
+ * Shared types for player profile view and edit components
+ * These types are used by both view and edit components to ensure consistency
+ */
 
-    // Physical Attributes
-    height?: string; // e.g., "6'2\"" or "188 cm"
-    weight?: string; // e.g., "180 lbs" or "82 kg"
+// ============================================
+// Core Data Types (used by both view and edit)
+// ============================================
 
-    // Athletic Information
-    clubTeam?: string;
-    highSchool?: string;
-    stats?: PlayerStats;
-
-    // Academic Information
-    graduationYear?: number;
-    major?: string;
-    intendedMajor?: string;
-    classRank?: string;
-    honors?: string[];
-
-    // Athletic History
-    previousTeams?: string[];
-    championships?: string[];
-    allStarSelections?: string[];
-
-    // Recruitment Information
-    availableDate?: string;
-    preferredRegions?: string[];
-    scholarshipNeeds?: string;
-    recruitmentStatus?: 'open' | 'committed' | 'not-looking';
-
-    // Contact Information
-    phone?: string;
-    parentGuardianName?: string;
-    parentGuardianPhone?: string;
-    parentGuardianEmail?: string;
-    coachReferences?: CoachReference[];
-
-    // Media
-    videos?: VideoLink[];
-
-    // Social Media
-    socialMedia?: SocialMediaLinks;
-
-    // Timestamps
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-// Player statistics
-export interface PlayerStats {
-    pointsPerGame?: number;
-    assistsPerGame?: number;
-    reboundsPerGame?: number;
-    fieldGoalPercentage?: number;
-    threePointPercentage?: number;
-    freeThrowPercentage?: number;
-    // Add more sport-specific stats as needed
-    customStats?: Record<string, string | number>;
-}
-
-// Video link structure
-export interface VideoLink {
-    id: string;
-    url: string;
-    title?: string;
-    description?: string;
-    isMain: boolean; // One video should be marked as main
-    order: number; // For ordering videos (1-5)
-}
-
-// Social media links
-export interface SocialMediaLinks {
-    facebook?: string;
+export interface SocialMedia {
+    twitter?: string;
     instagram?: string;
-    twitter?: string; // X (formerly Twitter)
-    tiktok?: string;
-    linkedin?: string;
     youtube?: string;
+    tiktok?: string;
 }
 
-// Coach reference structure
-export interface CoachReference {
-    id: string;
+export interface HeadCoach {
     name: string;
-    title?: string;
-    organization?: string;
-    phone?: string;
-    email?: string;
-}
-
-// Props for PlayerProfile component
-export interface PlayerProfileProps {
-    playerId: string;
-    playerData: PlayerProfileData;
-}
-
-// Form data for profile updates
-export interface PlayerProfileFormData {
-    firstName: string;
-    lastName: string;
     email: string;
-    sex: string;
-    sport: string;
-    position: string;
-    gpa: string;
-    country: string;
-    state?: string;
-    region?: string;
-    scholarshipAmount?: string;
-    testScores?: string;
-    height?: string;
-    weight?: string;
-    clubTeam?: string;
-    highSchool?: string;
-    stats?: Partial<PlayerStats>;
-    graduationYear?: string;
-    major?: string;
-    intendedMajor?: string;
-    classRank?: string;
-    honors?: string[];
-    previousTeams?: string[];
-    championships?: string[];
-    allStarSelections?: string[];
-    availableDate?: string;
-    preferredRegions?: string[];
-    scholarshipNeeds?: string;
-    recruitmentStatus?: 'open' | 'committed' | 'not-looking';
-    phone?: string;
+    phone: string;
+}
+
+export interface Contact {
+    email: string;
+    phone: string;
     parentGuardianName?: string;
     parentGuardianPhone?: string;
     parentGuardianEmail?: string;
-    coachReferences?: CoachReference[];
-    videos?: VideoLink[];
-    socialMedia?: SocialMediaLinks;
+    socialMedia: SocialMedia;
+    preferredContactMethod?: string;
+    headCoach: HeadCoach;
 }
 
-// Validation errors
-export interface ProfileValidationErrors {
-    [key: string]: string;
+export interface Video {
+    id: string;
+    title: string;
+    description?: string;
+    url: string;
+    thumbnail?: string;
+    duration?: string;
+    isFeatured?: boolean;
+    date?: string;
+}
+
+export interface Achievement {
+    id: string;
+    icon: string;
+    title: string;
+    description: string;
+    color: string;
+}
+
+export interface Testimonial {
+    id: string;
+    quote: string;
+    coachName: string;
+    coachTitle: string;
+    coachOrganization: string;
+}
+
+export interface PerformanceMetric {
+    label: string;
+    value: string;
+}
+
+export interface Hero {
+    firstName: string;
+    lastName: string;
+    initials: string;
+    position: string;
+    school: string;
+    location: string;
+    classYear: string;
+    height: string;
+    weight: string;
+    age?: number;
+    profileImage?: string;
+    performanceMetrics?: PerformanceMetric[];
+}
+
+export interface Academic {
+    ncaaEligibilityCenter?: string;
+    ncaaQualifier?: boolean;
+    gpa: number;
+    gpaScale: string;
+    satScore?: number;
+    satMath?: number;
+    satReading?: number;
+    actScore?: number;
+    classRank?: string;
+    classRankDetail?: string;
+    coursework: string[];
+}
+
+export interface Stats {
+    [key: string]: number | string;
 }
 
 // ============================================
-// Component Props Interfaces
+// Validation
 // ============================================
 
+export type ValidationErrors = Record<string, string>;
+
+// ============================================
+// Player Profile Data (complete structure)
+// ============================================
+
+export interface PlayerProfile {
+    id: string;
+    firstName: string;
+    lastName: string;
+    initials: string;
+    classYear: string;
+    position: string;
+    school: string;
+    location: string;
+    height: string;
+    weight: string;
+    age?: number;
+    profileImage?: string;
+    performanceMetrics?: PerformanceMetric[];
+    academic: Academic;
+    stats: Stats;
+    videos: Video[];
+    achievements: Achievement[];
+    coachTestimonials: Testimonial[];
+    contact: Contact;
+    recruitmentStatus?: string;
+    commitmentStatus?: string | null;
+}
+
+// ============================================
 // Input Component Props
+// ============================================
+
 export interface TextInputProps {
     label: string;
     name: string;
@@ -210,192 +186,157 @@ export interface SubmitButtonProps {
 // View Component Props Interfaces
 // ============================================
 
-import type { MockPlayerData } from '../data/mockPlayerData';
-
-// Re-export MockPlayerData for convenience
-export type { MockPlayerData };
-
 export interface HeroSectionProps {
-    player: MockPlayerData;
+    player: PlayerProfile;
     isOwner?: boolean;
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onSave?: (updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
 export interface StatsShowcaseProps {
-    stats: MockPlayerData['stats'];
+    stats: PlayerProfile['stats'];
     isOwner?: boolean;
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onSave?: (updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
 export interface AthleticAchievementsSectionProps {
-    achievements: MockPlayerData['achievements'];
+    achievements: PlayerProfile['achievements'];
     isOwner?: boolean;
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onSave?: (updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
 export interface AcademicProfileSectionProps {
-    academic: MockPlayerData['academic'];
+    academic: PlayerProfile['academic'];
     isOwner?: boolean;
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onSave?: (updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
 export interface GameHighlightsSectionProps {
-    videos: MockPlayerData['videos'];
+    videos: PlayerProfile['videos'];
     isOwner?: boolean;
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onSave?: (updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
 export interface CoachesPerspectiveSectionProps {
-    testimonials: MockPlayerData['coachTestimonials'];
+    testimonials: PlayerProfile['coachTestimonials'];
     isOwner?: boolean;
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onSave?: (updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
 export interface RecruitingContactSectionProps {
-    contact: MockPlayerData['contact'];
+    contact: PlayerProfile['contact'];
     isOwner?: boolean;
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<MockPlayerData>) => void;
+    onSave?: (updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
-// ============================================
-// Inline Editing Type Definitions
-// ============================================
-
-// Validation errors type
-export type ValidationErrors = Record<string, string>;
-
-// Hero Section Data
-export interface HeroData {
-    firstName: string;
-    lastName: string;
-    position: string;
-    school: string;
-    location: string;
-    classYear: string;
-    height: string;
-    weight: string;
-}
-
-// Academic Section Data
-export interface AcademicData {
-    gpa: number;
-    gpaScale: string;
-    satScore?: number;
-    satMath?: number;
-    satReading?: number;
-    actScore?: number;
-    classRank: string;
-    classRankDetail: string;
-    ncaaEligibilityCenter: string;
-    ncaaQualifier: boolean;
-    coursework: string[];
-}
-
-// Stats Section Data
-export interface StatsData {
-    stats: Record<string, number | string>;
-}
-
-// Videos Section Data
-export interface VideosData {
-    videos: Array<{
-        id: string;
-        title: string;
-        url: string;
-        thumbnail?: string;
-    }>;
-}
-
-// Contact Section Data
-export interface ContactData {
-    email: string;
-    phone: string;
-    parentGuardianName?: string;
-    parentGuardianPhone?: string;
-    parentGuardianEmail?: string;
-    socialMedia: {
-        twitter?: string;
-        instagram?: string;
-        youtube?: string;
-        tiktok?: string;
-    };
-    preferredContactMethod: string;
-}
-
-// Achievements Section Data
-export interface AchievementsData {
-    achievements: Array<{
-        id: string;
-        title: string;
-        description: string;
-        date: string;
-    }>;
-}
-
-// Testimonials Section Data
-export interface TestimonialsData {
-    coachTestimonials: Array<{
-        id: string;
-        coachName: string;
-        coachTitle: string;
-        testimonial: string;
-        date: string;
-    }>;
-}
-
-// Union type for all section data types
-export type SectionData =
-    | HeroData
-    | AcademicData
-    | StatsData
-    | VideosData
-    | ContactData
-    | AchievementsData
-    | TestimonialsData;
-
-// Editable Section Props
-export interface EditableSectionProps<T = SectionData> {
-    data: T;
-    isOwner: boolean;
-    isEditing: boolean;
-    isAnyOtherSectionEditing: boolean;
-    onEdit: () => void;
-    onSave: (updatedData: T) => void;
-    onCancel: () => void;
-}
-
-// Player Profile View Props
 export interface PlayerProfileViewProps {
     playerId: string;
     currentUserId?: string;
-    initialData: MockPlayerData;
-    onDataUpdate?: (updatedData: Partial<MockPlayerData>) => void;
+    initialData: PlayerProfile;
+    onDataUpdate?: (updatedData: Partial<PlayerProfile>) => void;
+}
+
+// Legacy type alias for backwards compatibility
+// TODO: Remove this once all references are updated
+export type MockPlayerData = PlayerProfile;
+
+// ============================================
+// Edit Component Props Interfaces
+// ============================================
+
+export interface HeroSectionEditProps {
+    formData: Hero;
+    setFormData: React.Dispatch<React.SetStateAction<Hero>>;
+    errors: ValidationErrors;
+    isSaving: boolean;
+    onSave: () => void;
+    onCancel: () => void;
+}
+
+export interface StatsShowcaseEditProps {
+    formData: Stats;
+    setFormData: React.Dispatch<React.SetStateAction<Stats>>;
+    errors: ValidationErrors;
+    isSaving: boolean;
+    onSave: () => void;
+    onCancel: () => void;
+}
+
+export interface AthleticAchievementsSectionEditProps {
+    formData: Achievement[];
+    setFormData: React.Dispatch<React.SetStateAction<Achievement[]>>;
+    errors: ValidationErrors;
+    isSaving: boolean;
+    onSave: () => void;
+    onCancel: () => void;
+}
+
+export interface AcademicProfileSectionEditProps {
+    formData: Academic;
+    setFormData: React.Dispatch<React.SetStateAction<Academic>>;
+    errors: ValidationErrors;
+    isSaving: boolean;
+    onSave: () => void;
+    onCancel: () => void;
+}
+
+export interface GameHighlightsSectionEditProps {
+    formData: Video[];
+    setFormData: React.Dispatch<React.SetStateAction<Video[]>>;
+    errors: ValidationErrors;
+    isSaving: boolean;
+    onSave: () => void;
+    onCancel: () => void;
+}
+
+export interface CoachesPerspectiveSectionEditProps {
+    formData: Testimonial[];
+    setFormData: React.Dispatch<React.SetStateAction<Testimonial[]>>;
+    errors: ValidationErrors;
+    isSaving: boolean;
+    onSave: () => void;
+    onCancel: () => void;
+}
+
+export interface RecruitingContactSectionEditProps {
+    formData: Contact;
+    setFormData: React.Dispatch<React.SetStateAction<Contact>>;
+    errors: ValidationErrors;
+    isSaving: boolean;
+    onSave: () => void;
+    onCancel: () => void;
+}
+
+export interface ActionButtonsProps {
+    onSave: () => void;
+    onCancel: () => void;
+    isSaving: boolean;
+    disabled?: boolean;
 }

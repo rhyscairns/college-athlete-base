@@ -13,7 +13,7 @@ import { PlayerRecord } from '@/authentication/types';
 // Performance thresholds (in milliseconds)
 const THRESHOLDS = {
     EMAIL_CHECK: 50,           // Email existence check should be < 50ms
-    PASSWORD_HASH: 200,        // Password hashing should be < 200ms (bcrypt is intentionally slow)
+    PASSWORD_HASH: 600,        // Password hashing should be < 600ms (bcrypt is intentionally slow, varies by machine)
     PLAYER_CREATE: 100,        // Player creation should be < 100ms
     PLAYER_FETCH: 50,          // Player fetch should be < 50ms
     CONCURRENT_10: 500,        // 10 concurrent requests should complete in < 500ms

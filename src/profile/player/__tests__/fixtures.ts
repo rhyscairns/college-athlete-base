@@ -1,5 +1,14 @@
-// Mock data for player profile UI development
-export const mockPlayerData = {
+/**
+ * Test fixtures for player profile tests
+ * These fixtures provide sample data for testing components
+ */
+
+import type { PlayerProfile } from '../types';
+
+/**
+ * Sample player profile data for testing
+ */
+export const samplePlayerProfile: PlayerProfile = {
     // Basic Info
     id: 'player-123',
     firstName: 'Marcus',
@@ -194,4 +203,14 @@ export const mockPlayerData = {
     commitmentStatus: null,
 };
 
-export type MockPlayerData = typeof mockPlayerData;
+/**
+ * Helper function to create a partial player profile for testing
+ * @param overrides - Partial player profile data to override defaults
+ * @returns Complete player profile with overrides applied
+ */
+export function createPlayerProfile(overrides: Partial<PlayerProfile> = {}): PlayerProfile {
+    return {
+        ...samplePlayerProfile,
+        ...overrides,
+    };
+}
