@@ -7,6 +7,7 @@ import { query } from '@/authentication/db/client';
 import { logger } from '@/lib/logger';
 import type { CoachProfile } from '../../../types';
 
+const coachNotFound = 'Coach not found'
 /**
  * Database row type for coach profile query
  */
@@ -48,7 +49,7 @@ export async function getCoachProfileById(coachId: string): Promise<CoachProfile
         );
 
         if (coachRows.length === 0) {
-            logger.debug('Coach not found', { coachId });
+            logger.debug(coachNotFound, { coachId });
             return null;
         }
 
@@ -114,7 +115,7 @@ export async function updateCoachProfile(
             logger.debug('No fields to update, returning current profile', { coachId });
             const currentProfile = await getCoachProfileById(coachId);
             if (!currentProfile) {
-                throw new Error('Coach not found');
+                throw new Error(coachNotFound);
             }
             return currentProfile;
         }
@@ -140,7 +141,7 @@ export async function updateCoachProfile(
 
         if (result.length === 0) {
             logger.error('Coach not found for update', { coachId });
-            throw new Error('Coach not found');
+            throw new Error(coachNotFound);
         }
 
         const updatedCoach = transformCoachData(result[0]);
@@ -151,7 +152,7 @@ export async function updateCoachProfile(
         logger.error('Failed to update coach profile', { coachId }, error instanceof Error ? error : new Error('Unknown error'));
 
         // Re-throw specific error messages
-        if (error instanceof Error && error.message === 'Coach not found') {
+        if (error instanceof Error && error.message === coachNotFound) {
             throw error;
         }
 

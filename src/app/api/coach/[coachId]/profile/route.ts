@@ -13,6 +13,8 @@ function isValidUUID(uuid: string): boolean {
     return uuidRegex.test(uuid);
 }
 
+const invalidCoachId = 'Invalid coach ID format'
+
 /**
  * Handle GET request for coach profile retrieval
  * 
@@ -34,14 +36,14 @@ export async function GET(
     try {
         // Validate coachId format
         if (!coachId || !isValidUUID(coachId)) {
-            logger.validationError('Invalid coach ID format', [
+            logger.validationError(invalidCoachId, [
                 { field: 'coachId', message: 'Coach ID must be a valid UUID' }
             ], { requestId, coachId });
 
             const response = NextResponse.json(
                 {
                     success: false,
-                    error: 'Invalid coach ID format',
+                    error: invalidCoachId,
                 },
                 { status: 400 }
             );
@@ -151,14 +153,14 @@ export async function PUT(
     try {
         // Validate coachId format
         if (!coachId || !isValidUUID(coachId)) {
-            logger.validationError('Invalid coach ID format', [
+            logger.validationError(invalidCoachId, [
                 { field: 'coachId', message: 'Coach ID must be a valid UUID' }
             ], { requestId, coachId });
 
             const response = NextResponse.json(
                 {
                     success: false,
-                    error: 'Invalid coach ID format',
+                    error: invalidCoachId,
                 },
                 { status: 400 }
             );
