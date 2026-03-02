@@ -16,10 +16,23 @@ export default function CoachLayout({ children }: CoachLayoutProps) {
     // Extract coachId from the URL path using client-side hook
     const pathname = usePathname();
 
-    // Extract coachId from path like /coach/dashboard/[coachId]
+    // Extract coachId from path like /coach/dashboard/[coachId] or /coach/[coachId]/profile
     const pathSegments = pathname.split('/').filter(Boolean);
-    const coachIdIndex = pathSegments.indexOf('dashboard') + 1;
-    const coachId = pathSegments[coachIdIndex] || '';
+
+    let coachId = '';
+
+    // Pattern 1: /coach/dashboard/[coachId]
+    const dashboardIndex = pathSegments.indexOf('dashboard');
+    if (dashboardIndex !== -1 && pathSegments[dashboardIndex + 1]) {
+        coachId = pathSegments[dashboardIndex + 1];
+    }
+    // Pattern 2: /coach/[coachId]/profile (or other routes)
+    else {
+        const coachIndex = pathSegments.indexOf('coach');
+        if (coachIndex !== -1 && pathSegments[coachIndex + 1] && pathSegments[coachIndex + 1] !== 'dashboard') {
+            coachId = pathSegments[coachIndex + 1];
+        }
+    }
 
     return (
         <div

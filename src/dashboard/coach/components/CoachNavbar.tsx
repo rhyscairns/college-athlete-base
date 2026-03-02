@@ -47,6 +47,7 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
     const handleProfileClick = (e: React.MouseEvent) => {
         e.preventDefault();
         setMobileMenuOpen(false);
+        window.location.href = `/coach/${coachId}/profile`;
     };
 
     const toggleMobileMenu = () => {

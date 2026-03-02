@@ -6,6 +6,9 @@ This directory contains SQL migration files for the College Athlete Base databas
 
 - `001_create_players_table.sql` - Creates the players table with all constraints and indexes
 - `001_create_players_table_rollback.sql` - Rollback script for the players table
+- `002_create_coaches_table.sql` - Creates the coaches table with all constraints and indexes
+- `003_add_coach_profile_columns.sql` - Adds profile_image_url and team_website_url columns to coaches table
+- `003_add_coach_profile_columns_rollback.sql` - Rollback script for coach profile columns
 
 ## Running Migrations
 
