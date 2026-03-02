@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlayerProfileById } from '@/profile/player/lib/db/queries';
 import { logger } from '@/lib/logger';
-
-/**
- * Validate UUID format
- */
-function isValidUUID(uuid: string): boolean {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(uuid);
-}
+import { isValidUUID, generateRequestId, formatExecutionTime } from '@/lib/api/utils';
 
 /**
  * Handle GET request for player profile
@@ -22,7 +15,7 @@ export async function GET(
     { params }: { params: { playerId: string } }
 ) {
     const startTime = Date.now();
-    const requestId = crypto.randomUUID();
+    const requestId = generateRequestId();
     const { playerId } = params;
 
     // Log incoming request
@@ -90,11 +83,10 @@ export async function GET(
         }
 
         // Log successful fetch
-        const executionTime = Date.now() - startTime;
         logger.info('Player profile fetched successfully', {
             requestId,
             playerId,
-            executionTime: `${executionTime}ms`,
+            executionTime: formatExecutionTime(startTime),
         });
 
         // Create successful response with caching headers
@@ -115,15 +107,14 @@ export async function GET(
         const etag = `"${playerId}-${Date.now()}"`;
         response.headers.set('ETag', etag);
 
-        logger.apiResponse('GET', `/api/player/${playerId}/profile`, 200, executionTime, { requestId, playerId });
+        logger.apiResponse('GET', `/api/player/${playerId}/profile`, 200, Date.now() - startTime, { requestId, playerId });
         return response;
     } catch (error) {
         // Catch any unexpected errors
-        const executionTime = Date.now() - startTime;
         logger.error('Unexpected error fetching player profile', {
             requestId,
             playerId,
-            executionTime: `${executionTime}ms`,
+            executionTime: formatExecutionTime(startTime),
         }, error instanceof Error ? error : new Error('Unknown error'));
 
         const response = NextResponse.json(
@@ -135,7 +126,7 @@ export async function GET(
             { status: 500 }
         );
 
-        logger.apiResponse('GET', `/api/player/${playerId}/profile`, 500, executionTime, { requestId });
+        logger.apiResponse('GET', `/api/player/${playerId}/profile`, 500, Date.now() - startTime, { requestId });
         return response;
     }
 }

@@ -182,7 +182,7 @@ export function HeroSection({
                 ) : (
                     <div className="grid lg:grid-cols-2 gap-8 items-center">
                         {/* Left Side - Player Info */}
-                        <div className="space-y-4">
+                        <div className="space-y-4 ml-8 md:ml-12 lg:ml-16">
                             {/* Status Badge */}
                             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/20 border border-emerald-400/50 rounded-full">
                                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>

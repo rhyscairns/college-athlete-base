@@ -1,65 +1,54 @@
-// Coach profile data structure
-export interface CoachProfileData {
-    // Basic Information
+// Core coach profile data structure
+export interface CoachProfile {
     id: string;
     firstName: string;
     lastName: string;
+    initials: string;
     email: string;
-
-    // Professional Information
-    university?: string;
-    sport?: string;
-    position?: string; // e.g., "Head Coach", "Assistant Coach"
-    yearsExperience?: number;
-
-    // Contact Information
     phone?: string;
-    officeLocation?: string;
-
-    // Social Media
-    socialMedia?: CoachSocialMediaLinks;
-
-    // Bio
-    bio?: string;
-    achievements?: string[];
-
-    // Timestamps
+    university?: string;
+    position?: string;
+    sport?: string;
+    profileImage?: string;
+    teamWebsiteUrl?: string;
     createdAt: Date;
     updatedAt: Date;
 }
 
-// Social media links for coaches
-export interface CoachSocialMediaLinks {
-    facebook?: string;
-    instagram?: string;
-    twitter?: string; // X (formerly Twitter)
-    linkedin?: string;
-    universityProfile?: string;
-}
-
-// Props for CoachProfile component
-export interface CoachProfileProps {
+// View component props
+export interface CoachProfileViewProps {
     coachId: string;
-    coachData: CoachProfileData;
+    currentUserId?: string;
+    initialData: CoachProfile;
+    onDataUpdate?: (updatedData: Partial<CoachProfile>) => void;
 }
 
-// Form data for coach profile updates
-export interface CoachProfileFormData {
-    firstName: string;
-    lastName: string;
-    email: string;
-    university?: string;
-    sport?: string;
-    position?: string;
-    yearsExperience?: string;
-    phone?: string;
-    officeLocation?: string;
-    bio?: string;
-    achievements?: string[];
-    socialMedia?: CoachSocialMediaLinks;
+export interface CoachHeroSectionProps {
+    coach: CoachProfile;
+    isOwner?: boolean;
+    isEditing?: boolean;
+    onEdit?: () => void;
+    onSave?: (updatedData: Partial<CoachProfile>) => void;
+    onCancel?: () => void;
 }
 
-// Validation errors
-export interface ProfileValidationErrors {
-    [key: string]: string;
+// Edit component props
+export interface CoachHeroSectionEditProps {
+    formData: CoachProfile;
+    setFormData: React.Dispatch<React.SetStateAction<CoachProfile>>;
+    errors: ValidationErrors;
+    isSaving: boolean;
+    onSave: () => void;
+    onCancel: () => void;
+}
+
+// Validation
+export type ValidationErrors = Record<string, string>;
+
+// API Response types
+export interface CoachProfileApiResponse {
+    success: boolean;
+    data?: CoachProfile;
+    error?: string;
+    validationErrors?: ValidationErrors;
 }
