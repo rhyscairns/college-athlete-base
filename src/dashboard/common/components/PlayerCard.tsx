@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { PlayerCardProps } from '../types';
 
 export const PlayerCard = React.memo(function PlayerCard({
@@ -21,20 +22,22 @@ export const PlayerCard = React.memo(function PlayerCard({
             {/* Video/Image Section */}
             <div className="relative aspect-video bg-gradient-to-br from-slate-800 to-slate-900">
                 {videoThumbnail ? (
-                    <img
+                    <Image
                         src={videoThumbnail}
                         alt={`${playerName} highlight`}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        decoding="async"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        priority={false}
                     />
                 ) : profileImage ? (
-                    <img
+                    <Image
                         src={profileImage}
                         alt={playerName}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        decoding="async"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        priority={false}
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center">

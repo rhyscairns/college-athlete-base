@@ -4,6 +4,17 @@ import userEvent from '@testing-library/user-event';
 import { CoachHeroSection } from '../CoachHeroSection';
 import type { CoachProfile } from '../../../types';
 
+// Mock Next.js Image component
+jest.mock('next/image', () => ({
+    __esModule: true,
+    default: (props: any) => {
+        // Filter out Next.js Image-specific props that aren't valid HTML attributes
+        const { fill, priority, sizes, ...imgProps } = props;
+        // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+        return <img {...imgProps} />;
+    },
+}));
+
 describe('CoachHeroSection', () => {
     const mockCoach: CoachProfile = {
         id: '123',

@@ -10,6 +10,17 @@ jest.mock('next/link', () => {
     };
 });
 
+// Mock Next.js Image component
+jest.mock('next/image', () => ({
+    __esModule: true,
+    default: (props: any) => {
+        // Filter out Next.js Image-specific props that aren't valid HTML attributes
+        const { fill, priority, sizes, ...imgProps } = props;
+        // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+        return <img {...imgProps} />;
+    },
+}));
+
 describe('PlayerCard', () => {
     const mockPlayerData: PlayerCardProps = {
         playerId: 'player-123',
@@ -74,7 +85,7 @@ describe('PlayerCard', () => {
             expect(svg).toBeInTheDocument();
         });
 
-        it('should have lazy loading attributes on video thumbnail', () => {
+        it('should use Next.js Image component for video thumbnail', () => {
             const dataWithVideo = {
                 ...mockPlayerData,
                 videoThumbnail: 'https://example.com/video-thumb.jpg',
@@ -83,8 +94,8 @@ describe('PlayerCard', () => {
             render(<PlayerCard {...dataWithVideo} />);
 
             const image = screen.getByAltText('John Smith highlight');
-            expect(image).toHaveAttribute('loading', 'lazy');
-            expect(image).toHaveAttribute('decoding', 'async');
+            expect(image).toBeInTheDocument();
+            expect(image).toHaveAttribute('src', 'https://example.com/video-thumb.jpg');
         });
     });
 
@@ -117,7 +128,7 @@ describe('PlayerCard', () => {
             expect(screen.queryByAltText('John Smith')).not.toBeInTheDocument();
         });
 
-        it('should have lazy loading attributes on profile image', () => {
+        it('should use Next.js Image component for profile image', () => {
             const dataWithImage = {
                 ...mockPlayerData,
                 profileImage: 'https://example.com/profile.jpg',
@@ -126,8 +137,8 @@ describe('PlayerCard', () => {
             render(<PlayerCard {...dataWithImage} />);
 
             const image = screen.getByAltText('John Smith');
-            expect(image).toHaveAttribute('loading', 'lazy');
-            expect(image).toHaveAttribute('decoding', 'async');
+            expect(image).toBeInTheDocument();
+            expect(image).toHaveAttribute('src', 'https://example.com/profile.jpg');
         });
     });
 
