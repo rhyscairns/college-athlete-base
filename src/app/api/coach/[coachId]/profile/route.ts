@@ -3,17 +3,10 @@ import { validateSession } from '@/authentication/middleware/session';
 import { getCoachProfileById, updateCoachProfile } from '@/profile/coach/lib/db/queries';
 import { validateCoachProfile } from '@/profile/coach/utils/validation';
 import { logger } from '@/lib/logger';
+import { isValidUUID, generateRequestId, formatExecutionTime } from '@/lib/api/utils';
 import type { CoachProfile } from '@/profile/coach/types';
 
-/**
- * Validate UUID format
- */
-function isValidUUID(uuid: string): boolean {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(uuid);
-}
-
-const invalidCoachId = 'Invalid coach ID format'
+const invalidCoachId = 'Invalid coach ID format';
 
 /**
  * Handle GET request for coach profile retrieval
@@ -27,7 +20,7 @@ export async function GET(
     context: { params: Promise<{ coachId: string }> }
 ) {
     const startTime = Date.now();
-    const requestId = crypto.randomUUID();
+    const requestId = generateRequestId();
     const { coachId } = await context.params;
 
     // Log incoming request
@@ -92,11 +85,10 @@ export async function GET(
         }
 
         // Log successful retrieval
-        const executionTime = Date.now() - startTime;
         logger.info('Coach profile retrieved successfully', {
             requestId,
             coachId,
-            executionTime: `${executionTime}ms`,
+            executionTime: formatExecutionTime(startTime),
         });
 
         // Return successful response
@@ -108,15 +100,14 @@ export async function GET(
             { status: 200 }
         );
 
-        logger.apiResponse('GET', `/api/coach/${coachId}/profile`, 200, executionTime, { requestId, coachId });
+        logger.apiResponse('GET', `/api/coach/${coachId}/profile`, 200, Date.now() - startTime, { requestId, coachId });
         return response;
     } catch (error) {
         // Catch any unexpected errors
-        const executionTime = Date.now() - startTime;
         logger.error('Unexpected error fetching coach profile', {
             requestId,
             coachId,
-            executionTime: `${executionTime}ms`,
+            executionTime: formatExecutionTime(startTime),
         }, error instanceof Error ? error : new Error('Unknown error'));
 
         const response = NextResponse.json(
@@ -127,7 +118,7 @@ export async function GET(
             { status: 500 }
         );
 
-        logger.apiResponse('GET', `/api/coach/${coachId}/profile`, 500, executionTime, { requestId });
+        logger.apiResponse('GET', `/api/coach/${coachId}/profile`, 500, Date.now() - startTime, { requestId });
         return response;
     }
 }
@@ -144,7 +135,7 @@ export async function PUT(
     context: { params: Promise<{ coachId: string }> }
 ) {
     const startTime = Date.now();
-    const requestId = crypto.randomUUID();
+    const requestId = generateRequestId();
     const { coachId } = await context.params;
 
     // Log incoming request
@@ -297,11 +288,10 @@ export async function PUT(
         }
 
         // Log successful update
-        const executionTime = Date.now() - startTime;
         logger.info('Coach profile updated successfully', {
             requestId,
             coachId,
-            executionTime: `${executionTime}ms`,
+            executionTime: formatExecutionTime(startTime),
         });
 
         // Return successful response
@@ -313,15 +303,14 @@ export async function PUT(
             { status: 200 }
         );
 
-        logger.apiResponse('PUT', `/api/coach/${coachId}/profile`, 200, executionTime, { requestId, coachId });
+        logger.apiResponse('PUT', `/api/coach/${coachId}/profile`, 200, Date.now() - startTime, { requestId, coachId });
         return response;
     } catch (error) {
         // Catch any unexpected errors
-        const executionTime = Date.now() - startTime;
         logger.error('Unexpected error updating coach profile', {
             requestId,
             coachId,
-            executionTime: `${executionTime}ms`,
+            executionTime: formatExecutionTime(startTime),
         }, error instanceof Error ? error : new Error('Unknown error'));
 
         const response = NextResponse.json(
@@ -332,7 +321,7 @@ export async function PUT(
             { status: 500 }
         );
 
-        logger.apiResponse('PUT', `/api/coach/${coachId}/profile`, 500, executionTime, { requestId });
+        logger.apiResponse('PUT', `/api/coach/${coachId}/profile`, 500, Date.now() - startTime, { requestId });
         return response;
     }
 }
