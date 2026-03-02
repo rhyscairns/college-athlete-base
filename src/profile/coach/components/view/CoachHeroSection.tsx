@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import type { CoachProfile } from '../../types';
 import { EditButton } from '../../../player/components/view-page/EditButton';
 
@@ -135,13 +136,13 @@ export const CoachHeroSection = React.memo(function CoachHeroSection({
 
                             {coach.profileImage ? (
                                 <div className="relative h-full rounded-2xl border border-white/10 overflow-hidden">
-                                    <img
+                                    <Image
                                         src={coach.profileImage}
                                         alt={`${coach.firstName} ${coach.lastName}`}
-                                        className="w-full h-full object-cover"
-                                        loading="lazy"
-                                        decoding="async"
-                                        fetchPriority="low"
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 1024px) 0vw, 50vw"
+                                        priority={false}
                                     />
                                 </div>
                             ) : (
