@@ -1,27 +1,39 @@
 'use client';
 
+import Link from 'next/link';
 import { LoginForm } from '../components/LoginForm';
+import { SplitScreenLayout } from '../components/SplitScreenLayout';
 import type { LoginPageProps } from '../types';
 
 export function LoginPage({ onSuccess, redirectTo }: LoginPageProps) {
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-sky-200 px-4 py-8 sm:px-6 lg:px-8 relative overflow-hidden">
-            <div
-                className="absolute inset-0 opacity-90"
-                style={{
-                    backgroundImage: 'url("https://images.unsplash.com/photo-1604329003703-dcd7f21527e2?q=80&w=3132&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                }}
-            />
-            <div className="relative z-10">
-                <h1 className="text-6xl sm:text-6xl font-mono text-white mb-6 sm:mb-8 tracking-tight drop-shadow-2xl sm:text-center">
-                    <strong>COLLEGE ATHLETE BASE</strong>
-                </h1>
-            </div>
-            <div className="w-full max-w-md relative z-10">
+        <SplitScreenLayout
+            showBackButton
+            backHref="/"
+            heroImage="https://images.unsplash.com/photo-1551958219-acbc608c6377?q=80&w=2069"
+            heroTitle="Welcome back to the game."
+            heroSubtitle="Sign in to access your profile, connect with coaches, and take the next step in your athletic career."
+            testimonial={{
+                quote: "This platform changed my recruitment journey completely!",
+                author: "Marcus T.",
+                role: "D1 Commit",
+                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+            }}
+            sportTags={['Football', 'Basketball', 'Track & Field']}
+        >
+            <div className="space-y-6">
+                <div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign in</h2>
+                    <p className="text-gray-600">
+                        Don't have an account?{' '}
+                        <Link href="/register" className="text-blue-600 hover:text-blue-700 font-semibold">
+                            Sign up
+                        </Link>
+                    </p>
+                </div>
+
                 <LoginForm onSuccess={onSuccess} redirectTo={redirectTo} />
             </div>
-        </div>
+        </SplitScreenLayout>
     );
 }

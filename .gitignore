@@ -92,4 +92,4 @@ infrastructure/.env.local
 .kiro
 
 # Docs
-docs
+.docs

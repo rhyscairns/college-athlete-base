@@ -86,7 +86,7 @@ describe('Performance Optimizations', () => {
 
             // After exiting edit mode, should show updated name in view mode
             await waitFor(() => {
-                expect(screen.getByText('Jane')).toBeInTheDocument();
+                expect(screen.getByText('Jane Smith')).toBeInTheDocument();
             });
 
             // API should be called
@@ -154,7 +154,7 @@ describe('Performance Optimizations', () => {
             );
 
             // Get initial render count
-            const initialElement = screen.getByText('John');
+            const initialElement = screen.getByText('John Smith');
 
             // Re-render with same props
             rerender(
@@ -167,7 +167,7 @@ describe('Performance Optimizations', () => {
             );
 
             // Element should be the same (memoized)
-            expect(screen.getByText('John')).toBe(initialElement);
+            expect(screen.getByText('John Smith')).toBe(initialElement);
         });
 
         it('should not re-render CoachHeroSectionEdit when props are unchanged', () => {

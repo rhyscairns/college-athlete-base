@@ -31,10 +31,10 @@ export function RecruitingContactSectionEdit({
     };
 
     return (
-        <div className="space-y-4 p-3 sm:p-4 bg-white/5 rounded-2xl border border-white/10 animate-fade-in">
+        <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fade-in">
             {/* Player Contact Information */}
             <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white">Player Contact</h3>
+                <h3 className="text-lg font-bold text-gray-900">Player Contact</h3>
 
                 <EmailInput
                     label="Email"
@@ -58,8 +58,8 @@ export function RecruitingContactSectionEdit({
             </div>
 
             {/* Parent/Guardian Contact */}
-            <div className="space-y-4 pt-4 border-t border-white/10">
-                <h3 className="text-lg font-semibold text-white">Parent/Guardian Contact</h3>
+            <div className="space-y-4 pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900">Parent/Guardian Contact</h3>
 
                 <TextInput
                     label="Parent/Guardian Name"
@@ -94,8 +94,8 @@ export function RecruitingContactSectionEdit({
             </div>
 
             {/* Social Media Links */}
-            <div className="space-y-4 pt-4 border-t border-white/10">
-                <h3 className="text-lg font-semibold text-white">Social Media</h3>
+            <div className="space-y-4 pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900">Social Media</h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <TextInput
@@ -141,7 +141,7 @@ export function RecruitingContactSectionEdit({
             </div>
 
             {/* Preferred Contact Method */}
-            <div className="pt-4 border-t border-white/10">
+            <div className="pt-6 border-t border-gray-200">
                 <TextInput
                     label="Preferred Contact Method"
                     name="preferredContactMethod"

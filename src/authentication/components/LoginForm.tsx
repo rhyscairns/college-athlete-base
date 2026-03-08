@@ -141,14 +141,14 @@ export function LoginForm({ onSuccess, redirectTo }: LoginFormProps) {
     const isFormValid = email.length > 0 && password.length > 0;
 
     return (
-        <form onSubmit={handleSubmit} role="form" className="w-full max-w-md mx-auto p-12 bg-white/90 rounded-3xl shadow-2xl border border-white/50">
+        <form onSubmit={handleSubmit} role="form" className="w-full space-y-6">
             {generalError && (
                 <div className="mb-6">
                     <ErrorMessage message={generalError} className="text-center" />
                 </div>
             )}
 
-            <div className="space-y-6 mb-6">
+            <div className="space-y-4">
                 <EmailInput
                     value={email}
                     onChange={setEmail}
@@ -163,12 +163,14 @@ export function LoginForm({ onSuccess, redirectTo }: LoginFormProps) {
                 />
             </div>
 
-            <div className="flex items-center justify-between mb-8">
-                <label className="flex items-center">
-                    <input type="checkbox" className="w-4 h-4 rounded border-gray-400 bg-white/60 text-gray-700 focus:ring-0" />
-                    <span className="ml-2 text-sm text-gray-700">Keep logged in</span>
+            <div className="flex items-center justify-between">
+                <label className="flex items-center cursor-pointer">
+                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                    <span className="ml-2 text-sm text-gray-700">Keep me signed in</span>
                 </label>
-                <a href="#" className="text-sm text-gray-700 hover:text-gray-900">Forgot Password?</a>
+                <a href="#" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                    Forgot password?
+                </a>
             </div>
 
             <SubmitButton loading={loading} disabled={!isFormValid}>

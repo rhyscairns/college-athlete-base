@@ -110,9 +110,9 @@ describe('EditButton', () => {
         const button = screen.getByRole('button', { name: /edit section/i });
         expect(button).toHaveClass('px-4');
         expect(button).toHaveClass('py-2');
-        expect(button).toHaveClass('bg-white/10');
+        expect(button).toHaveClass('bg-blue-600');
         expect(button).toHaveClass('border');
-        expect(button).toHaveClass('border-white/20');
+        expect(button).toHaveClass('border-blue-600');
         expect(button).toHaveClass('rounded-lg');
         expect(button).toHaveClass('text-white');
         expect(button).toHaveClass('text-sm');
@@ -125,6 +125,6 @@ describe('EditButton', () => {
         render(<EditButton onClick={mockOnClick} />);
 
         const button = screen.getByRole('button', { name: /edit section/i });
-        expect(button).toHaveClass('hover:bg-white/15');
+        expect(button).toHaveClass('hover:bg-blue-700');
     });
 });

@@ -41,7 +41,9 @@ export function TextInput({
                 aria-invalid={!!error}
                 aria-describedby={error ? errorId : undefined}
                 aria-required={required}
-                className={`w-full h-12 px-4 bg-white/60 backdrop-blur-sm text-gray-800 placeholder-gray-500 border-2 rounded-xl focus:outline-none focus:bg-white/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all ${error ? 'border-red-500 focus:border-red-600' : 'border-white/80 focus:border-white'
+                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all ${error
+                        ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                        : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
                     }`}
             />
             {error && <ErrorMessage message={error} className="mt-1" id={errorId} />}

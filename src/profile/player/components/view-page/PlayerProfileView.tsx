@@ -58,7 +58,7 @@ export function PlayerProfileView({
     };
 
     return (
-        <div className="relative">
+        <div className="relative bg-slate-100 min-h-screen">
             {/* Success notification */}
             {showSuccessNotification && (
                 <SuccessNotification

@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { PlayerRegistrationForm } from '../components/PlayerRegistrationForm';
+import { SplitScreenLayout } from '../components/SplitScreenLayout';
 import type { PlayerRegistrationData, ApiResponse } from '../types';
 
 export function PlayerRegisterPage() {
@@ -78,19 +80,18 @@ export function PlayerRegisterPage() {
 
     if (successMessage) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-sky-200 px-4 py-8 sm:px-6 lg:px-8 relative overflow-hidden">
-                <div
-                    className="absolute inset-0 opacity-90"
-                    style={{
-                        backgroundImage: 'url("https://images.unsplash.com/photo-1604329003703-dcd7f21527e2?q=80&w=3132&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                    }}
-                />
-                <div className="w-full max-w-md p-12 bg-white/90 rounded-3xl shadow-2xl border border-white/50 text-center relative z-10">
-                    <div className="mb-6">
+            <SplitScreenLayout
+                showBackButton
+                backHref="/register"
+                heroImage="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=2070"
+                heroTitle="Welcome to the team!"
+                heroSubtitle="You're one step closer to connecting with college coaches and achieving your athletic dreams."
+                sportTags={['Football', 'Basketball', 'Soccer']}
+            >
+                <div className="text-center space-y-6">
+                    <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center">
                         <svg
-                            className="w-16 h-16 mx-auto text-green-500"
+                            className="w-10 h-10 text-green-600"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -103,47 +104,54 @@ export function PlayerRegisterPage() {
                             />
                         </svg>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Success!</h2>
-                    <p className="text-gray-600">{successMessage}</p>
+                    <div>
+                        <h2 className="text-3xl font-bold text-gray-900 mb-2">Success!</h2>
+                        <p className="text-gray-600">{successMessage}</p>
+                    </div>
                 </div>
-            </div>
+            </SplitScreenLayout>
         );
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-sky-200 px-4 py-8 sm:px-6 lg:px-8 relative overflow-hidden">
-            <div
-                className="absolute inset-0 opacity-90"
-                style={{
-                    backgroundImage: 'url("https://images.unsplash.com/photo-1604329003703-dcd7f21527e2?q=80&w=3132&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                }}
-            />
-            <div className="relative z-10">
-                <h1 className="text-6xl sm:text-6xl font-mono text-white mb-6 sm:mb-8 tracking-tight drop-shadow-2xl sm:text-center">
-                    <strong>PLAYER REGISTRATION</strong>
-                </h1>
-            </div>
-            <div className="w-full max-w-2xl relative z-10">
+        <SplitScreenLayout
+            showBackButton
+            backHref="/register"
+            heroImage="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=2070"
+            heroTitle="Your future starts on the field."
+            heroSubtitle="Connect with over 2,500 college coaches and showcase your talent on the nation's premier recruitment platform."
+            testimonial={{
+                quote: "Found my dream scholarship in 3 weeks!",
+                author: "Marcus T.",
+                role: "D1 Commit",
+                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+            }}
+            sportTags={['Football', 'Basketball', 'Soccer']}
+        >
+            <div className="space-y-6">
+                <div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
+                    <p className="text-gray-600">
+                        Welcome to College Athlete Base — let's build your recruitment profile.
+                    </p>
+                </div>
+
                 {apiError && (
-                    <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                        <p className="font-semibold">Registration Error</p>
-                        <p>{apiError}</p>
+                    <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                        <p className="font-semibold text-sm">Registration Error</p>
+                        <p className="text-sm">{apiError}</p>
                     </div>
                 )}
 
                 <PlayerRegistrationForm onSubmit={handleSubmit} onCancel={handleCancel} />
 
-                <div className="text-center mt-6">
-                    <button
-                        onClick={() => router.push('/login')}
-                        className="text-white hover:text-gray-200 transition-colors drop-shadow-lg font-medium"
-                    >
-                        Back to Login
-                    </button>
+                <div className="text-center text-sm text-gray-600">
+                    Already have an account?{' '}
+                    <Link href="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
+                        Sign in
+                    </Link>
                 </div>
             </div>
-        </div>
+        </SplitScreenLayout>
     );
 }

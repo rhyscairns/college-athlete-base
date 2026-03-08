@@ -39,22 +39,22 @@ export function AthleticAchievementsSectionEdit({
     };
 
     return (
-        <div className="space-y-4 p-3 sm:p-4 bg-white/5 rounded-2xl border border-white/10 animate-fade-in text-white">
+        <div className="space-y-4 p-6 sm:p-8 bg-white rounded-2xl shadow-lg animate-fade-in">
             <div className="space-y-4">
                 {formData.map((achievement, index) => (
                     <div
                         key={achievement.id}
-                        className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10"
+                        className="space-y-3 p-6 bg-gray-50 rounded-xl border border-gray-200"
                     >
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                            <h4 className="text-sm font-semibold text-white">
+                            <h4 className="text-sm font-semibold text-gray-900">
                                 Achievement {index + 1}
                             </h4>
                             <button
                                 type="button"
                                 onClick={() => handleRemoveAchievement(index)}
                                 disabled={isSaving}
-                                className="min-h-[44px] w-full sm:w-auto px-3 py-1.5 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm font-semibold hover:bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all touch-manipulation"
+                                className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg font-semibold hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
                             >
                                 Remove
                             </button>
@@ -86,7 +86,7 @@ export function AthleticAchievementsSectionEdit({
                             <div>
                                 <label
                                     htmlFor={`achievement-icon-${index}`}
-                                    className="block text-sm font-medium text-white/90 mb-2"
+                                    className="block text-sm font-medium text-gray-700 mb-2"
                                 >
                                     Icon
                                 </label>
@@ -95,7 +95,7 @@ export function AthleticAchievementsSectionEdit({
                                     value={achievement.icon}
                                     onChange={(e) => handleAchievementChange(index, 'icon', e.target.value)}
                                     disabled={isSaving}
-                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 >
                                     {iconOptions.map((option) => (
                                         <option key={option.value} value={option.value}>
@@ -108,7 +108,7 @@ export function AthleticAchievementsSectionEdit({
                             <div>
                                 <label
                                     htmlFor={`achievement-color-${index}`}
-                                    className="block text-sm font-medium text-white/90 mb-2"
+                                    className="block text-sm font-medium text-gray-700 mb-2"
                                 >
                                     Color
                                 </label>
@@ -117,7 +117,7 @@ export function AthleticAchievementsSectionEdit({
                                     value={achievement.color}
                                     onChange={(e) => handleAchievementChange(index, 'color', e.target.value)}
                                     disabled={isSaving}
-                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 >
                                     {colorOptions.map((option) => (
                                         <option key={option.value} value={option.value}>
@@ -132,7 +132,7 @@ export function AthleticAchievementsSectionEdit({
             </div>
 
             {formData.length === 0 && (
-                <p className="text-center text-slate-400 py-8">
+                <p className="text-center text-gray-500 py-8">
                     No achievements added yet. Click "Add Achievement" to get started.
                 </p>
             )}
@@ -141,7 +141,7 @@ export function AthleticAchievementsSectionEdit({
                 type="button"
                 onClick={handleAddAchievement}
                 disabled={isSaving}
-                className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm font-semibold hover:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed transition-all touch-manipulation"
+                className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg font-semibold hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
             >
                 + Add Achievement
             </button>

@@ -79,7 +79,7 @@ describe('StatsShowcase - Empty State', () => {
             expect(onEdit).toHaveBeenCalledTimes(1);
         });
 
-        it('shows section header even in empty state', () => {
+        it('shows empty state without section header', () => {
             render(
                 <StatsShowcase
                     stats={emptyStats}
@@ -88,8 +88,9 @@ describe('StatsShowcase - Empty State', () => {
                 />
             );
 
-            expect(screen.getByText('Season Statistics')).toBeInTheDocument();
-            expect(screen.getByText(/Junior Year Performance/i)).toBeInTheDocument();
+            // Empty state should show, but not the normal header
+            expect(screen.getByText('No Stats Yet')).toBeInTheDocument();
+            expect(screen.queryByText('Season Statistics')).not.toBeInTheDocument();
         });
 
         it('shows empty state icon', () => {

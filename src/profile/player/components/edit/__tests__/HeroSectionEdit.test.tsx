@@ -170,24 +170,13 @@ describe('HeroSectionEdit', () => {
             />
         );
 
-        const mainContainer = container.firstChild;
-        expect(mainContainer).toHaveClass('space-y-4', 'p-3', 'sm:p-4', 'bg-white/5', 'rounded-2xl', 'border', 'border-white/10', 'animate-fade-in');
-    });
+        // Check for white card with shadow
+        const cardContainer = container.querySelector('.bg-white.rounded-2xl.shadow-lg');
+        expect(cardContainer).toBeInTheDocument();
 
-    it('applies fade-in animation class', () => {
-        const { container } = render(
-            <HeroSectionEdit
-                formData={mockFormData}
-                setFormData={mockSetFormData}
-                errors={mockErrors}
-                isSaving={false}
-                onSave={mockOnSave}
-                onCancel={mockOnCancel}
-            />
-        );
-
-        const mainContainer = container.firstChild;
-        expect(mainContainer).toHaveClass('animate-fade-in');
+        // Check for blue gradient header
+        const header = container.querySelector('.bg-gradient-to-r.from-blue-600.to-blue-500');
+        expect(header).toBeInTheDocument();
     });
 
     it('uses grid layout for paired fields', () => {
@@ -203,6 +192,38 @@ describe('HeroSectionEdit', () => {
         );
 
         const gridContainers = container.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-2.gap-4');
-        expect(gridContainers.length).toBe(3); // Name fields, School/Location, Height/Weight
+        expect(gridContainers.length).toBe(3); // Name fields, Height/Weight, School/Location
+    });
+
+    it('displays section headers with icons', () => {
+        render(
+            <HeroSectionEdit
+                formData={mockFormData}
+                setFormData={mockSetFormData}
+                errors={mockErrors}
+                isSaving={false}
+                onSave={mockOnSave}
+                onCancel={mockOnCancel}
+            />
+        );
+
+        expect(screen.getByText('Personal Information')).toBeInTheDocument();
+        expect(screen.getByText('Athletic Information')).toBeInTheDocument();
+        expect(screen.getByText('School Information')).toBeInTheDocument();
+    });
+
+    it('displays initials in header avatar', () => {
+        render(
+            <HeroSectionEdit
+                formData={mockFormData}
+                setFormData={mockSetFormData}
+                errors={mockErrors}
+                isSaving={false}
+                onSave={mockOnSave}
+                onCancel={mockOnCancel}
+            />
+        );
+
+        expect(screen.getByText('MJ')).toBeInTheDocument();
     });
 });

@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 
 const sections = [
-    { id: 'hero', label: 'Profile', icon: '👤' },
-    { id: 'stats', label: 'Stats', icon: '📊' },
-    { id: 'achievements', label: 'Achievements', icon: '🏆' },
-    { id: 'academics', label: 'Academics', icon: '🎓' },
-    { id: 'highlights', label: 'Highlights', icon: '🎥' },
-    { id: 'coaches', label: 'Coaches', icon: '💬' },
-    { id: 'contact', label: 'Contact', icon: '📧' },
+    { id: 'hero', label: 'Profile' },
+    { id: 'stats', label: 'Stats' },
+    { id: 'achievements', label: 'Achievements' },
+    { id: 'academics', label: 'Academics' },
+    { id: 'highlights', label: 'Highlights' },
+    { id: 'coaches', label: 'Coaches' },
+    { id: 'contact', label: 'Contact' },
 ];
 
 export function ProfileSideNav() {
@@ -48,24 +48,23 @@ export function ProfileSideNav() {
     };
 
     return (
-        <nav className="fixed left-0 top-0 h-screen w-48 bg-black/40 backdrop-blur-md border-r border-white/10 z-40 hidden lg:flex flex-col items-center justify-center">
-            <div className="space-y-2 w-full px-3">
+        <nav className="fixed left-0 top-0 h-screen w-48 bg-white border-r border-gray-200 z-40 hidden lg:flex flex-col items-center justify-center shadow-lg">
+            <div className="space-y-1 w-full px-3">
                 {sections.map((section) => (
                     <button
                         key={section.id}
                         onClick={() => scrollToSection(section.id)}
-                        className={`group relative flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all ${activeSection === section.id
-                            ? 'bg-yellow-400/20 text-yellow-400'
-                            : 'text-slate-400 hover:text-white hover:bg-white/10'
+                        className={`group relative flex items-center w-full px-4 py-3 rounded-lg transition-all text-left ${activeSection === section.id
+                            ? 'bg-blue-50 text-blue-600 font-semibold'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                             }`}
                         title={section.label}
                     >
-                        <span className="text-xl flex-shrink-0">{section.icon}</span>
-                        <span className="text-sm font-medium">{section.label}</span>
+                        <span className="text-sm">{section.label}</span>
 
                         {/* Active Indicator */}
                         {activeSection === section.id && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-yellow-400 rounded-r-full"></div>
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 rounded-r-full"></div>
                         )}
                     </button>
                 ))}

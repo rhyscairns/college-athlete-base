@@ -100,7 +100,7 @@ describe('Responsive Behavior', () => {
             weight: '185 lbs',
         };
 
-        it('should have responsive padding (p-3 sm:p-4)', () => {
+        it('should have responsive padding (p-6 sm:p-8)', () => {
             const { container } = render(
                 <HeroSectionEdit
                     formData={mockFormData}
@@ -112,9 +112,9 @@ describe('Responsive Behavior', () => {
                 />
             );
 
-            const editContainer = container.firstChild;
-            expect(editContainer).toHaveClass('p-3');
-            expect(editContainer).toHaveClass('sm:p-4');
+            const formContent = container.querySelector('.p-6');
+            expect(formContent).toBeInTheDocument();
+            expect(formContent).toHaveClass('sm:p-8');
         });
 
         it('should use single column grid on mobile for paired fields', () => {
@@ -172,8 +172,8 @@ describe('Responsive Behavior', () => {
             );
 
             const editContainer = container.firstChild;
-            expect(editContainer).toHaveClass('p-3');
-            expect(editContainer).toHaveClass('sm:p-4');
+            expect(editContainer).toHaveClass('p-6');
+            expect(editContainer).toHaveClass('sm:p-8');
         });
 
         it('should stack stat fields vertically on mobile', () => {
@@ -257,8 +257,9 @@ describe('Responsive Behavior', () => {
             );
 
             const firstNameInput = screen.getByLabelText(/first name/i);
-            // h-12 = 48px which is > 44px minimum
-            expect(firstNameInput).toHaveClass('h-12');
+            // py-3 with px-4 provides sufficient touch target
+            expect(firstNameInput).toHaveClass('py-3');
+            expect(firstNameInput).toHaveClass('px-4');
         });
     });
 

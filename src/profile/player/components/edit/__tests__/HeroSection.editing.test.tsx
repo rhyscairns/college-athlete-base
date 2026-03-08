@@ -618,17 +618,16 @@ describe('HeroSection - Inline Editing', () => {
         it('displays player information in view mode', () => {
             render(<HeroSection {...defaultProps} isEditing={false} />);
 
-            // Check that player name is displayed
-            expect(screen.getByText(mockPlayerData.firstName)).toBeInTheDocument();
-            expect(screen.getByText(mockPlayerData.lastName)).toBeInTheDocument();
+            // Check that player name is displayed (combined)
+            expect(screen.getByText(`${mockPlayerData.firstName} ${mockPlayerData.lastName}`)).toBeInTheDocument();
 
             // Check that position and school are displayed
-            expect(screen.getByText(mockPlayerData.position)).toBeInTheDocument();
-            expect(screen.getByText(mockPlayerData.school)).toBeInTheDocument();
+            expect(screen.getAllByText(mockPlayerData.position).length).toBeGreaterThan(0);
+            expect(screen.getAllByText(mockPlayerData.school).length).toBeGreaterThan(0);
 
             // Check that location and class year are displayed
-            expect(screen.getByText(new RegExp(mockPlayerData.location, 'i'))).toBeInTheDocument();
-            expect(screen.getByText(new RegExp(mockPlayerData.classYear, 'i'))).toBeInTheDocument();
+            expect(screen.getAllByText(new RegExp(mockPlayerData.location, 'i')).length).toBeGreaterThan(0);
+            expect(screen.getAllByText(new RegExp(mockPlayerData.classYear, 'i')).length).toBeGreaterThan(0);
         });
     });
 });

@@ -67,12 +67,11 @@ describe('Empty State Integration Tests', () => {
         it('HeroSection handles completely empty data for owner', () => {
             render(<HeroSection player={completelyEmptyPlayer as any} isOwner={true} />);
 
-            // Should show placeholders for required fields
-            expect(screen.getByText('First Name')).toBeInTheDocument();
-            expect(screen.getByText('Last Name')).toBeInTheDocument();
+            // Should show default values for empty fields
+            expect(screen.getByText('First Last')).toBeInTheDocument();
 
             // Should show edit button
-            expect(screen.getByRole('button', { name: /edit section/i })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /edit profile/i })).toBeInTheDocument();
         });
 
         it('StatsShowcase handles completely empty data for owner', () => {
@@ -289,9 +288,8 @@ describe('Empty State Integration Tests', () => {
             render(<HeroSection player={partialPlayer as any} isOwner={false} />);
 
             // Should show filled fields
-            expect(screen.getByText('John')).toBeInTheDocument();
-            expect(screen.getByText('Doe')).toBeInTheDocument();
-            expect(screen.getByText('Quarterback')).toBeInTheDocument();
+            expect(screen.getByText('John Doe')).toBeInTheDocument();
+            expect(screen.getAllByText('Quarterback').length).toBeGreaterThan(0);
             expect(screen.getByText("6'2\"")).toBeInTheDocument();
 
             // Should not show empty optional fields

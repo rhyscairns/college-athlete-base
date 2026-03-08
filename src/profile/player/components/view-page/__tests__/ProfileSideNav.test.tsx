@@ -43,7 +43,7 @@ describe('ProfileSideNav', () => {
         const profileButton = screen.getByTitle('Profile');
 
         // Check if it has active classes (default is 'hero')
-        expect(profileButton).toHaveClass('bg-yellow-400/20', 'text-yellow-400');
+        expect(profileButton).toHaveClass('bg-blue-50', 'text-blue-600', 'font-semibold');
     });
 
     it('updates active section on scroll', () => {

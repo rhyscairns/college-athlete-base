@@ -44,15 +44,15 @@ describe('HeroSection', () => {
     it('renders player name', () => {
         render(<HeroSection player={mockPlayer} />);
 
-        expect(screen.getByText('Marcus')).toBeInTheDocument();
-        expect(screen.getByText('Johnson')).toBeInTheDocument();
+        expect(screen.getByText('Marcus Johnson')).toBeInTheDocument();
     });
 
     it('renders player position and school', () => {
         render(<HeroSection player={mockPlayer} />);
 
-        expect(screen.getByText('Wide Receiver')).toBeInTheDocument();
-        expect(screen.getByText('Westlake High School')).toBeInTheDocument();
+        // Position and school appear multiple times in the new layout
+        expect(screen.getAllByText('Wide Receiver').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Westlake High School').length).toBeGreaterThan(0);
     });
 
     it('renders player stats', () => {
@@ -94,10 +94,9 @@ describe('HeroSection', () => {
             render(<HeroSection player={playerWithoutOptionalFields} />);
 
             // Required fields should still render
-            expect(screen.getByText('Marcus')).toBeInTheDocument();
-            expect(screen.getByText('Johnson')).toBeInTheDocument();
-            expect(screen.getByText('Wide Receiver')).toBeInTheDocument();
-            expect(screen.getByText('Westlake High School')).toBeInTheDocument();
+            expect(screen.getByText('Marcus Johnson')).toBeInTheDocument();
+            expect(screen.getAllByText('Wide Receiver').length).toBeGreaterThan(0);
+            expect(screen.getAllByText('Westlake High School').length).toBeGreaterThan(0);
 
             // Optional location/classYear section should not render
             expect(screen.queryByText(/Austin, TX/)).not.toBeInTheDocument();
@@ -181,10 +180,9 @@ describe('HeroSection', () => {
             render(<HeroSection player={minimalPlayer} />);
 
             // Required fields should render
-            expect(screen.getByText('John')).toBeInTheDocument();
-            expect(screen.getByText('Doe')).toBeInTheDocument();
-            expect(screen.getByText('Quarterback')).toBeInTheDocument();
-            expect(screen.getByText('Test High School')).toBeInTheDocument();
+            expect(screen.getByText('John Doe')).toBeInTheDocument();
+            expect(screen.getAllByText('Quarterback').length).toBeGreaterThan(0);
+            expect(screen.getAllByText('Test High School').length).toBeGreaterThan(0);
 
             // Optional sections should not render
             expect(screen.queryByText(/Class of/)).not.toBeInTheDocument();
@@ -202,12 +200,12 @@ describe('HeroSection', () => {
 
             const { container } = render(<HeroSection player={playerWithoutInitials} />);
 
-            // Should render ?? as placeholder
+            // Should generate initials from first and last name (MJ from Marcus Johnson)
             const initialsElements = container.querySelectorAll('span');
-            const hasPlaceholder = Array.from(initialsElements).some(
-                (el) => el.textContent === '??'
+            const hasInitials = Array.from(initialsElements).some(
+                (el) => el.textContent === 'MJ'
             );
-            expect(hasPlaceholder).toBe(true);
+            expect(hasInitials).toBe(true);
         });
 
         it('renders only location when classYear is missing', () => {
@@ -218,7 +216,7 @@ describe('HeroSection', () => {
 
             render(<HeroSection player={playerWithOnlyLocation} />);
 
-            expect(screen.getByText(/Austin, TX/)).toBeInTheDocument();
+            expect(screen.getAllByText(/Austin, TX/).length).toBeGreaterThan(0);
             expect(screen.queryByText(/Class of/)).not.toBeInTheDocument();
         });
 

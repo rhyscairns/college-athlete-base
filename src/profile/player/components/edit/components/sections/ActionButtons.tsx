@@ -27,7 +27,7 @@ export function ActionButtons({
                 onClick={onSave}
                 onKeyDown={handleSaveKeyDown}
                 disabled={disabled || isSaving}
-                className="min-h-[44px] w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg text-white font-semibold hover:shadow-lg disabled:opacity-60 transition-all touch-manipulation flex items-center justify-center gap-2"
+                className="min-h-[44px] w-full sm:w-auto px-6 py-3 bg-blue-600 rounded-lg text-white font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation flex items-center justify-center gap-2"
                 type="button"
             >
                 {isSaving && (
@@ -59,7 +59,7 @@ export function ActionButtons({
                 onClick={onCancel}
                 onKeyDown={handleCancelKeyDown}
                 disabled={isSaving}
-                className="min-h-[44px] w-full sm:w-auto px-6 py-3 bg-white/5 border border-white/10 rounded-lg text-white/70 font-semibold hover:bg-white/10 hover:text-white transition-all touch-manipulation disabled:opacity-60 disabled:cursor-not-allowed"
+                className="min-h-[44px] w-full sm:w-auto px-6 py-3 bg-gray-200 rounded-lg text-gray-900 font-semibold hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
                 type="button"
             >
                 Cancel
