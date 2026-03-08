@@ -10,21 +10,29 @@ jest.mock('next/navigation', () => ({
     }),
 }));
 
+// Mock the SplitScreenLayout component
+jest.mock('@/authentication/components/SplitScreenLayout', () => ({
+    SplitScreenLayout: ({ children }: { children: React.ReactNode }) => (
+        <div data-testid="split-screen-layout" className="min-h-screen flex flex-col lg:flex-row">
+            {children}
+        </div>
+    ),
+}));
+
 describe('RegisterPage', () => {
     beforeEach(() => {
         mockPush.mockClear();
     });
 
-    it('renders the page title', () => {
+    it('renders the page heading', () => {
         render(<RegisterPage />);
 
-        expect(screen.getByText('COLLEGE ATHLETE BASE')).toBeInTheDocument();
+        expect(screen.getByText('Create your account')).toBeInTheDocument();
     });
 
     it('renders the RoleSelector component', () => {
         render(<RegisterPage />);
 
-        expect(screen.getByText('Choose Your Role')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /register as player/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /register as coach/i })).toBeInTheDocument();
     });
@@ -32,9 +40,9 @@ describe('RegisterPage', () => {
     it('renders link back to login page', () => {
         render(<RegisterPage />);
 
-        const loginLink = screen.getByRole('link', { name: /already have an account\? sign in/i });
+        const loginLink = screen.getByText('Sign in');
         expect(loginLink).toBeInTheDocument();
-        expect(loginLink).toHaveAttribute('href', '/login');
+        expect(loginLink.closest('a')).toHaveAttribute('href', '/login');
     });
 
     it('navigates to /register/player when Player role is selected', async () => {
@@ -59,33 +67,16 @@ describe('RegisterPage', () => {
         expect(mockPush).toHaveBeenCalledWith('/register/coach');
     });
 
-    it('has consistent styling with login page', () => {
-        const { container } = render(<RegisterPage />);
+    it('renders with SplitScreenLayout', () => {
+        render(<RegisterPage />);
 
-        // Check for the same background styling classes
-        const backgroundDiv = container.querySelector('.bg-sky-200');
-        expect(backgroundDiv).toBeInTheDocument();
-
-        // Check for the same title styling
-        const title = screen.getByText('COLLEGE ATHLETE BASE');
-        expect(title.tagName).toBe('STRONG');
-        expect(title.parentElement).toHaveClass('text-6xl');
-        expect(title.parentElement).toHaveClass('font-mono');
-        expect(title.parentElement).toHaveClass('text-white');
-    });
-
-    it('displays background image', () => {
-        const { container } = render(<RegisterPage />);
-
-        const backgroundImage = container.querySelector('.absolute.inset-0.opacity-90');
-        expect(backgroundImage).toBeInTheDocument();
-        expect(backgroundImage).toHaveStyle({ backgroundSize: 'cover' });
+        expect(screen.getByTestId('split-screen-layout')).toBeInTheDocument();
     });
 
     it('has proper responsive layout classes', () => {
         const { container } = render(<RegisterPage />);
 
         const mainContainer = container.querySelector('.min-h-screen');
-        expect(mainContainer).toHaveClass('flex', 'flex-col', 'items-center', 'justify-center');
+        expect(mainContainer).toHaveClass('flex', 'flex-col', 'lg:flex-row');
     });
 });

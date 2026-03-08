@@ -204,7 +204,7 @@ describe('RecruitingContactSectionEdit', () => {
     it('applies edit mode container styling', () => {
         const { container } = render(<RecruitingContactSectionEdit {...defaultProps} />);
 
-        const editContainer = container.querySelector('.space-y-4.p-3.sm\\:p-4.bg-white\\/5.rounded-2xl.border.border-white\\/10');
+        const editContainer = container.querySelector('.bg-white.rounded-2xl.shadow-lg');
         expect(editContainer).toBeInTheDocument();
     });
 

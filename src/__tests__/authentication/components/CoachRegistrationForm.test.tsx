@@ -71,7 +71,7 @@ describe('CoachRegistrationForm', () => {
     it('validates required fields on submit', async () => {
         render(<CoachRegistrationForm onSubmit={mockOnSubmit} />);
 
-        const submitButton = screen.getByRole('button', { name: /create coach account/i });
+        const submitButton = screen.getByRole('button', { name: /create account/i });
 
         // Button should be disabled when form is empty
         expect(submitButton).toBeDisabled();
@@ -90,7 +90,7 @@ describe('CoachRegistrationForm', () => {
         fireEvent.change(screen.getByLabelText(/university/i), { target: { value: stateUniversity } });
 
         // Button should still be disabled without coaching category
-        const submitButton = screen.getByRole('button', { name: /create coach account/i });
+        const submitButton = screen.getByRole('button', { name: /create account/i });
         expect(submitButton).toBeDisabled();
         expect(mockOnSubmit).not.toHaveBeenCalled();
     });
@@ -108,7 +108,7 @@ describe('CoachRegistrationForm', () => {
         fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
         fireEvent.change(screen.getByLabelText(/university/i), { target: { value: stateUniversity } });
 
-        const submitButton = screen.getByRole('button', { name: /create coach account/i });
+        const submitButton = screen.getByRole('button', { name: /create account/i });
         fireEvent.click(submitButton);
 
         await waitFor(() => {
@@ -138,7 +138,7 @@ describe('CoachRegistrationForm', () => {
         fireEvent.change(screen.getByLabelText(/secondary sport/i), { target: { value: 'volleyball' } });
         fireEvent.change(screen.getByLabelText(/university/i), { target: { value: 'Tech College' } });
 
-        const submitButton = screen.getByRole('button', { name: /create coach account/i });
+        const submitButton = screen.getByRole('button', { name: /create account/i });
         fireEvent.click(submitButton);
 
         await waitFor(() => {
@@ -169,7 +169,7 @@ describe('CoachRegistrationForm', () => {
     it('disables submit button when form is invalid', () => {
         render(<CoachRegistrationForm onSubmit={mockOnSubmit} />);
 
-        const submitButton = screen.getByRole('button', { name: /create coach account/i });
+        const submitButton = screen.getByRole('button', { name: /create account/i });
         expect(submitButton).toBeDisabled();
     });
 
@@ -185,7 +185,7 @@ describe('CoachRegistrationForm', () => {
         fireEvent.change(screen.getByLabelText(/university/i), { target: { value: stateUniversity } });
 
         await waitFor(() => {
-            const submitButton = screen.getByRole('button', { name: /create coach account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             expect(submitButton).not.toBeDisabled();
         });
     });
@@ -212,7 +212,7 @@ describe('CoachRegistrationForm', () => {
         fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
         fireEvent.change(screen.getByLabelText(/university/i), { target: { value: stateUniversity } });
 
-        const submitButton = screen.getByRole('button', { name: /create coach account/i });
+        const submitButton = screen.getByRole('button', { name: /create account/i });
         fireEvent.click(submitButton);
 
         await waitFor(() => {
@@ -233,7 +233,7 @@ describe('CoachRegistrationForm', () => {
         fireEvent.change(screen.getByLabelText(/primary sport/i), { target: { value: 'basketball' } });
         fireEvent.change(screen.getByLabelText(/university/i), { target: { value: stateUniversity } });
 
-        const submitButton = screen.getByRole('button', { name: /create coach account/i });
+        const submitButton = screen.getByRole('button', { name: /create account/i });
         fireEvent.click(submitButton);
 
         await waitFor(() => {

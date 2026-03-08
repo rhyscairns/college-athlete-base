@@ -48,10 +48,10 @@ describe('GameHighlightsSectionEdit', () => {
         expect(screen.getByDisplayValue('https://youtube.com/watch?v=test2')).toBeInTheDocument();
     });
 
-    it('displays featured badge for featured videos', () => {
+    it('displays main video badge for featured videos', () => {
         render(<GameHighlightsSectionEdit {...defaultProps} />);
 
-        expect(screen.getByText('FEATURED')).toBeInTheDocument();
+        expect(screen.getByText('MAIN VIDEO')).toBeInTheDocument();
     });
 
     it('renders all video fields', () => {
@@ -118,7 +118,7 @@ describe('GameHighlightsSectionEdit', () => {
     it('applies edit mode container styling', () => {
         const { container } = render(<GameHighlightsSectionEdit {...defaultProps} />);
 
-        const editContainer = container.querySelector('.space-y-4.p-3.sm\\:p-4.bg-white\\/5.rounded-2xl.border.border-white\\/10');
+        const editContainer = container.querySelector('.bg-white.rounded-2xl.shadow-lg');
         expect(editContainer).toBeInTheDocument();
     });
 

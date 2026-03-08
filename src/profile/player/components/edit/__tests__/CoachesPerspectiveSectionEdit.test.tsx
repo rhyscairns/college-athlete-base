@@ -237,7 +237,7 @@ describe('CoachesPerspectiveSectionEdit', () => {
     it('applies edit mode container styling', () => {
         const { container } = render(<CoachesPerspectiveSectionEdit {...defaultProps} />);
 
-        const editContainer = container.querySelector('.space-y-4.p-3.sm\\:p-4.bg-white\\/5.rounded-2xl.border.border-white\\/10');
+        const editContainer = container.querySelector('.space-y-4.p-6.sm\\:p-8.bg-white.rounded-2xl.shadow-lg');
         expect(editContainer).toBeInTheDocument();
     });
 
@@ -256,7 +256,7 @@ describe('CoachesPerspectiveSectionEdit', () => {
         const firstTextarea = textareas[0];
 
         expect(firstTextarea).toHaveClass('w-full');
-        expect(firstTextarea).toHaveClass('bg-white/5');
+        expect(firstTextarea).toHaveClass('bg-white');
         expect(firstTextarea).toHaveClass('rounded-lg');
     });
 });

@@ -13,7 +13,7 @@ const examplePlayers = [
         lastName: 'Jordan',
         position: 'Shooting Guard',
         sport: 'Basketball',
-        videoThumbnail: 'https://example.com/jordan-highlights.jpg',
+        videoThumbnail: 'https://img.youtube.com/vi/3V0bw0aYxcg/maxresdefault.jpg',
     },
     {
         playerId: 'player-2',
@@ -21,7 +21,7 @@ const examplePlayers = [
         lastName: 'Williams',
         position: 'Singles',
         sport: 'Tennis',
-        profileImage: 'https://example.com/serena.jpg',
+        profileImage: 'https://img.youtube.com/vi/3V0bw0aYxcg/hqdefault.jpg',
     },
     {
         playerId: 'player-3',
@@ -37,8 +37,8 @@ const examplePlayers = [
         lastName: 'Rapinoe',
         position: 'Winger',
         sport: 'Soccer',
-        videoThumbnail: 'https://example.com/rapinoe-highlights.jpg',
-        profileImage: 'https://example.com/rapinoe.jpg', // Video takes priority
+        videoThumbnail: 'https://img.youtube.com/vi/3V0bw0aYxcg/maxresdefault.jpg',
+        profileImage: 'https://img.youtube.com/vi/3V0bw0aYxcg/hqdefault.jpg', // Video takes priority
     },
 ];
 
@@ -117,7 +117,7 @@ export function GridWithLoadingExample() {
  * Example 3: With Empty State
  */
 export function GridWithEmptyStateExample() {
-    const players = []; // Empty array
+    const players: any[] = []; // Empty array
 
     if (players.length === 0) {
         return (
@@ -191,8 +191,8 @@ export function GridWithFilteringExample() {
                         key={sport}
                         onClick={() => setSelectedSport(sport)}
                         className={`px-4 py-2 rounded-lg font-semibold whitespace-nowrap transition-all ${selectedSport === sport
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-white/90 text-slate-700 hover:bg-white'
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-white/90 text-slate-700 hover:bg-white'
                             }`}
                     >
                         {sport.charAt(0).toUpperCase() + sport.slice(1)}

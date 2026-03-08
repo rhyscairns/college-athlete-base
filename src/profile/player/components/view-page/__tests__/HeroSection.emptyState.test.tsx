@@ -9,7 +9,7 @@ import type { MockPlayerData } from '../../../data/mockPlayerData';
 
 describe('HeroSection - Empty State Integration', () => {
     describe('Requirement 3.1: Empty sections display placeholder content', () => {
-        it('displays all required fields even when empty', () => {
+        it('displays default values when fields are empty', () => {
             const emptyPlayer = {
                 firstName: '',
                 lastName: '',
@@ -26,11 +26,10 @@ describe('HeroSection - Empty State Integration', () => {
 
             render(<HeroSection player={emptyPlayer} />);
 
-            // Required fields should show placeholders
-            expect(screen.getByText('First Name')).toBeInTheDocument();
-            expect(screen.getByText('Last Name')).toBeInTheDocument();
-            expect(screen.getByText('Position')).toBeInTheDocument();
-            expect(screen.getByText('School Name')).toBeInTheDocument();
+            // Should show default values
+            expect(screen.getByText('First Last')).toBeInTheDocument();
+            expect(screen.getAllByText('Position').length).toBeGreaterThan(0);
+            expect(screen.getAllByText('School Name').length).toBeGreaterThan(0);
         });
     });
 
@@ -54,8 +53,7 @@ describe('HeroSection - Empty State Integration', () => {
 
             // Component should render without errors
             expect(container.querySelector('section')).toBeInTheDocument();
-            expect(screen.getByText('John')).toBeInTheDocument();
-            expect(screen.getByText('Doe')).toBeInTheDocument();
+            expect(screen.getByText('John Doe')).toBeInTheDocument();
         });
 
         it('renders without errors when performanceMetrics is undefined', () => {
@@ -120,7 +118,7 @@ describe('HeroSection - Empty State Integration', () => {
             render(<HeroSection player={player} isOwner={true} />);
 
             // Edit button should be visible for owner
-            expect(screen.getByRole('button', { name: /edit section/i })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /edit profile/i })).toBeInTheDocument();
         });
 
         it('does not show edit button for non-owner', () => {
@@ -141,7 +139,7 @@ describe('HeroSection - Empty State Integration', () => {
             render(<HeroSection player={player} isOwner={false} />);
 
             // Edit button should not be visible for non-owner
-            expect(screen.queryByRole('button', { name: /edit section/i })).not.toBeInTheDocument();
+            expect(screen.queryByRole('button', { name: /edit profile/i })).not.toBeInTheDocument();
         });
     });
 
@@ -164,10 +162,9 @@ describe('HeroSection - Empty State Integration', () => {
             render(<HeroSection player={newPlayer} isOwner={true} />);
 
             // Should show required fields
-            expect(screen.getByText('New')).toBeInTheDocument();
-            expect(screen.getByText('Player')).toBeInTheDocument();
-            expect(screen.getByText('Athlete')).toBeInTheDocument();
-            expect(screen.getByText('High School')).toBeInTheDocument();
+            expect(screen.getByText('New Player')).toBeInTheDocument();
+            expect(screen.getAllByText('Athlete').length).toBeGreaterThan(0);
+            expect(screen.getAllByText('High School').length).toBeGreaterThan(0);
 
             // Should not show optional empty sections
             expect(screen.queryByText('Height')).not.toBeInTheDocument();
@@ -176,7 +173,7 @@ describe('HeroSection - Empty State Integration', () => {
             expect(screen.queryByText('Performance Highlights')).not.toBeInTheDocument();
 
             // Should show edit button
-            expect(screen.getByRole('button', { name: /edit section/i })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /edit profile/i })).toBeInTheDocument();
         });
 
         it('handles partially completed profile', () => {
@@ -199,9 +196,8 @@ describe('HeroSection - Empty State Integration', () => {
             render(<HeroSection player={partialPlayer} />);
 
             // Should show filled fields
-            expect(screen.getByText('Partial')).toBeInTheDocument();
-            expect(screen.getByText('Player')).toBeInTheDocument();
-            expect(screen.getByText(/Austin, TX/)).toBeInTheDocument();
+            expect(screen.getByText('Partial Player')).toBeInTheDocument();
+            expect(screen.getAllByText(/Austin, TX/).length).toBeGreaterThan(0);
             expect(screen.getByText(/Class of 2025/)).toBeInTheDocument();
             expect(screen.getByText("6'1\"")).toBeInTheDocument();
             expect(screen.getByText('3.2')).toBeInTheDocument();
@@ -232,11 +228,10 @@ describe('HeroSection - Empty State Integration', () => {
             render(<HeroSection player={completePlayer} />);
 
             // All fields should be visible
-            expect(screen.getByText('Complete')).toBeInTheDocument();
-            expect(screen.getByText('Player')).toBeInTheDocument();
-            expect(screen.getByText('Quarterback')).toBeInTheDocument();
-            expect(screen.getByText('Elite High')).toBeInTheDocument();
-            expect(screen.getByText(/Dallas, TX/)).toBeInTheDocument();
+            expect(screen.getByText('Complete Player')).toBeInTheDocument();
+            expect(screen.getAllByText('Quarterback').length).toBeGreaterThan(0);
+            expect(screen.getAllByText('Elite High').length).toBeGreaterThan(0);
+            expect(screen.getAllByText(/Dallas, TX/).length).toBeGreaterThan(0);
             expect(screen.getByText(/Class of 2024/)).toBeInTheDocument();
             expect(screen.getByText("6'3\"")).toBeInTheDocument();
             expect(screen.getByText('210 lbs')).toBeInTheDocument();

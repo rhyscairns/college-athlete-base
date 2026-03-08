@@ -7,6 +7,15 @@ jest.mock('next/navigation', () => ({
     useRouter: jest.fn(),
 }));
 
+// Mock the SplitScreenLayout component
+jest.mock('@/authentication/components/SplitScreenLayout', () => ({
+    SplitScreenLayout: ({ children }: { children: React.ReactNode }) => (
+        <div data-testid="split-screen-layout">
+            {children}
+        </div>
+    ),
+}));
+
 // Mock fetch
 global.fetch = jest.fn();
 
@@ -22,10 +31,10 @@ describe('PlayerRegisterPage', () => {
     });
 
     describe('Page Rendering', () => {
-        it('renders page title', () => {
+        it('renders page heading', () => {
             render(<PlayerRegisterPage />);
 
-            expect(screen.getByText(/player registration/i)).toBeInTheDocument();
+            expect(screen.getByText('Create your account')).toBeInTheDocument();
         });
 
         it('renders PlayerRegistrationForm', () => {
@@ -33,26 +42,19 @@ describe('PlayerRegisterPage', () => {
 
             expect(screen.getByLabelText(/first name/i)).toBeInTheDocument();
             expect(screen.getByLabelText(/last name/i)).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: /create player account/i })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
         });
 
-        it('renders back to login link', () => {
+        it('renders sign in link', () => {
             render(<PlayerRegisterPage />);
 
-            expect(screen.getByText(/back to login/i)).toBeInTheDocument();
+            const signInLink = screen.getByText('Sign in');
+            expect(signInLink).toBeInTheDocument();
+            expect(signInLink.closest('a')).toHaveAttribute('href', '/login');
         });
     });
 
     describe('Navigation', () => {
-        it('navigates to login when back to login link is clicked', () => {
-            render(<PlayerRegisterPage />);
-
-            const backLink = screen.getByText(/back to login/i);
-            fireEvent.click(backLink);
-
-            expect(mockPush).toHaveBeenCalledWith('/login');
-        });
-
         it('navigates to login when cancel button is clicked', () => {
             render(<PlayerRegisterPage />);
 
@@ -97,7 +99,7 @@ describe('PlayerRegisterPage', () => {
 
             await fillValidForm();
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             // Wait for the async submission to complete and success message to appear
@@ -123,7 +125,7 @@ describe('PlayerRegisterPage', () => {
 
             await fillValidForm();
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             // Wait for success message
@@ -152,7 +154,7 @@ describe('PlayerRegisterPage', () => {
 
             await fillValidForm();
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             // Wait for API call
@@ -203,7 +205,7 @@ describe('PlayerRegisterPage', () => {
 
             await fillValidForm();
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             // Wait for error message to appear
@@ -228,7 +230,7 @@ describe('PlayerRegisterPage', () => {
 
             await fillValidForm();
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             // Wait for error message to appear
@@ -247,7 +249,7 @@ describe('PlayerRegisterPage', () => {
 
             await fillValidForm();
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             // Wait for error message to appear
@@ -266,7 +268,7 @@ describe('PlayerRegisterPage', () => {
 
             await fillValidForm();
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             // Wait for error message to appear
@@ -291,7 +293,7 @@ describe('PlayerRegisterPage', () => {
 
             await fillValidForm();
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             // Wait for error message
@@ -321,19 +323,11 @@ describe('PlayerRegisterPage', () => {
         });
     });
 
-    describe('Styling Consistency', () => {
-        it('uses consistent background with login page', () => {
-            const { container } = render(<PlayerRegisterPage />);
+    describe('Layout', () => {
+        it('renders with SplitScreenLayout', () => {
+            render(<PlayerRegisterPage />);
 
-            const backgroundDiv = container.querySelector('.bg-sky-200');
-            expect(backgroundDiv).toBeInTheDocument();
-        });
-
-        it('uses consistent form styling', () => {
-            const { container } = render(<PlayerRegisterPage />);
-
-            const form = container.querySelector('form');
-            expect(form).toHaveClass('bg-white/90', 'rounded-3xl', 'shadow-2xl');
+            expect(screen.getByTestId('split-screen-layout')).toBeInTheDocument();
         });
     });
 });

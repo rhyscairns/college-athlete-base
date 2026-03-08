@@ -132,8 +132,8 @@ describe('StatsShowcase', () => {
             expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
         });
 
-        it('applies edit mode background when isEditing is true', () => {
-            const { container } = render(
+        it('renders edit form when isEditing is true', () => {
+            render(
                 <StatsShowcase
                     stats={mockStats}
                     isOwner={true}
@@ -145,8 +145,9 @@ describe('StatsShowcase', () => {
                 />
             );
 
-            const section = container.querySelector('section');
-            expect(section).toHaveClass('bg-blue-500/5', 'border-blue-500/20');
+            // Should render the edit form
+            expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
         });
 
         it('calls onCancel when cancel button is clicked', () => {

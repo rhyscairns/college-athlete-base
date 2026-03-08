@@ -22,6 +22,15 @@ export function GameHighlightsSectionEdit({
         });
     };
 
+    const handleSetMainVideo = (index: number) => {
+        setFormData((prev) => {
+            return prev.map((video, i) => ({
+                ...video,
+                isFeatured: i === index,
+            }));
+        });
+    };
+
     const handleAddVideo = () => {
         const newVideo: Video = {
             id: `video-${Date.now()}`,
@@ -51,30 +60,51 @@ export function GameHighlightsSectionEdit({
     };
 
     return (
-        <div className="space-y-4 p-3 sm:p-4 bg-white/5 rounded-2xl border border-white/10 animate-fade-in">
+        <div className="space-y-4 p-6 sm:p-8 bg-white rounded-2xl shadow-lg animate-fade-in">
             <div className="space-y-4">
                 {formData.map((video, index) => (
                     <div
                         key={video.id}
-                        className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10"
+                        className="space-y-3 p-6 bg-gray-50 rounded-xl border border-gray-200"
                     >
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                            <h4 className="text-sm font-semibold text-white">
-                                Video {index + 1}
-                                {video.isFeatured && (
-                                    <span className="ml-2 px-2 py-0.5 bg-yellow-400/20 border border-yellow-400/50 rounded text-xs text-yellow-300">
-                                        FEATURED
-                                    </span>
-                                )}
-                            </h4>
+                            <div className="flex items-center gap-3">
+                                <h4 className="text-sm font-semibold text-gray-900">
+                                    Video {index + 1}
+                                    {video.isFeatured && (
+                                        <span className="ml-2 px-2 py-0.5 bg-yellow-100 border border-yellow-300 rounded text-xs text-yellow-700 font-medium">
+                                            MAIN VIDEO
+                                        </span>
+                                    )}
+                                </h4>
+                            </div>
                             <button
                                 type="button"
                                 onClick={() => handleRemoveVideo(index)}
                                 disabled={isSaving}
-                                className="min-h-[44px] w-full sm:w-auto px-3 py-1.5 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm font-semibold hover:bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all touch-manipulation"
+                                className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-semibold hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
                             >
                                 Remove
                             </button>
+                        </div>
+
+                        {/* Main Video Selection */}
+                        <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <input
+                                type="radio"
+                                id={`main-video-${index}`}
+                                name="main-video"
+                                checked={video.isFeatured || false}
+                                onChange={() => handleSetMainVideo(index)}
+                                disabled={isSaving}
+                                className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                            />
+                            <label
+                                htmlFor={`main-video-${index}`}
+                                className="text-sm font-medium text-gray-700 cursor-pointer"
+                            >
+                                Set as main video (appears on player card)
+                            </label>
                         </div>
 
                         <TextInput
@@ -100,7 +130,7 @@ export function GameHighlightsSectionEdit({
                         />
 
                         {video.url && !validateUrl(video.url) && (
-                            <p className="text-sm text-red-400 -mt-2">
+                            <p className="text-sm text-red-600 -mt-2">
                                 Please enter a valid URL
                             </p>
                         )}
@@ -153,7 +183,7 @@ export function GameHighlightsSectionEdit({
             </div>
 
             {formData.length === 0 && (
-                <p className="text-center text-slate-400 py-8">
+                <p className="text-center text-gray-500 py-8">
                     No videos added yet. Click "Add Video" to get started.
                 </p>
             )}
@@ -162,7 +192,7 @@ export function GameHighlightsSectionEdit({
                 type="button"
                 onClick={handleAddVideo}
                 disabled={isSaving}
-                className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm font-semibold hover:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed transition-all touch-manipulation"
+                className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-sm font-semibold hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
             >
                 + Add Video
             </button>

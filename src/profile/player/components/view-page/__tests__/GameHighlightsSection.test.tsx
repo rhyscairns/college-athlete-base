@@ -39,7 +39,7 @@ describe('GameHighlightsSection', () => {
 
         expect(screen.getByText('Junior Season Highlights')).toBeInTheDocument();
         expect(screen.getByText('Full season compilation')).toBeInTheDocument();
-        expect(screen.getByText('FEATURED')).toBeInTheDocument();
+        expect(screen.getByText('MAIN VIDEO')).toBeInTheDocument();
     });
 
     it('renders other videos', () => {
@@ -141,7 +141,7 @@ describe('GameHighlightsSection', () => {
             expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
         });
 
-        it('applies edit mode background when isEditing is true', () => {
+        it('renders edit mode container when isEditing is true', () => {
             const { container } = render(
                 <GameHighlightsSection
                     videos={mockVideos}
@@ -155,7 +155,7 @@ describe('GameHighlightsSection', () => {
             );
 
             const section = container.querySelector('section');
-            expect(section).toHaveClass('bg-blue-500/5', 'border-blue-500/20');
+            expect(section).toHaveClass('max-w-6xl', 'mx-auto', 'px-4', 'py-8');
         });
 
         it('calls onCancel when cancel button is clicked', () => {

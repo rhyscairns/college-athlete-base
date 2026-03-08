@@ -253,8 +253,9 @@ describe('AthleticAchievementsSectionEdit', () => {
     it('applies correct styling classes', () => {
         const { container } = render(<AthleticAchievementsSectionEdit {...defaultProps} />);
 
-        // Check for edit mode container styling
-        expect(container.querySelector('.space-y-4.p-3.sm\\:p-4.bg-white\\/5.rounded-2xl.border.border-white\\/10')).toBeInTheDocument();
+        // Check for edit mode container styling with light theme
+        const mainContainer = container.querySelector('.space-y-4.p-6.sm\\:p-8.bg-white.rounded-2xl.shadow-lg');
+        expect(mainContainer).toBeInTheDocument();
     });
 
     it('renders required indicators on title and description fields', () => {

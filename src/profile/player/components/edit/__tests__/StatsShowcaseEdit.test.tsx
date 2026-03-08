@@ -141,8 +141,8 @@ describe('StatsShowcaseEdit', () => {
     it('applies correct styling classes', () => {
         const { container } = render(<StatsShowcaseEdit {...defaultProps} />);
 
-        // Check for edit mode container styling with responsive padding
-        const editContainer = container.querySelector('.space-y-4.p-3.sm\\:p-4.bg-white\\/5');
+        // Check for edit mode container styling with light theme
+        const editContainer = container.querySelector('.bg-white.rounded-2xl.shadow-lg');
         expect(editContainer).toBeInTheDocument();
     });
 
@@ -163,6 +163,7 @@ describe('StatsShowcaseEdit', () => {
         render(<StatsShowcaseEdit {...propsWithEmptyStats} />);
 
         expect(screen.queryByLabelText(/Stat Name/i)).not.toBeInTheDocument();
+        expect(screen.getByText(/No stats added yet/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Add Stat/i })).toBeInTheDocument();
     });
 

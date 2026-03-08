@@ -3,12 +3,12 @@ import userEvent from '@testing-library/user-event';
 import { RoleSelector } from '@/authentication/components/RoleSelector';
 
 describe('RoleSelector', () => {
-    it('renders the role selection heading', () => {
+    it('renders the role selection label', () => {
         const mockOnSelectRole = jest.fn();
         render(<RoleSelector onSelectRole={mockOnSelectRole} />);
 
-        expect(screen.getByText('Choose Your Role')).toBeInTheDocument();
-        expect(screen.getByText('Select how you want to register')).toBeInTheDocument();
+        expect(screen.getByText('I am a...')).toBeInTheDocument();
+        expect(screen.getByText('OR, SIGN UP WITH EMAIL')).toBeInTheDocument();
     });
 
     it('renders both Player and Coach role options', () => {
@@ -19,22 +19,22 @@ describe('RoleSelector', () => {
         expect(screen.getByRole('button', { name: /register as coach/i })).toBeInTheDocument();
     });
 
-    it('displays Player role label in uppercase', () => {
+    it('displays Player role label', () => {
         const mockOnSelectRole = jest.fn();
         render(<RoleSelector onSelectRole={mockOnSelectRole} />);
 
         const playerLabel = screen.getByText('Player');
         expect(playerLabel).toBeInTheDocument();
-        expect(playerLabel).toHaveClass('uppercase');
+        expect(playerLabel).toHaveClass('font-bold');
     });
 
-    it('displays Coach role label in uppercase', () => {
+    it('displays Coach role label', () => {
         const mockOnSelectRole = jest.fn();
         render(<RoleSelector onSelectRole={mockOnSelectRole} />);
 
         const coachLabel = screen.getByText('Coach');
         expect(coachLabel).toBeInTheDocument();
-        expect(coachLabel).toHaveClass('uppercase');
+        expect(coachLabel).toHaveClass('font-bold');
     });
 
     it('calls onSelectRole with "player" when Player button is clicked', async () => {

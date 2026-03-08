@@ -11,6 +11,15 @@ jest.mock('next/navigation', () => ({
     useRouter: jest.fn(),
 }));
 
+// Mock the SplitScreenLayout component
+jest.mock('@/authentication/components/SplitScreenLayout', () => ({
+    SplitScreenLayout: ({ children }: { children: React.ReactNode }) => (
+        <div data-testid="split-screen-layout">
+            {children}
+        </div>
+    ),
+}));
+
 // Mock CoachRegistrationForm
 jest.mock('@/authentication/components/CoachRegistrationForm', () => ({
     CoachRegistrationForm: ({ onSubmit, onCancel }: any) => (
@@ -64,21 +73,23 @@ describe('CoachRegisterPage', () => {
         it('renders the coach registration page', () => {
             render(<CoachRegisterPage />);
 
-            expect(screen.getByText(/COACH REGISTRATION/i)).toBeInTheDocument();
+            expect(screen.getByText('Create coach account')).toBeInTheDocument();
             expect(screen.getByTestId('coach-registration-form')).toBeInTheDocument();
         });
 
-        it('renders back to login button', () => {
+        it('renders sign in link', () => {
             render(<CoachRegisterPage />);
 
-            expect(screen.getByText(/Back to Login/i)).toBeInTheDocument();
+            const signInLink = screen.getByText('Sign in');
+            expect(signInLink).toBeInTheDocument();
+            expect(signInLink.closest('a')).toHaveAttribute('href', '/login');
         });
 
-        it('navigates to login when back button is clicked', () => {
+        it('navigates to login when cancel is clicked', () => {
             render(<CoachRegisterPage />);
 
-            const backButton = screen.getByText(/Back to Login/i);
-            backButton.click();
+            const cancelButton = screen.getByText('Cancel');
+            cancelButton.click();
 
             expect(mockPush).toHaveBeenCalledWith('/login');
         });
@@ -191,18 +202,12 @@ describe('CoachRegisterPage', () => {
             submitButton.click();
 
             await waitFor(() => {
-                expect(consoleErrorSpy).toHaveBeenCalledWith(
-                    'Coach registration error:',
-                    expect.any(Error)
-                );
+                expect(screen.getByText('Registration Error')).toBeInTheDocument();
+                expect(screen.getByText(/email: Invalid email address/i)).toBeInTheDocument();
             });
-
-            consoleErrorSpy.mockRestore();
         });
 
         it('handles email already registered error', async () => {
-            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
             (global.fetch as jest.Mock).mockResolvedValueOnce({
                 ok: false,
                 json: async () => ({
@@ -217,20 +222,12 @@ describe('CoachRegisterPage', () => {
             submitButton.click();
 
             await waitFor(() => {
-                expect(consoleErrorSpy).toHaveBeenCalledWith(
-                    'Coach registration error:',
-                    expect.objectContaining({
-                        message: 'Email already registered',
-                    })
-                );
+                expect(screen.getByText('Registration Error')).toBeInTheDocument();
+                expect(screen.getByText('Email already registered')).toBeInTheDocument();
             });
-
-            consoleErrorSpy.mockRestore();
         });
 
         it('handles network errors', async () => {
-            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
             (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
             render(<CoachRegisterPage />);
@@ -239,20 +236,11 @@ describe('CoachRegisterPage', () => {
             submitButton.click();
 
             await waitFor(() => {
-                expect(consoleErrorSpy).toHaveBeenCalledWith(
-                    'Coach registration error:',
-                    expect.objectContaining({
-                        message: 'Network error',
-                    })
-                );
+                expect(screen.getByText('Registration Error')).toBeInTheDocument();
             });
-
-            consoleErrorSpy.mockRestore();
         });
 
         it('handles generic API errors', async () => {
-            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
             (global.fetch as jest.Mock).mockResolvedValueOnce({
                 ok: false,
                 json: async () => ({}),
@@ -264,15 +252,9 @@ describe('CoachRegisterPage', () => {
             submitButton.click();
 
             await waitFor(() => {
-                expect(consoleErrorSpy).toHaveBeenCalledWith(
-                    'Coach registration error:',
-                    expect.objectContaining({
-                        message: 'Registration failed. Please try again.',
-                    })
-                );
+                expect(screen.getByText('Registration Error')).toBeInTheDocument();
+                expect(screen.getByText('Registration failed. Please try again.')).toBeInTheDocument();
             });
-
-            consoleErrorSpy.mockRestore();
         });
     });
 

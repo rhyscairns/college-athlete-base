@@ -12,6 +12,15 @@ jest.mock('@/authentication/components/LoginForm', () => ({
     ),
 }));
 
+// Mock the SplitScreenLayout component
+jest.mock('@/authentication/components/SplitScreenLayout', () => ({
+    SplitScreenLayout: ({ children }: { children: React.ReactNode }) => (
+        <div data-testid="split-screen-layout" className="min-h-screen flex flex-col lg:flex-row">
+            {children}
+        </div>
+    ),
+}));
+
 describe('LoginPage', () => {
     it('renders without crashing', () => {
         render(<LoginPage />);
@@ -24,32 +33,25 @@ describe('LoginPage', () => {
 
         expect(wrapper).toHaveClass('min-h-screen');
         expect(wrapper).toHaveClass('flex');
-        expect(wrapper).toHaveClass('items-center');
-        expect(wrapper).toHaveClass('justify-center');
+        expect(wrapper).toHaveClass('flex-col');
+        expect(wrapper).toHaveClass('lg:flex-row');
     });
 
-    it('applies responsive padding classes', () => {
-        const { container } = render(<LoginPage />);
-        const wrapper = container.firstChild as HTMLElement;
-
-        expect(wrapper).toHaveClass('px-4');
-        expect(wrapper).toHaveClass('sm:px-6');
-        expect(wrapper).toHaveClass('lg:px-8');
+    it('renders with SplitScreenLayout', () => {
+        render(<LoginPage />);
+        expect(screen.getByTestId('split-screen-layout')).toBeInTheDocument();
     });
 
-    it('applies background color', () => {
-        const { container } = render(<LoginPage />);
-        const wrapper = container.firstChild as HTMLElement;
-
-        expect(wrapper).toHaveClass('bg-sky-200');
+    it('renders sign in heading', () => {
+        render(<LoginPage />);
+        expect(screen.getByText('Sign in')).toBeInTheDocument();
     });
 
-    it('constrains content width with max-w-md', () => {
-        const { container } = render(<LoginPage />);
-        const innerWrapper = container.querySelector('.max-w-md');
-
-        expect(innerWrapper).toBeInTheDocument();
-        expect(innerWrapper).toHaveClass('w-full');
+    it('renders sign up link', () => {
+        render(<LoginPage />);
+        const signUpLink = screen.getByText('Sign up');
+        expect(signUpLink).toBeInTheDocument();
+        expect(signUpLink.closest('a')).toHaveAttribute('href', '/register');
     });
 
     it('passes onSuccess prop to LoginForm', () => {
@@ -72,16 +74,6 @@ describe('LoginPage', () => {
         expect(screen.getByTestId('redirect-to')).toHaveTextContent('no-redirect');
     });
 
-    it('centers content vertically and horizontally', () => {
-        const { container } = render(<LoginPage />);
-        const wrapper = container.firstChild as HTMLElement;
-
-        // Check for flexbox centering
-        expect(wrapper).toHaveClass('flex');
-        expect(wrapper).toHaveClass('items-center'); // vertical centering
-        expect(wrapper).toHaveClass('justify-center'); // horizontal centering
-    });
-
     it('uses full viewport height', () => {
         const { container } = render(<LoginPage />);
         const wrapper = container.firstChild as HTMLElement;
@@ -90,20 +82,11 @@ describe('LoginPage', () => {
     });
 
     it('has proper structure for responsive layout', () => {
-        const { container } = render(<LoginPage />);
+        render(<LoginPage />);
 
-        // Outer container
-        const outerDiv = container.firstChild as HTMLElement;
-        expect(outerDiv.tagName).toBe('DIV');
-
-        // Find the form container (skip the background image div and title div)
-        const formContainer = Array.from(outerDiv.children).find(
-            child => child.classList.contains('max-w-md')
-        ) as HTMLElement;
-
-        expect(formContainer).toBeTruthy();
-        expect(formContainer).toHaveClass('w-full');
-        expect(formContainer).toHaveClass('max-w-md');
+        // Check that the layout is rendered
+        expect(screen.getByTestId('split-screen-layout')).toBeInTheDocument();
+        expect(screen.getByTestId('login-form')).toBeInTheDocument();
     });
 
     it('passes all props correctly to LoginForm', () => {

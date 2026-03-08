@@ -280,8 +280,9 @@ describe('CoachHeroSectionEdit', () => {
             />
         );
 
-        const mainContainer = container.firstChild;
-        expect(mainContainer).toHaveClass('space-y-4', 'p-3', 'sm:p-4', 'bg-white/5', 'rounded-2xl', 'border', 'border-white/10', 'animate-fade-in');
+        // Check for the card container with light theme styling
+        const cardContainer = container.querySelector('.bg-white.rounded-2xl.shadow-lg');
+        expect(cardContainer).toBeInTheDocument();
     });
 
     it('uses grid layout for paired fields', () => {
@@ -419,7 +420,7 @@ describe('CoachHeroSectionEdit', () => {
             );
 
             const phoneInput = screen.getByLabelText(/phone/i);
-            expect(phoneInput).toHaveAttribute('placeholder', 'e.g., +1-555-0123');
+            expect(phoneInput).toHaveAttribute('placeholder', 'e.g., +1 (310) 825-4321');
         });
 
         it('shows helpful placeholder for position field', () => {
@@ -445,7 +446,7 @@ describe('CoachHeroSectionEdit', () => {
             );
 
             const positionInput = screen.getByLabelText(/position/i);
-            expect(positionInput).toHaveAttribute('placeholder', 'e.g., Head Coach');
+            expect(positionInput).toHaveAttribute('placeholder', 'e.g., Head Basketball Coach');
         });
 
         it('shows helpful placeholder for university field', () => {
@@ -471,7 +472,7 @@ describe('CoachHeroSectionEdit', () => {
             );
 
             const universityInput = screen.getByLabelText(/university/i);
-            expect(universityInput).toHaveAttribute('placeholder', 'e.g., State University');
+            expect(universityInput).toHaveAttribute('placeholder', 'e.g., University of California, Los Angeles');
         });
 
         it('shows helpful placeholder for sport field', () => {
@@ -523,7 +524,7 @@ describe('CoachHeroSectionEdit', () => {
             );
 
             const profileImageInput = screen.getByLabelText(/profile image url/i);
-            expect(profileImageInput).toHaveAttribute('placeholder', 'https://example.com/image.jpg');
+            expect(profileImageInput).toHaveAttribute('placeholder', 'https://example.com/profile-image.jpg');
         });
 
         it('shows helpful placeholder for team website URL field', () => {
@@ -549,7 +550,7 @@ describe('CoachHeroSectionEdit', () => {
             );
 
             const teamWebsiteInput = screen.getByLabelText(/team website url/i);
-            expect(teamWebsiteInput).toHaveAttribute('placeholder', 'https://university.edu/basketball');
+            expect(teamWebsiteInput).toHaveAttribute('placeholder', 'https://uclabruins.com/sports/basketball');
         });
     });
 });

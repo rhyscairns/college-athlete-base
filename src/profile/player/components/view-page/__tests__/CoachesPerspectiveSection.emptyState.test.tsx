@@ -74,11 +74,11 @@ describe('CoachesPerspectiveSection - Empty State', () => {
                 />
             );
 
-            // Check for the icon emoji
+            // Check for the icon emoji in the empty state
             expect(screen.getByText('💬')).toBeInTheDocument();
         });
 
-        it('should still show section header for owners', () => {
+        it('should not show section header for empty state', () => {
             render(
                 <CoachesPerspectiveSection
                     testimonials={emptyTestimonials}
@@ -86,21 +86,22 @@ describe('CoachesPerspectiveSection - Empty State', () => {
                 />
             );
 
-            expect(screen.getByText("Coaches' Perspective")).toBeInTheDocument();
-            expect(screen.getByText('What the coaches say')).toBeInTheDocument();
+            // Header is only shown when there's data, not in empty state
+            expect(screen.queryByText("Coaches' Perspective")).not.toBeInTheDocument();
         });
 
-        it('should show edit button in header for owners', () => {
+        it('should show "Add Content" button in empty state', () => {
             render(
                 <CoachesPerspectiveSection
                     testimonials={emptyTestimonials}
                     isOwner={true}
+                    onEdit={jest.fn()}
                 />
             );
 
-            // The EditButton component should be present
-            const editButtons = screen.getAllByRole('button');
-            expect(editButtons.length).toBeGreaterThan(0);
+            // The Add Content button should be present in the empty state
+            const addButton = screen.getByText('Add Content');
+            expect(addButton).toBeInTheDocument();
         });
     });
 

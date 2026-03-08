@@ -144,7 +144,7 @@ describe('AthleticAchievementsSection - Inline Editing', () => {
     });
 
     describe('Edit Mode Background', () => {
-        it('applies edit mode background when isEditing is true', () => {
+        it('applies standard section styling when isEditing is true', () => {
             const { container } = render(
                 <AthleticAchievementsSection
                     achievements={mockAchievements}
@@ -158,10 +158,10 @@ describe('AthleticAchievementsSection - Inline Editing', () => {
             );
 
             const section = container.querySelector('section');
-            expect(section).toHaveClass('bg-blue-500/5', 'border-blue-500/20');
+            expect(section).toHaveClass('max-w-6xl', 'mx-auto', 'px-4', 'py-8');
         });
 
-        it('does not apply edit mode background when isEditing is false', () => {
+        it('applies standard section styling when isEditing is false', () => {
             const { container } = render(
                 <AthleticAchievementsSection
                     achievements={mockAchievements}
@@ -175,7 +175,7 @@ describe('AthleticAchievementsSection - Inline Editing', () => {
             );
 
             const section = container.querySelector('section');
-            expect(section).not.toHaveClass('bg-blue-500/5');
+            expect(section).toHaveClass('max-w-6xl', 'mx-auto', 'px-4', 'py-8');
         });
     });
 

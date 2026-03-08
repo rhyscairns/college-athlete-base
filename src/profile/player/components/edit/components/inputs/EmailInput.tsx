@@ -25,8 +25,10 @@ export function EmailInput({
                 onBlur={onBlur}
                 placeholder={placeholder}
                 disabled={disabled}
-                className={`w-full h-12 px-4 bg-white/60 backdrop-blur-sm text-gray-800 placeholder-gray-500 border-2 ${error ? 'border-red-500' : 'border-white/80'
-                    } rounded-xl focus:outline-none focus:bg-white/80 focus:border-white disabled:opacity-50 disabled:cursor-not-allowed transition-all`}
+                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all ${error
+                    ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
+                    : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+                    }`}
             />
             {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
         </div>

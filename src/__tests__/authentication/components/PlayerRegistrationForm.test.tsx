@@ -36,7 +36,7 @@ describe('PlayerRegistrationForm', () => {
         it('renders submit button', () => {
             render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
 
-            expect(screen.getByRole('button', { name: /create player account/i })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
         });
 
         it('renders cancel button when onCancel is provided', () => {
@@ -187,7 +187,7 @@ describe('PlayerRegistrationForm', () => {
                 expect(screen.getByLabelText(/state/i)).toBeInTheDocument();
             });
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -205,7 +205,7 @@ describe('PlayerRegistrationForm', () => {
                 expect(screen.getByLabelText(/region\/county/i)).toBeInTheDocument();
             });
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -239,7 +239,7 @@ describe('PlayerRegistrationForm', () => {
 
             fireEvent.change(screen.getByLabelText(/state/i), { target: { value: 'CA' } });
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -271,7 +271,7 @@ describe('PlayerRegistrationForm', () => {
 
             fireEvent.change(screen.getByLabelText(/region\/county/i), { target: { value: 'Ontario' } });
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -304,7 +304,7 @@ describe('PlayerRegistrationForm', () => {
             fireEvent.change(screen.getByLabelText(/scholarship amount needed/i), { target: { value: '50000' } });
             fireEvent.change(screen.getByLabelText(/sat\/act results/i), { target: { value: 'SAT: 1450' } });
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -328,7 +328,7 @@ describe('PlayerRegistrationForm', () => {
         it('does not submit form with invalid data', async () => {
             render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -348,7 +348,7 @@ describe('PlayerRegistrationForm', () => {
 
             fireEvent.change(screen.getByLabelText(/state/i), { target: { value: 'CA' } });
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             expect(submitButton).toBeDisabled();
@@ -370,7 +370,7 @@ describe('PlayerRegistrationForm', () => {
 
             fireEvent.change(screen.getByLabelText(/state/i), { target: { value: 'CA' } });
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -381,7 +381,7 @@ describe('PlayerRegistrationForm', () => {
         it('focuses first error field on validation failure', async () => {
             render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             // The form should not submit when validation fails
@@ -429,7 +429,7 @@ describe('PlayerRegistrationForm', () => {
 
             fireEvent.change(screen.getByLabelText(/state/i), { target: { value: 'CA' } });
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             const cancelButton = screen.getByRole('button', { name: /cancel/i });
@@ -474,7 +474,7 @@ describe('PlayerRegistrationForm', () => {
 
             fireEvent.change(screen.getByLabelText(/state/i), { target: { value: 'CA' } });
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -505,7 +505,7 @@ describe('PlayerRegistrationForm', () => {
 
             fireEvent.change(screen.getByLabelText(/state/i), { target: { value: 'CA' } });
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {
@@ -538,7 +538,7 @@ describe('PlayerRegistrationForm', () => {
 
             fireEvent.change(screen.getByLabelText(/state/i), { target: { value: 'TX' } });
 
-            const submitButton = screen.getByRole('button', { name: /create player account/i });
+            const submitButton = screen.getByRole('button', { name: /create account/i });
             fireEvent.click(submitButton);
 
             await waitFor(() => {

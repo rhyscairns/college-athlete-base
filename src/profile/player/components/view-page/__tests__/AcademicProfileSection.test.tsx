@@ -113,7 +113,7 @@ describe('AcademicProfileSection', () => {
             expect(screen.queryByRole('button', { name: /^edit$/i })).not.toBeInTheDocument();
         });
 
-        it('applies edit mode background styling', () => {
+        it('applies standard section styling in edit mode', () => {
             const { container } = render(
                 <AcademicProfileSection
                     academic={mockAcademicData}
@@ -123,8 +123,7 @@ describe('AcademicProfileSection', () => {
             );
 
             const section = container.querySelector('section');
-            expect(section).toHaveClass('bg-blue-500/5');
-            expect(section).toHaveClass('border-blue-500/20');
+            expect(section).toHaveClass('max-w-6xl', 'mx-auto', 'px-4', 'py-8');
         });
     });
 

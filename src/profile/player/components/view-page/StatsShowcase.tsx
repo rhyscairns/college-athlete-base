@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { StatsShowcaseProps, ValidationErrors } from '../../types';
-import { EditButton } from './EditButton';
 import { StatsShowcaseEdit } from '../edit/components/sections/StatsShowcaseEdit';
 import { EmptySection } from '../EmptySection';
 import { hasSectionData } from '../../utils/profile-helpers';
@@ -21,7 +20,6 @@ export function StatsShowcase({
     const [errors, setErrors] = useState<ValidationErrors>({});
     const [isSaving, setIsSaving] = useState(false);
 
-    // Reset form data when stats change or when exiting edit mode
     useEffect(() => {
         if (!isEditing) {
             setFormData(stats);
@@ -29,12 +27,9 @@ export function StatsShowcase({
         }
     }, [isEditing, stats]);
 
-    // Scroll into view when entering edit mode and set focus
     useEffect(() => {
         if (isEditing && sectionRef.current) {
             sectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            // Focus the first input field after a short delay to allow for scroll
             setTimeout(() => {
                 const firstInput = sectionRef.current?.querySelector('input, textarea, select') as HTMLElement;
                 if (firstInput) {
@@ -44,7 +39,6 @@ export function StatsShowcase({
         }
     }, [isEditing]);
 
-    // Handle Escape key to cancel editing
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isEditing) {
@@ -60,25 +54,20 @@ export function StatsShowcase({
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isEditing]);
 
     const validateStatsSection = (data: Record<string, number | string>): ValidationErrors => {
         const validationErrors: ValidationErrors = {};
-
-        // Validate that numeric values are valid numbers
         Object.entries(data).forEach(([key, value]) => {
             if (value === '' || value === null || value === undefined) {
                 validationErrors[`${key}-value`] = 'Value is required';
             } else if (typeof value === 'string') {
-                // Remove commas before checking if it's a number
                 const cleanedValue = value.replace(/,/g, '');
                 if (isNaN(Number(cleanedValue))) {
                     validationErrors[`${key}-value`] = 'Value must be a number';
                 }
             }
         });
-
         return validationErrors;
     };
 
@@ -90,14 +79,11 @@ export function StatsShowcase({
         }
 
         setIsSaving(true);
-        // Simulate save delay
         await new Promise((resolve) => setTimeout(resolve, 500));
 
         if (onSave) {
-            // Convert string values to numbers where appropriate
             const updatedStats = Object.entries(formData).reduce((acc, [key, value]) => {
                 if (typeof value === 'string') {
-                    // Remove commas and check if it's a valid number
                     const cleanedValue = value.replace(/,/g, '');
                     acc[key] = !isNaN(Number(cleanedValue)) && cleanedValue !== '' ? Number(cleanedValue) : value;
                 } else {
@@ -114,7 +100,6 @@ export function StatsShowcase({
     };
 
     const handleCancel = () => {
-        // Reset form data to original stats
         setFormData(stats);
         setErrors({});
         if (onCancel) {
@@ -122,32 +107,19 @@ export function StatsShowcase({
         }
     };
 
-    // Check if stats section has data
     const hasStats = hasSectionData(stats, 'stats');
 
-    // If no stats and not owner, hide the section
     if (!hasStats && !isOwner) {
         return null;
     }
 
-    // If no stats and owner, show empty state (unless editing)
     if (!hasStats && isOwner && !isEditing) {
         return (
-            <section
-                id="stats"
-                ref={sectionRef}
-                className="relative min-h-[calc(100vh-80px)] flex items-center px-4 py-6"
-            >
-                <div className="max-w-6xl mx-auto w-full">
-                    {/* Section Header */}
-                    <div className="text-center mb-8">
-                        <h2 className="text-3xl md:text-4xl font-black text-white mb-3">Season Statistics</h2>
-                        <p className="text-base text-slate-400">Junior Year Performance • 2023-24</p>
-                    </div>
-
+            <section id="stats" ref={sectionRef} className="max-w-6xl mx-auto px-4 py-8">
+                <div className="bg-white rounded-2xl shadow-lg p-8">
                     <EmptySection
                         title="No Stats Yet"
-                        description="Add your season statistics to showcase your performance on the field. Include key metrics like receiving yards, touchdowns, and more."
+                        description="Add your season statistics to showcase your performance. Include key metrics like receiving yards, touchdowns, and more."
                         isOwner={isOwner}
                         showEditButton={true}
                         onEdit={onEdit}
@@ -158,66 +130,70 @@ export function StatsShowcase({
         );
     }
 
+    if (isEditing) {
+        return (
+            <section id="stats" ref={sectionRef} className="max-w-6xl mx-auto px-4 py-8">
+                <StatsShowcaseEdit
+                    formData={formData}
+                    setFormData={setFormData}
+                    errors={errors}
+                    isSaving={isSaving}
+                    onSave={handleSave}
+                    onCancel={handleCancel}
+                />
+            </section>
+        );
+    }
+
     const statCards = Object.entries(stats || {}).map(([key, value]: [string, string | number]) => ({
         label: key,
         value: typeof value === 'string' ? value : value.toLocaleString(),
-        sublabel: '',
     }));
 
     return (
-        <section
-            id="stats"
-            ref={sectionRef}
-            className={`relative min-h-[calc(100vh-80px)] flex items-center px-4 py-6 transition-all duration-300 ease-in-out ${isEditing ? 'bg-blue-500/5 border border-blue-500/20 rounded-2xl p-6' : ''
-                }`}
-        >
-            <div className="max-w-6xl mx-auto w-full">
-                {/* Section Header with Edit Button */}
-                <div className="text-center mb-8">
-                    <div className="flex items-center justify-center gap-4 mb-3">
-                        <h2 className="text-3xl md:text-4xl font-black text-white">Season Statistics</h2>
-                        {isOwner && !isEditing && (
-                            <EditButton
-                                onClick={() => onEdit?.()}
-                                disabled={isAnyOtherSectionEditing}
-                                tooltip={
-                                    isAnyOtherSectionEditing
-                                        ? 'Another section is being edited'
-                                        : undefined
-                                }
-                            />
-                        )}
+        <section id="stats" ref={sectionRef} className="max-w-6xl mx-auto px-4 py-8">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-6 sm:px-8 relative">
+                    {isOwner && (
+                        <button
+                            onClick={() => onEdit?.()}
+                            disabled={isAnyOtherSectionEditing}
+                            className="absolute top-4 right-4 px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Edit
+                        </button>
+                    )}
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                            <span className="text-2xl">📊</span>
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-white">Season Statistics</h2>
+                            <p className="text-blue-100">Junior Year Performance • 2023-24</p>
+                        </div>
                     </div>
-                    <p className="text-base text-slate-400">Junior Year Performance • 2023-24</p>
                 </div>
 
-                {isEditing ? (
-                    <StatsShowcaseEdit
-                        formData={formData}
-                        setFormData={setFormData}
-                        errors={errors}
-                        isSaving={isSaving}
-                        onSave={handleSave}
-                        onCancel={handleCancel}
-                    />
-                ) : (
+                {/* Stats Grid */}
+                <div className="p-6 sm:p-8">
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         {statCards.map((stat, idx) => (
                             <div
                                 key={idx}
-                                className="group relative bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 hover:border-yellow-400/50 hover:scale-105 transition-all duration-300"
+                                className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200 hover:shadow-md transition-all"
                             >
                                 <div className="text-center">
-                                    <div className="text-4xl font-black text-yellow-400 mb-2">{stat.value}</div>
-                                    <div className="text-xs font-bold text-white uppercase tracking-wide mb-1">{stat.label}</div>
-                                    <div className="text-xs text-slate-400">{stat.sublabel}</div>
+                                    <div className="text-3xl font-black text-blue-600 mb-2">{stat.value}</div>
+                                    <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide">{stat.label}</div>
                                 </div>
-
-                                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/0 to-amber-500/0 group-hover:from-yellow-400/5 group-hover:to-amber-500/5 rounded-2xl transition-all"></div>
                             </div>
                         ))}
                     </div>
-                )}
+                </div>
             </div>
         </section>
     );

@@ -103,9 +103,9 @@ describe('GameHighlightsSection - Inline Editing', () => {
             });
         });
 
-        it('displays featured video prominently', () => {
+        it('displays main video prominently', () => {
             render(<GameHighlightsSection {...defaultProps} isEditing={false} />);
-            expect(screen.getByText(/featured/i)).toBeInTheDocument();
+            expect(screen.getByText(/main video/i)).toBeInTheDocument();
         });
     });
 });

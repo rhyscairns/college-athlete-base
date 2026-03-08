@@ -306,7 +306,7 @@ describe('LoginForm', () => {
     const { container } = render(<LoginForm />);
     const form = container.querySelector('form');
 
-    expect(form).toHaveClass('w-full', 'max-w-md', 'mx-auto', 'p-12');
+    expect(form).toHaveClass('w-full', 'space-y-6');
   });
 
   it('renders with redirectTo prop without errors', () => {

@@ -67,7 +67,7 @@ describe('PlayerCard', () => {
 
             render(<PlayerCard {...dataWithVideo} />);
 
-            const image = screen.getByAltText('John Smith highlight');
+            const image = screen.getByAltText('John Smith highlight video thumbnail');
             expect(image).toBeInTheDocument();
             expect(image).toHaveAttribute('src', 'https://example.com/video-thumb.jpg');
         });
@@ -81,7 +81,7 @@ describe('PlayerCard', () => {
             render(<PlayerCard {...dataWithVideo} />);
 
             // Check for play button SVG
-            const svg = screen.getByAltText('John Smith highlight').parentElement?.querySelector('svg');
+            const svg = screen.getByAltText('John Smith highlight video thumbnail').parentElement?.querySelector('svg');
             expect(svg).toBeInTheDocument();
         });
 
@@ -93,7 +93,7 @@ describe('PlayerCard', () => {
 
             render(<PlayerCard {...dataWithVideo} />);
 
-            const image = screen.getByAltText('John Smith highlight');
+            const image = screen.getByAltText('John Smith highlight video thumbnail');
             expect(image).toBeInTheDocument();
             expect(image).toHaveAttribute('src', 'https://example.com/video-thumb.jpg');
         });
@@ -108,7 +108,7 @@ describe('PlayerCard', () => {
 
             render(<PlayerCard {...dataWithImage} />);
 
-            const image = screen.getByAltText('John Smith');
+            const image = screen.getByAltText('John Smith profile photo');
             expect(image).toBeInTheDocument();
             expect(image).toHaveAttribute('src', 'https://example.com/profile.jpg');
         });
@@ -123,9 +123,9 @@ describe('PlayerCard', () => {
             render(<PlayerCard {...dataWithBoth} />);
 
             // Should show video thumbnail
-            expect(screen.getByAltText('John Smith highlight')).toBeInTheDocument();
+            expect(screen.getByAltText('John Smith highlight video thumbnail')).toBeInTheDocument();
             // Should not show profile image
-            expect(screen.queryByAltText('John Smith')).not.toBeInTheDocument();
+            expect(screen.queryByAltText('John Smith profile photo')).not.toBeInTheDocument();
         });
 
         it('should use Next.js Image component for profile image', () => {
@@ -136,7 +136,7 @@ describe('PlayerCard', () => {
 
             render(<PlayerCard {...dataWithImage} />);
 
-            const image = screen.getByAltText('John Smith');
+            const image = screen.getByAltText('John Smith profile photo');
             expect(image).toBeInTheDocument();
             expect(image).toHaveAttribute('src', 'https://example.com/profile.jpg');
         });
@@ -171,7 +171,7 @@ describe('PlayerCard', () => {
 
             render(<PlayerCard {...dataWithVideo} />);
 
-            expect(screen.getByAltText('John Smith highlight')).toBeInTheDocument();
+            expect(screen.getByAltText('John Smith highlight video thumbnail')).toBeInTheDocument();
         });
 
         it('should have proper alt text for profile image', () => {
@@ -182,7 +182,7 @@ describe('PlayerCard', () => {
 
             render(<PlayerCard {...dataWithImage} />);
 
-            expect(screen.getByAltText('John Smith')).toBeInTheDocument();
+            expect(screen.getByAltText('John Smith profile photo')).toBeInTheDocument();
         });
 
         it('should have minimum touch target size for button', () => {
@@ -191,8 +191,8 @@ describe('PlayerCard', () => {
             const button = screen.getByRole('link', { name: /view profile/i });
             // Verify the button exists and has appropriate styling classes
             expect(button).toBeInTheDocument();
-            // Check that parent container has the card structure
-            expect(container.querySelector('.bg-white\\/90')).toBeInTheDocument();
+            // Check that parent container has the card structure with light theme
+            expect(container.querySelector('.bg-white')).toBeInTheDocument();
         });
     });
 
@@ -201,7 +201,7 @@ describe('PlayerCard', () => {
             render(<PlayerCard {...mockPlayerData} />);
 
             const card = screen.getByText('John Smith').closest('div')?.parentElement;
-            expect(card).toHaveClass('hover:shadow-xl');
+            expect(card).toHaveClass('hover:shadow-2xl');
             expect(card).toHaveClass('hover:-translate-y-1');
         });
 
@@ -225,6 +225,279 @@ describe('PlayerCard', () => {
             // React.memo components don't always have displayName set
             // Instead, verify it's a memoized component by checking the type
             expect(typeof PlayerCard).toBe('object');
+        });
+    });
+
+    describe('Status Badge', () => {
+        it('should render available status badge with green styling', () => {
+            const dataWithStatus = {
+                ...mockPlayerData,
+                status: 'available' as const,
+            };
+
+            render(<PlayerCard {...dataWithStatus} />);
+
+            const badge = screen.getByText('Available');
+            expect(badge).toBeInTheDocument();
+            expect(badge).toHaveClass('bg-green-500', 'text-white');
+        });
+
+        it('should render interested status badge with orange styling', () => {
+            const dataWithStatus = {
+                ...mockPlayerData,
+                status: 'interested' as const,
+            };
+
+            render(<PlayerCard {...dataWithStatus} />);
+
+            const badge = screen.getByText('Interested');
+            expect(badge).toBeInTheDocument();
+            expect(badge).toHaveClass('bg-orange-500', 'text-white');
+        });
+
+        it('should render contacted status badge with red styling', () => {
+            const dataWithStatus = {
+                ...mockPlayerData,
+                status: 'contacted' as const,
+            };
+
+            render(<PlayerCard {...dataWithStatus} />);
+
+            const badge = screen.getByText('Contacted');
+            expect(badge).toBeInTheDocument();
+            expect(badge).toHaveClass('bg-red-500', 'text-white');
+        });
+
+        it('should not render status badge when status is not provided', () => {
+            render(<PlayerCard {...mockPlayerData} />);
+
+            expect(screen.queryByText('Available')).not.toBeInTheDocument();
+            expect(screen.queryByText('Interested')).not.toBeInTheDocument();
+            expect(screen.queryByText('Contacted')).not.toBeInTheDocument();
+        });
+
+        it('should position status badge in top-right corner', () => {
+            const dataWithStatus = {
+                ...mockPlayerData,
+                status: 'available' as const,
+            };
+
+            const { container } = render(<PlayerCard {...dataWithStatus} />);
+
+            const badgeContainer = screen.getByText('Available').parentElement;
+            expect(badgeContainer).toHaveClass('absolute', 'top-3', 'right-3');
+        });
+
+        it('should have rounded corners on status badge', () => {
+            const dataWithStatus = {
+                ...mockPlayerData,
+                status: 'available' as const,
+            };
+
+            render(<PlayerCard {...dataWithStatus} />);
+
+            const badge = screen.getByText('Available');
+            expect(badge).toHaveClass('rounded-full');
+        });
+    });
+
+    describe('Height and Weight Display', () => {
+        it('should render height and weight when both are provided', () => {
+            const dataWithStats = {
+                ...mockPlayerData,
+                height: '6\'2"',
+                weight: '210 lbs',
+            };
+
+            render(<PlayerCard {...dataWithStats} />);
+
+            expect(screen.getByText('6\'2" • 210 lbs')).toBeInTheDocument();
+        });
+
+        it('should render only height when weight is not provided', () => {
+            const dataWithHeight = {
+                ...mockPlayerData,
+                height: '6\'2"',
+            };
+
+            render(<PlayerCard {...dataWithHeight} />);
+
+            expect(screen.getByText('6\'2"')).toBeInTheDocument();
+        });
+
+        it('should render only weight when height is not provided', () => {
+            const dataWithWeight = {
+                ...mockPlayerData,
+                weight: '210 lbs',
+            };
+
+            render(<PlayerCard {...dataWithWeight} />);
+
+            expect(screen.getByText('210 lbs')).toBeInTheDocument();
+        });
+
+        it('should not render height/weight section when neither is provided', () => {
+            render(<PlayerCard {...mockPlayerData} />);
+
+            // Check that the text doesn't exist by looking for the bullet separator
+            expect(screen.queryByText(/•/)).not.toBeInTheDocument();
+        });
+
+        it('should display height and weight below position', () => {
+            const dataWithStats = {
+                ...mockPlayerData,
+                height: '6\'2"',
+                weight: '210 lbs',
+            };
+
+            const { container } = render(<PlayerCard {...dataWithStats} />);
+
+            const statsElement = screen.getByText('6\'2" • 210 lbs');
+            const positionElement = screen.getByText('Point Guard');
+
+            // Both should be in the same parent container
+            expect(statsElement.parentElement).toBe(positionElement.parentElement);
+        });
+
+        it('should use appropriate text styling for height/weight', () => {
+            const dataWithStats = {
+                ...mockPlayerData,
+                height: '6\'2"',
+                weight: '210 lbs',
+            };
+
+            render(<PlayerCard {...dataWithStats} />);
+
+            const statsElement = screen.getByText('6\'2" • 210 lbs');
+            expect(statsElement).toHaveClass('text-sm', 'text-gray-500');
+        });
+    });
+
+    describe('Configurable Action Buttons', () => {
+        it('should render default primary button as link with "View Profile" label', () => {
+            render(<PlayerCard {...mockPlayerData} />);
+
+            const button = screen.getByRole('link', { name: /view profile/i });
+            expect(button).toBeInTheDocument();
+            expect(button).toHaveAttribute('href', '/player/player-123/profile');
+        });
+
+        it('should render custom primary button label', () => {
+            const dataWithCustomLabel = {
+                ...mockPlayerData,
+                primaryButtonLabel: 'See Details',
+            };
+
+            render(<PlayerCard {...dataWithCustomLabel} />);
+
+            expect(screen.getByRole('link', { name: /see details/i })).toBeInTheDocument();
+        });
+
+        it('should render primary button as button when onPrimaryClick is provided', () => {
+            const handleClick = jest.fn();
+            const dataWithCallback = {
+                ...mockPlayerData,
+                onPrimaryClick: handleClick,
+            };
+
+            render(<PlayerCard {...dataWithCallback} />);
+
+            const button = screen.getByRole('button', { name: /view profile/i });
+            expect(button).toBeInTheDocument();
+
+            button.click();
+            expect(handleClick).toHaveBeenCalledTimes(1);
+        });
+
+        it('should render secondary button when secondaryButtonLabel is provided', () => {
+            const dataWithSecondary = {
+                ...mockPlayerData,
+                secondaryButtonLabel: 'Contact',
+            };
+
+            render(<PlayerCard {...dataWithSecondary} />);
+
+            expect(screen.getByRole('button', { name: /contact/i })).toBeInTheDocument();
+        });
+
+        it('should not render secondary button when secondaryButtonLabel is not provided', () => {
+            render(<PlayerCard {...mockPlayerData} />);
+
+            // Should only have one button/link (the primary one)
+            const buttons = screen.queryAllByRole('button');
+            expect(buttons).toHaveLength(0); // Primary is a link by default
+        });
+
+        it('should call onSecondaryClick when secondary button is clicked', () => {
+            const handleSecondaryClick = jest.fn();
+            const dataWithSecondary = {
+                ...mockPlayerData,
+                secondaryButtonLabel: 'Contact',
+                onSecondaryClick: handleSecondaryClick,
+            };
+
+            render(<PlayerCard {...dataWithSecondary} />);
+
+            const button = screen.getByRole('button', { name: /contact/i });
+            button.click();
+
+            expect(handleSecondaryClick).toHaveBeenCalledTimes(1);
+        });
+
+        it('should style primary button with blue gradient', () => {
+            const handleClick = jest.fn();
+            const dataWithCallback = {
+                ...mockPlayerData,
+                onPrimaryClick: handleClick,
+            };
+
+            render(<PlayerCard {...dataWithCallback} />);
+
+            const button = screen.getByRole('button', { name: /view profile/i });
+            expect(button).toHaveClass('bg-gradient-to-r', 'from-blue-500', 'to-blue-600');
+        });
+
+        it('should style secondary button with light theme', () => {
+            const dataWithSecondary = {
+                ...mockPlayerData,
+                secondaryButtonLabel: 'Contact',
+            };
+
+            render(<PlayerCard {...dataWithSecondary} />);
+
+            const button = screen.getByRole('button', { name: /contact/i });
+            expect(button).toHaveClass('bg-gray-100');
+        });
+
+        it('should have minimum touch target size for both buttons', () => {
+            const dataWithBoth = {
+                ...mockPlayerData,
+                primaryButtonLabel: 'View Profile',
+                secondaryButtonLabel: 'Contact',
+                onPrimaryClick: jest.fn(),
+            };
+
+            render(<PlayerCard {...dataWithBoth} />);
+
+            const primaryButton = screen.getByRole('button', { name: /view profile/i });
+            const secondaryButton = screen.getByRole('button', { name: /contact/i });
+
+            expect(primaryButton).toHaveClass('min-h-[44px]');
+            expect(secondaryButton).toHaveClass('min-h-[44px]');
+        });
+
+        it('should render both buttons with custom labels', () => {
+            const dataWithCustom = {
+                ...mockPlayerData,
+                primaryButtonLabel: 'View Details',
+                secondaryButtonLabel: 'Send Message',
+                onPrimaryClick: jest.fn(),
+            };
+
+            render(<PlayerCard {...dataWithCustom} />);
+
+            expect(screen.getByRole('button', { name: /view details/i })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /send message/i })).toBeInTheDocument();
         });
     });
 

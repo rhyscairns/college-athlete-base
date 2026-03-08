@@ -206,7 +206,57 @@ describe('AcademicProfileSectionEdit', () => {
             />
         );
 
-        const editContainer = container.querySelector('.space-y-4.p-3.sm\\:p-4.bg-white\\/5.rounded-2xl.border.border-white\\/10');
+        // Check for light theme container styling
+        const editContainer = container.querySelector('.bg-white.rounded-2xl.shadow-lg');
         expect(editContainer).toBeInTheDocument();
+    });
+
+    it('displays section header', () => {
+        render(
+            <AcademicProfileSectionEdit
+                formData={mockFormData}
+                setFormData={mockSetFormData}
+                errors={mockErrors}
+                isSaving={false}
+                onSave={mockOnSave}
+                onCancel={mockOnCancel}
+            />
+        );
+
+        expect(screen.getByText('Academic Profile')).toBeInTheDocument();
+    });
+
+    it('displays empty state when no coursework is added', () => {
+        const emptyFormData = { ...mockFormData, coursework: [] };
+
+        render(
+            <AcademicProfileSectionEdit
+                formData={emptyFormData}
+                setFormData={mockSetFormData}
+                errors={mockErrors}
+                isSaving={false}
+                onSave={mockOnSave}
+                onCancel={mockOnCancel}
+            />
+        );
+
+        expect(screen.getByText(/No courses added yet/i)).toBeInTheDocument();
+    });
+
+    it('applies light theme styling to coursework items', () => {
+        const { container } = render(
+            <AcademicProfileSectionEdit
+                formData={mockFormData}
+                setFormData={mockSetFormData}
+                errors={mockErrors}
+                isSaving={false}
+                onSave={mockOnSave}
+                onCancel={mockOnCancel}
+            />
+        );
+
+        // Check for light theme coursework card styling
+        const courseworkCards = container.querySelectorAll('.bg-gray-50.rounded-xl.border.border-gray-200');
+        expect(courseworkCards.length).toBe(mockFormData.coursework.length);
     });
 });

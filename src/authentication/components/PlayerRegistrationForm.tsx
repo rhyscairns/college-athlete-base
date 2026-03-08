@@ -251,7 +251,7 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
         (country === 'USA' ? state.length > 0 : region.length > 0);
 
     return (
-        <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto p-8 sm:p-12 bg-white/90 rounded-3xl shadow-2xl border border-white/50 max-h-[85vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="w-full space-y-6">
             {generalError && (
                 <div className="mb-6">
                     <ErrorMessage message={generalError} className="text-center" />
@@ -260,7 +260,7 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
 
             <div className="space-y-4">
                 {/* Name fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <TextInput
                         label="First Name"
                         name="firstName"
@@ -300,7 +300,7 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                 />
 
                 {/* Sex and Sport */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <SelectInput
                         label="Sex"
                         name="gender"
@@ -326,7 +326,7 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                 </div>
 
                 {/* Position and GPA */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <TextInput
                         label="Position"
                         name="position"
@@ -423,9 +423,9 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                 />
             </div>
 
-            <div className="mt-8 space-y-4">
+            <div className="space-y-3 pt-2">
                 <SubmitButton loading={isSubmitting} disabled={!isFormValid || isSubmitting}>
-                    Create Player Account
+                    Create Account
                 </SubmitButton>
 
                 {onCancel && (
@@ -433,12 +433,19 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                         type="button"
                         onClick={onCancel}
                         disabled={isSubmitting}
-                        className="w-full h-12 text-gray-700 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="w-full h-12 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                     >
                         Cancel
                     </button>
                 )}
             </div>
+
+            <p className="text-xs text-gray-500 text-center">
+                By clicking "Create Account" above, you agree to our{' '}
+                <a href="#" className="text-blue-600 hover:text-blue-700">Terms & Conditions</a>
+                {' '}and{' '}
+                <a href="#" className="text-blue-600 hover:text-blue-700">Privacy Policy</a>.
+            </p>
         </form>
     );
 }

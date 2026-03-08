@@ -28,7 +28,7 @@ export function EditButton({ onClick, disabled = false, tooltip }: EditButtonPro
             <button
                 onClick={onClick}
                 disabled={disabled}
-                className="min-h-[44px] min-w-[44px] px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm font-semibold hover:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed transition-all touch-manipulation"
+                className="min-h-[44px] min-w-[44px] px-4 py-2 bg-blue-600 border border-blue-600 rounded-lg text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all touch-manipulation"
                 aria-label="Edit section"
             >
                 Edit

@@ -35,15 +35,14 @@ describe('CoachHeroSection', () => {
     it('renders coach name correctly', () => {
         render(<CoachHeroSection coach={mockCoach} />);
 
-        expect(screen.getByText('John')).toBeInTheDocument();
-        expect(screen.getByText('Smith')).toBeInTheDocument();
+        expect(screen.getByText('John Smith')).toBeInTheDocument();
     });
 
     it('renders position, university, and sport', () => {
         render(<CoachHeroSection coach={mockCoach} />);
 
-        expect(screen.getByText('Head Coach')).toBeInTheDocument();
-        expect(screen.getByText('State University')).toBeInTheDocument();
+        expect(screen.getAllByText('Head Coach').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('State University').length).toBeGreaterThan(0);
         expect(screen.getByText('Basketball')).toBeInTheDocument();
     });
 
@@ -57,7 +56,7 @@ describe('CoachHeroSection', () => {
     it('renders team website link when provided', () => {
         render(<CoachHeroSection coach={mockCoach} />);
 
-        const link = screen.getByRole('link', { name: /visit team website/i });
+        const link = screen.getByRole('link', { name: /visit.*official website/i });
         expect(link).toBeInTheDocument();
         expect(link).toHaveAttribute('href', 'https://university.edu/basketball');
         expect(link).toHaveAttribute('target', '_blank');
@@ -68,7 +67,7 @@ describe('CoachHeroSection', () => {
         const coachWithoutWebsite = { ...mockCoach, teamWebsiteUrl: undefined };
         render(<CoachHeroSection coach={coachWithoutWebsite} />);
 
-        expect(screen.queryByRole('link', { name: /visit team website/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: /visit.*official website/i })).not.toBeInTheDocument();
     });
 
     it('does not render phone when not provided', () => {
@@ -147,8 +146,7 @@ describe('CoachHeroSection', () => {
 
         render(<CoachHeroSection coach={minimalCoach} />);
 
-        expect(screen.getByText('Jane')).toBeInTheDocument();
-        expect(screen.getByText('Doe')).toBeInTheDocument();
+        expect(screen.getByText('Jane Doe')).toBeInTheDocument();
         expect(screen.getByText('jane.doe@example.com')).toBeInTheDocument();
     });
 
@@ -171,162 +169,49 @@ describe('CoachHeroSection', () => {
 
         render(<CoachHeroSection coach={coachWithEmptyFields} />);
 
-        expect(screen.getByText('Test')).toBeInTheDocument();
-        expect(screen.getByText('Coach')).toBeInTheDocument();
+        expect(screen.getByText('Test Coach')).toBeInTheDocument();
         expect(screen.getByText('test@example.com')).toBeInTheDocument();
     });
 
     describe('Empty State Handling', () => {
-        describe('for profile owner', () => {
-            it('shows placeholder text for empty position when owner', () => {
-                const coachWithoutPosition = { ...mockCoach, position: undefined };
-                render(<CoachHeroSection coach={coachWithoutPosition} isOwner={true} />);
+        it('renders default values for missing optional fields', () => {
+            const minimalCoach: CoachProfile = {
+                id: '123',
+                firstName: 'Jane',
+                lastName: 'Doe',
+                initials: 'JD',
+                email: 'jane.doe@example.com',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
 
-                expect(screen.getByText('No position specified')).toBeInTheDocument();
-            });
+            render(<CoachHeroSection coach={minimalCoach} />);
 
-            it('shows placeholder text for empty university when owner', () => {
-                const coachWithoutUniversity = { ...mockCoach, university: undefined };
-                render(<CoachHeroSection coach={coachWithoutUniversity} isOwner={true} />);
-
-                expect(screen.getByText('No university specified')).toBeInTheDocument();
-            });
-
-            it('shows placeholder text for empty sport when owner', () => {
-                const coachWithoutSport = { ...mockCoach, sport: undefined };
-                render(<CoachHeroSection coach={coachWithoutSport} isOwner={true} />);
-
-                expect(screen.getByText('No sport specified')).toBeInTheDocument();
-            });
-
-            it('shows placeholder text for empty phone when owner', () => {
-                const coachWithoutPhone = { ...mockCoach, phone: undefined };
-                render(<CoachHeroSection coach={coachWithoutPhone} isOwner={true} />);
-
-                expect(screen.getByText('No phone number')).toBeInTheDocument();
-            });
-
-            it('shows placeholder text for empty team website when owner', () => {
-                const coachWithoutWebsite = { ...mockCoach, teamWebsiteUrl: undefined };
-                render(<CoachHeroSection coach={coachWithoutWebsite} isOwner={true} />);
-
-                expect(screen.getByText('No team website link added')).toBeInTheDocument();
-            });
-
-            it('shows all placeholder texts when all optional fields are empty for owner', () => {
-                const minimalCoach: CoachProfile = {
-                    id: '123',
-                    firstName: 'Jane',
-                    lastName: 'Doe',
-                    initials: 'JD',
-                    email: 'jane.doe@example.com',
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                };
-
-                render(<CoachHeroSection coach={minimalCoach} isOwner={true} />);
-
-                expect(screen.getByText('No position specified')).toBeInTheDocument();
-                expect(screen.getByText('No university specified')).toBeInTheDocument();
-                expect(screen.getByText('No sport specified')).toBeInTheDocument();
-                expect(screen.getByText('No phone number')).toBeInTheDocument();
-                expect(screen.getByText('No team website link added')).toBeInTheDocument();
-            });
+            // Should render with default values
+            expect(screen.getByText('Jane Doe')).toBeInTheDocument();
+            expect(screen.getByText('jane.doe@example.com')).toBeInTheDocument();
+            expect(screen.getByText('Head Coach')).toBeInTheDocument(); // Default position
         });
 
-        describe('for non-owner viewers', () => {
-            it('shows placeholder text for empty position when not owner', () => {
-                const coachWithoutPosition = { ...mockCoach, position: undefined };
-                render(<CoachHeroSection coach={coachWithoutPosition} isOwner={false} />);
+        it('does not render phone section when phone is missing', () => {
+            const coachWithoutPhone = { ...mockCoach, phone: undefined };
+            render(<CoachHeroSection coach={coachWithoutPhone} />);
 
-                expect(screen.getByText('Position not specified')).toBeInTheDocument();
-            });
-
-            it('shows placeholder text for empty university when not owner', () => {
-                const coachWithoutUniversity = { ...mockCoach, university: undefined };
-                render(<CoachHeroSection coach={coachWithoutUniversity} isOwner={false} />);
-
-                expect(screen.getByText('University not specified')).toBeInTheDocument();
-            });
-
-            it('shows placeholder text for empty sport when not owner', () => {
-                const coachWithoutSport = { ...mockCoach, sport: undefined };
-                render(<CoachHeroSection coach={coachWithoutSport} isOwner={false} />);
-
-                expect(screen.getByText('Sport not specified')).toBeInTheDocument();
-            });
-
-            it('shows placeholder text for empty phone when not owner', () => {
-                const coachWithoutPhone = { ...mockCoach, phone: undefined };
-                render(<CoachHeroSection coach={coachWithoutPhone} isOwner={false} />);
-
-                expect(screen.getByText('Phone not provided')).toBeInTheDocument();
-            });
-
-            it('does not show team website placeholder when not owner', () => {
-                const coachWithoutWebsite = { ...mockCoach, teamWebsiteUrl: undefined };
-                render(<CoachHeroSection coach={coachWithoutWebsite} isOwner={false} />);
-
-                expect(screen.queryByText('No team website link added')).not.toBeInTheDocument();
-                expect(screen.queryByRole('link', { name: /visit team website/i })).not.toBeInTheDocument();
-            });
-
-            it('shows all placeholder texts when all optional fields are empty for non-owner', () => {
-                const minimalCoach: CoachProfile = {
-                    id: '123',
-                    firstName: 'Jane',
-                    lastName: 'Doe',
-                    initials: 'JD',
-                    email: 'jane.doe@example.com',
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                };
-
-                render(<CoachHeroSection coach={minimalCoach} isOwner={false} />);
-
-                expect(screen.getByText('Position not specified')).toBeInTheDocument();
-                expect(screen.getByText('University not specified')).toBeInTheDocument();
-                expect(screen.getByText('Sport not specified')).toBeInTheDocument();
-                expect(screen.getByText('Phone not provided')).toBeInTheDocument();
-                expect(screen.queryByText('No team website link added')).not.toBeInTheDocument();
-            });
+            expect(screen.queryByText('+1-555-0123')).not.toBeInTheDocument();
         });
 
-        describe('empty string handling', () => {
-            it('treats empty string position as empty', () => {
-                const coachWithEmptyPosition = { ...mockCoach, position: '' };
-                render(<CoachHeroSection coach={coachWithEmptyPosition} isOwner={true} />);
+        it('does not render team website button when URL is missing', () => {
+            const coachWithoutWebsite = { ...mockCoach, teamWebsiteUrl: undefined };
+            render(<CoachHeroSection coach={coachWithoutWebsite} />);
 
-                expect(screen.getByText('No position specified')).toBeInTheDocument();
-            });
+            expect(screen.queryByRole('link', { name: /visit.*official website/i })).not.toBeInTheDocument();
+        });
 
-            it('treats empty string university as empty', () => {
-                const coachWithEmptyUniversity = { ...mockCoach, university: '' };
-                render(<CoachHeroSection coach={coachWithEmptyUniversity} isOwner={true} />);
+        it('does not render sport tag when sport is missing', () => {
+            const coachWithoutSport = { ...mockCoach, sport: undefined };
+            render(<CoachHeroSection coach={coachWithoutSport} />);
 
-                expect(screen.getByText('No university specified')).toBeInTheDocument();
-            });
-
-            it('treats empty string sport as empty', () => {
-                const coachWithEmptySport = { ...mockCoach, sport: '' };
-                render(<CoachHeroSection coach={coachWithEmptySport} isOwner={true} />);
-
-                expect(screen.getByText('No sport specified')).toBeInTheDocument();
-            });
-
-            it('treats empty string phone as empty', () => {
-                const coachWithEmptyPhone = { ...mockCoach, phone: '' };
-                render(<CoachHeroSection coach={coachWithEmptyPhone} isOwner={true} />);
-
-                expect(screen.getByText('No phone number')).toBeInTheDocument();
-            });
-
-            it('treats empty string team website as empty', () => {
-                const coachWithEmptyWebsite = { ...mockCoach, teamWebsiteUrl: '' };
-                render(<CoachHeroSection coach={coachWithEmptyWebsite} isOwner={true} />);
-
-                expect(screen.getByText('No team website link added')).toBeInTheDocument();
-            });
+            expect(screen.queryByText('Basketball')).not.toBeInTheDocument();
         });
     });
 });
