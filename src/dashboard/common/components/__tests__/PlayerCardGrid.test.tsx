@@ -454,4 +454,177 @@ describe('PlayerCardGrid', () => {
             expect(screen.getByTestId('player-card-4')).toBeInTheDocument();
         });
     });
+
+    describe('Video Modal Integration', () => {
+        it('passes onWatchVideo handler to PlayerCard when video data exists', () => {
+            const PlayerCard = require('../PlayerCard').PlayerCard;
+            const onWatchVideo = jest.fn();
+
+            const playersWithVideo: PlayerCardData[] = [
+                {
+                    ...mockPlayers[0],
+                    videoUrl: 'https://youtube.com/watch?v=test123',
+                    videoTitle: 'Highlight Reel',
+                },
+            ];
+
+            render(
+                <PlayerCardGrid
+                    players={playersWithVideo}
+                    currentUserId="999"
+                    userType="coach"
+                    onWatchVideo={onWatchVideo}
+                />
+            );
+
+            const firstCall = PlayerCard.mock.calls[0][0];
+            expect(firstCall.onWatchVideo).toBeDefined();
+            expect(typeof firstCall.onWatchVideo).toBe('function');
+        });
+
+        it('does not pass onWatchVideo handler when video URL is missing', () => {
+            const PlayerCard = require('../PlayerCard').PlayerCard;
+            const onWatchVideo = jest.fn();
+
+            render(
+                <PlayerCardGrid
+                    players={mockPlayers}
+                    currentUserId="999"
+                    userType="coach"
+                    onWatchVideo={onWatchVideo}
+                />
+            );
+
+            const firstCall = PlayerCard.mock.calls[0][0];
+            expect(firstCall.onWatchVideo).toBeUndefined();
+        });
+
+        it('does not pass onWatchVideo handler when onWatchVideo prop is not provided', () => {
+            const PlayerCard = require('../PlayerCard').PlayerCard;
+
+            const playersWithVideo: PlayerCardData[] = [
+                {
+                    ...mockPlayers[0],
+                    videoUrl: 'https://youtube.com/watch?v=test123',
+                    videoTitle: 'Highlight Reel',
+                },
+            ];
+
+            render(
+                <PlayerCardGrid
+                    players={playersWithVideo}
+                    currentUserId="999"
+                    userType="coach"
+                />
+            );
+
+            const firstCall = PlayerCard.mock.calls[0][0];
+            expect(firstCall.onWatchVideo).toBeUndefined();
+        });
+
+        it('calls onWatchVideo with correct parameters when handler is invoked', () => {
+            const PlayerCard = require('../PlayerCard').PlayerCard;
+            const onWatchVideo = jest.fn();
+
+            const playersWithVideo: PlayerCardData[] = [
+                {
+                    ...mockPlayers[0],
+                    videoUrl: 'https://youtube.com/watch?v=test123',
+                    videoTitle: 'Highlight Reel',
+                },
+            ];
+
+            render(
+                <PlayerCardGrid
+                    players={playersWithVideo}
+                    currentUserId="999"
+                    userType="coach"
+                    onWatchVideo={onWatchVideo}
+                />
+            );
+
+            const firstCall = PlayerCard.mock.calls[0][0];
+            firstCall.onWatchVideo();
+
+            expect(onWatchVideo).toHaveBeenCalledWith(
+                '1',
+                'https://youtube.com/watch?v=test123',
+                'Highlight Reel',
+                'John Doe'
+            );
+        });
+
+        it('passes video data without title when title is missing', () => {
+            const PlayerCard = require('../PlayerCard').PlayerCard;
+            const onWatchVideo = jest.fn();
+
+            const playersWithVideo: PlayerCardData[] = [
+                {
+                    ...mockPlayers[0],
+                    videoUrl: 'https://youtube.com/watch?v=test123',
+                },
+            ];
+
+            render(
+                <PlayerCardGrid
+                    players={playersWithVideo}
+                    currentUserId="999"
+                    userType="coach"
+                    onWatchVideo={onWatchVideo}
+                />
+            );
+
+            const firstCall = PlayerCard.mock.calls[0][0];
+            firstCall.onWatchVideo();
+
+            expect(onWatchVideo).toHaveBeenCalledWith(
+                '1',
+                'https://youtube.com/watch?v=test123',
+                undefined,
+                'John Doe'
+            );
+        });
+
+        it('handles multiple players with mixed video availability', () => {
+            const PlayerCard = require('../PlayerCard').PlayerCard;
+            const onWatchVideo = jest.fn();
+
+            const mixedPlayers: PlayerCardData[] = [
+                {
+                    ...mockPlayers[0],
+                    videoUrl: 'https://youtube.com/watch?v=test123',
+                    videoTitle: 'Highlight Reel',
+                },
+                {
+                    ...mockPlayers[1],
+                    // No video URL
+                },
+                {
+                    ...mockPlayers[2],
+                    videoUrl: 'https://youtube.com/watch?v=test456',
+                },
+            ];
+
+            render(
+                <PlayerCardGrid
+                    players={mixedPlayers}
+                    currentUserId="999"
+                    userType="coach"
+                    onWatchVideo={onWatchVideo}
+                />
+            );
+
+            // First player should have onWatchVideo
+            const firstCall = PlayerCard.mock.calls[0][0];
+            expect(firstCall.onWatchVideo).toBeDefined();
+
+            // Second player should not have onWatchVideo
+            const secondCall = PlayerCard.mock.calls[1][0];
+            expect(secondCall.onWatchVideo).toBeUndefined();
+
+            // Third player should have onWatchVideo
+            const thirdCall = PlayerCard.mock.calls[2][0];
+            expect(thirdCall.onWatchVideo).toBeDefined();
+        });
+    });
 });

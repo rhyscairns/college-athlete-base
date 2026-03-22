@@ -20,6 +20,7 @@ export const PlayerCard = React.memo(function PlayerCard({
     secondaryButtonLabel,
     onPrimaryClick,
     onSecondaryClick,
+    onWatchVideo,
     priority = false,
 }: PlayerCardProps) {
     const playerName = `${firstName} ${lastName}`;
@@ -158,8 +159,24 @@ export const PlayerCard = React.memo(function PlayerCard({
                         </Link>
                     )}
 
-                    {/* Secondary Button */}
-                    {secondaryButtonLabel && (
+                    {/* Watch Video Button (replaces secondary button when video is available) */}
+                    {onWatchVideo ? (
+                        <button
+                            onClick={onWatchVideo}
+                            aria-label={`Watch highlight video for ${playerName}`}
+                            className="w-full min-h-[44px] px-4 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-lg text-slate-900 font-bold text-center hover:shadow-lg hover:from-yellow-300 hover:to-yellow-400 transition-all touch-manipulation focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-white flex items-center justify-center gap-2"
+                        >
+                            <svg
+                                className="w-5 h-5"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Watch Video
+                        </button>
+                    ) : secondaryButtonLabel && (
                         <button
                             onClick={onSecondaryClick}
                             aria-label={`${secondaryButtonLabel} ${playerName}`}

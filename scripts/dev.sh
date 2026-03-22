@@ -90,32 +90,31 @@ fi
 print_status "Checking database state..."
 TABLE_COUNT=$(docker exec college-athlete-base-db psql -U postgres -d college_athlete_base -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';" 2>/dev/null | tr -d ' ')
 
+# Always run migrations to ensure latest schema
+print_status "Running migrations..."
+for migration in infrastructure/database/migrations/*.sql; do
+    # Skip rollback files
+    if [[ $migration == *"rollback"* ]]; then
+        continue
+    fi
+    
+    print_status "Running migration: $(basename $migration)"
+    docker exec -i college-athlete-base-db psql -U postgres -d college_athlete_base < "$migration"
+    
+    if [ $? -ne 0 ]; then
+        print_error "Migration failed: $(basename $migration)"
+        exit 1
+    fi
+done
+
+print_success "Migrations completed!"
+
+# Only seed if database was empty
 if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
-    print_status "Database is empty. Running migrations..."
-    
-    # Run migrations
-    for migration in infrastructure/database/migrations/*.sql; do
-        # Skip rollback files
-        if [[ $migration == *"rollback"* ]]; then
-            continue
-        fi
-        
-        print_status "Running migration: $(basename $migration)"
-        docker exec -i college-athlete-base-db psql -U postgres -d college_athlete_base < "$migration"
-        
-        if [ $? -ne 0 ]; then
-            print_error "Migration failed: $(basename $migration)"
-            exit 1
-        fi
-    done
-    
-    print_success "Migrations completed!"
-    
-    # Run seeds
-    print_status "Seeding database..."
+    print_status "Database was empty. Seeding database..."
     for seed in infrastructure/database/seeds/*.sql; do
-        # Skip README
-        if [[ $seed == *"README"* ]]; then
+        # Skip README and update scripts
+        if [[ $seed == *"README"* ]] || [[ $seed == *"update_"* ]]; then
             continue
         fi
         
@@ -129,7 +128,7 @@ if [ "$TABLE_COUNT" = "0" ] || [ -z "$TABLE_COUNT" ]; then
     
     print_success "Database seeded!"
 else
-    print_success "Database already initialized with $TABLE_COUNT tables"
+    print_success "Database already has $TABLE_COUNT tables (skipping seeds)"
 fi
 
 # Show some sample data

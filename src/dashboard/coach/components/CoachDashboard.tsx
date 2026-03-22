@@ -3,11 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { CoachDashboardProps } from '../types';
-import type { PlayerCardData } from '../../common/types';
+import type { PlayerCardData, VideoModalState } from '../../common/types';
 import { DashboardHeader } from '../../common/components/DashboardHeader';
 import { FilterBar } from '../../common/components/FilterBar';
 import { PlayerCardGrid } from '../../common/components/PlayerCardGrid';
 import { Pagination } from '../../common/components/Pagination';
+import { VideoModal } from '../../common/components/VideoModal';
 import { useDebounce } from '@/hooks/useDebounce';
 import { playerFilterCache } from '@/lib/cache/filterCache';
 
@@ -32,6 +33,14 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const pageSize = 6;
+
+    // Video modal state
+    const [videoModalState, setVideoModalState] = useState<VideoModalState>({
+        isOpen: false,
+        videoUrl: null,
+        videoTitle: null,
+        playerName: null,
+    });
 
     // Available sports and positions (placeholder - will be populated from API in task 9)
     const [availableSports] = useState<string[]>(['All Sports', 'Football', 'Basketball', 'Soccer', 'Baseball']);
@@ -197,6 +206,26 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
         console.log('Contact player:', playerId);
     };
 
+    // Handler for watching video
+    const handleWatchVideo = (playerId: string, videoUrl: string, videoTitle?: string, playerName?: string) => {
+        setVideoModalState({
+            isOpen: true,
+            videoUrl,
+            videoTitle: videoTitle || null,
+            playerName: playerName || null,
+        });
+    };
+
+    // Handler for closing video modal
+    const handleCloseVideoModal = () => {
+        setVideoModalState({
+            isOpen: false,
+            videoUrl: null,
+            videoTitle: null,
+            playerName: null,
+        });
+    };
+
     return (
         <div className="min-h-screen bg-slate-100">
             {/* Skip Links for Accessibility */}
@@ -268,6 +297,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
                     userType="coach"
                     isLoading={isLoading}
                     emptyMessage="No players found matching your filters"
+                    onWatchVideo={handleWatchVideo}
                 />
 
                 {/* Pagination */}
@@ -279,6 +309,17 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
                     />
                 )}
             </main>
+
+            {/* Video Modal */}
+            {videoModalState.isOpen && videoModalState.videoUrl && (
+                <VideoModal
+                    isOpen={videoModalState.isOpen}
+                    onClose={handleCloseVideoModal}
+                    videoUrl={videoModalState.videoUrl}
+                    videoTitle={videoModalState.videoTitle || undefined}
+                    playerName={videoModalState.playerName || undefined}
+                />
+            )}
         </div>
     );
 }
