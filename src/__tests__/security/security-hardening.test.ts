@@ -81,7 +81,7 @@ describe('Security Hardening Tests', () => {
             const mockQuery = query as jest.MockedFunction<typeof query>;
 
             // Verify that queries use $1, $2 placeholders
-            const sqlInjectionAttempt = "'; DROP TABLE players; --";
+            const _sqlInjectionAttempt = "'; DROP TABLE players; --";
 
             // Our code should pass this as a parameter, not concatenate it
             expect(mockQuery).toBeDefined();

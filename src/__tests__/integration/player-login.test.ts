@@ -39,13 +39,11 @@ function createMockRequest(
         headers.set('cookie', cookieString);
     }
 
-    const request = new NextRequest(url, {
+    return new NextRequest(url, {
         method: options.method || 'POST',
         headers,
         body: body ? JSON.stringify(body) : undefined,
     });
-
-    return request;
 }
 
 /**
@@ -420,7 +418,7 @@ skipIfNoDb('Player Login - Complete Integration Flow', () => {
             // Register and login
             const email = `mismatch.${Date.now()}@login-test.com`;
             const password = 'MismatchPassword123!';
-            const { playerId } = await registerTestPlayer(email, password);
+            await registerTestPlayer(email, password);
 
             const loginRequest = createMockRequest({
                 email,

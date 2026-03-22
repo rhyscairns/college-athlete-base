@@ -5,8 +5,6 @@
 import {
     normalizeEmail,
     validatePlayerRegistration,
-    ValidationResult,
-    PlayerRegistrationData,
 } from '@/authentication/utils/registerValidation';
 
 describe('normalizeEmail', () => {

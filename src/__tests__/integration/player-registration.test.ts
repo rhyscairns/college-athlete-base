@@ -26,13 +26,11 @@ function createMockRequest(body: any, options: { origin?: string; method?: strin
         headers.set('origin', options.origin);
     }
 
-    const request = new NextRequest(url, {
+    return new NextRequest(url, {
         method: options.method || 'POST',
         headers,
         body: JSON.stringify(body),
     });
-
-    return request;
 }
 
 skipIfNoDb('Player Registration - Complete Integration Flow', () => {

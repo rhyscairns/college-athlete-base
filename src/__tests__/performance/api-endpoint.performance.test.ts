@@ -21,8 +21,8 @@ class MockNextRequest {
     public url: string;
     public method: string;
     public headers: {
-        get: (name: string) => string | null;
-        has: (name: string) => boolean;
+        get: (_name: string) => string | null;
+        has: (_name: string) => boolean;
         entries: () => IterableIterator<[string, string]>;
     };
     private _body: string;

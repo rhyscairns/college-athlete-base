@@ -54,7 +54,7 @@ export function StatsShowcase({
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
-    }, [isEditing]);
+    }, [isEditing, handleCancel]);
 
     const validateStatsSection = (data: Record<string, number | string>): ValidationErrors => {
         const validationErrors: ValidationErrors = {};

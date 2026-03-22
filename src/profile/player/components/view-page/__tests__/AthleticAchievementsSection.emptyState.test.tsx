@@ -199,7 +199,7 @@ describe('AthleticAchievementsSection - Empty State', () => {
             );
 
             const addButton = screen.getByText('Add Content');
-            const styles = window.getComputedStyle(addButton);
+            window.getComputedStyle(addButton);
 
             // Check that min-height is set (44px minimum for touch targets)
             expect(addButton.className).toContain('min-h-[44px]');

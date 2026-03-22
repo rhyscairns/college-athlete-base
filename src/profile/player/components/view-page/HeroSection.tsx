@@ -79,7 +79,7 @@ export function HeroSection({
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
-    }, [isEditing]);
+    }, [isEditing, handleCancel]);
 
     const validateHeroSection = (data: Hero): ValidationErrors => {
         const validationErrors: ValidationErrors = {};
