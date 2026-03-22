@@ -5,7 +5,6 @@
 
 import { render, screen } from '@testing-library/react';
 import { HeroSection } from '../HeroSection';
-import type { MockPlayerData } from '../../../data/mockPlayerData';
 
 describe('HeroSection - Empty State Integration', () => {
     describe('Requirement 3.1: Empty sections display placeholder content', () => {

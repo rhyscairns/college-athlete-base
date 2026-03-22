@@ -185,7 +185,7 @@ export function RecruitingContactSection({
                             </div>
                             <div>
                                 <h2 className="text-2xl font-bold text-white">Get In Touch</h2>
-                                <p className="text-green-100">Ready to recruit? Let's connect</p>
+                                <p className="text-green-100">Ready to recruit? Let&apos;s connect</p>
                             </div>
                         </div>
                     </div>

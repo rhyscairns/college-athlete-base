@@ -54,6 +54,7 @@ export function StatsShowcase({
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isEditing]);
 
     const validateStatsSection = (data: Record<string, number | string>): ValidationErrors => {

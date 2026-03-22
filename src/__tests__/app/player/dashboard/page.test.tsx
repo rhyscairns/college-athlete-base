@@ -137,7 +137,7 @@ describe('PlayerDashboardPage', () => {
         });
 
         it('should display player information correctly', async () => {
-            const result = await PlayerDashboardPage({ params: Promise.resolve({ playerId: mockPlayerId }) });
+            await PlayerDashboardPage({ params: Promise.resolve({ playerId: mockPlayerId }) });
 
             // The component should be rendered without redirecting
             expect(redirect).not.toHaveBeenCalled();

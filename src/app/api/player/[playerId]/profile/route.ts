@@ -12,11 +12,11 @@ import { isValidUUID, generateRequestId, formatExecutionTime } from '@/lib/api/u
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: { playerId: string } }
+    { params }: { params: Promise<{ playerId: string }> }
 ) {
     const startTime = Date.now();
     const requestId = generateRequestId();
-    const { playerId } = params;
+    const { playerId } = await params;
 
     // Log incoming request
     logger.apiRequest('GET', `/api/player/${playerId}/profile`, { requestId, playerId });

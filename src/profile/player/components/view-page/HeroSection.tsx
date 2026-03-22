@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
 import type { Hero, HeroSectionProps, ValidationErrors } from '../../types';
 import { HeroSectionEdit } from '../edit/components/sections/HeroSectionEdit';
 
@@ -79,6 +78,7 @@ export function HeroSection({
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isEditing]);
 
     const validateHeroSection = (data: Hero): ValidationErrors => {

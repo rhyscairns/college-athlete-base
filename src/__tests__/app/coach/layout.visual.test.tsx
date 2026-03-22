@@ -70,7 +70,7 @@ describe('CoachLayout - Visual Regression Tests', () => {
             );
 
             const backgroundDiv = container.firstChild as HTMLElement;
-            const computedStyle = window.getComputedStyle(backgroundDiv);
+            window.getComputedStyle(backgroundDiv);
 
             // Should have bg-gray-900 class as fallback
             expect(backgroundDiv.className).toContain('bg-gray-900');

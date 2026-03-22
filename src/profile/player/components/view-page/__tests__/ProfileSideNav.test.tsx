@@ -7,7 +7,7 @@ describe('ProfileSideNav', () => {
         window.scrollTo = jest.fn();
 
         // Mock getElementById
-        document.getElementById = jest.fn((id) => ({
+        document.getElementById = jest.fn((_id) => ({
             offsetTop: 100,
             offsetHeight: 500,
         })) as any;

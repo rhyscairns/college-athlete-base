@@ -4,7 +4,7 @@ import type { User } from '@/authentication/types';
 
 // Mock the LoginForm component
 jest.mock('@/authentication/components/LoginForm', () => ({
-    LoginForm: ({ onSuccess, redirectTo }: { onSuccess?: (user: User) => void; redirectTo?: string }) => (
+    LoginForm: ({ onSuccess, redirectTo }: { onSuccess?: (_user: User) => void; redirectTo?: string }) => (
         <div data-testid="login-form">
             <span data-testid="on-success">{onSuccess ? 'has-onSuccess' : 'no-onSuccess'}</span>
             <span data-testid="redirect-to">{redirectTo || 'no-redirect'}</span>

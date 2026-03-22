@@ -1,4 +1,4 @@
-import { Logger, LogLevel } from '@/lib/logger';
+import { Logger } from '@/lib/logger';
 
 describe('Logger', () => {
     let logger: Logger;

@@ -141,7 +141,7 @@ describe('GET /api/dashboard/players', () => {
 
             const request = createRequest('position=Quarterback');
             const response = await GET(request);
-            const data = await response.json();
+            await response.json();
 
             expect(response.status).toBe(200);
             expect(mockQuery).toHaveBeenCalledWith(
@@ -157,7 +157,7 @@ describe('GET /api/dashboard/players', () => {
 
             const request = createRequest('sport=Football&position=Quarterback');
             const response = await GET(request);
-            const data = await response.json();
+            await response.json();
 
             expect(response.status).toBe(200);
             expect(mockQuery).toHaveBeenCalledWith(
@@ -174,7 +174,7 @@ describe('GET /api/dashboard/players', () => {
 
             const request = createRequest(`excludeUserId=${excludeId}`);
             const response = await GET(request);
-            const data = await response.json();
+            await response.json();
 
             expect(response.status).toBe(200);
             expect(mockQuery).toHaveBeenCalledWith(
@@ -190,7 +190,7 @@ describe('GET /api/dashboard/players', () => {
 
             const request = createRequest('sport=All Sports');
             const response = await GET(request);
-            const data = await response.json();
+            await response.json();
 
             expect(response.status).toBe(200);
             // Should not include sport filter in WHERE clause
@@ -207,7 +207,7 @@ describe('GET /api/dashboard/players', () => {
 
             const request = createRequest('position=All Positions');
             const response = await GET(request);
-            const data = await response.json();
+            await response.json();
 
             expect(response.status).toBe(200);
             // Should not include position filter in WHERE clause

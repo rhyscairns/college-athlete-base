@@ -3,22 +3,31 @@
  */
 import { GET } from '@/app/api/health/route';
 
+// Mock process methods before importing anything else
+const mockUptime = jest.fn(() => 123.45);
+const mockMemoryUsage = jest.fn(() => ({
+    rss: 100 * 1024 * 1024,
+    heapTotal: 100 * 1024 * 1024,
+    heapUsed: 50 * 1024 * 1024,
+    external: 0,
+    arrayBuffers: 0,
+}));
+
 describe('/api/health', () => {
-    // Ensure process methods are available before tests
-    beforeAll(() => {
-        // Mock process methods if they don't exist (shouldn't happen, but defensive)
-        if (typeof process.uptime !== 'function') {
-            process.uptime = jest.fn(() => 0) as any;
-        }
-        if (typeof process.memoryUsage !== 'function') {
-            process.memoryUsage = jest.fn(() => ({
-                rss: 100 * 1024 * 1024,
-                heapTotal: 100 * 1024 * 1024,
-                heapUsed: 50 * 1024 * 1024,
-                external: 0,
-                arrayBuffers: 0,
-            })) as any;
-        }
+    beforeEach(() => {
+        // Reset mocks before each test
+        mockUptime.mockReturnValue(123.45);
+        mockMemoryUsage.mockReturnValue({
+            rss: 100 * 1024 * 1024,
+            heapTotal: 100 * 1024 * 1024,
+            heapUsed: 50 * 1024 * 1024,
+            external: 0,
+            arrayBuffers: 0,
+        });
+
+        // Ensure mocks are set
+        process.uptime = mockUptime as any;
+        process.memoryUsage = mockMemoryUsage as any;
     });
 
     it('returns 200 status', async () => {
@@ -94,10 +103,9 @@ describe('/api/health', () => {
 
     it('returns 503 status when health check fails', async () => {
         // Mock process.uptime to throw an error
-        const originalUptime = process.uptime;
-        process.uptime = jest.fn(() => {
+        mockUptime.mockImplementation(() => {
             throw new Error('Process error');
-        }) as any;
+        });
 
         const response = await GET();
         const data = await response.json();
@@ -105,17 +113,13 @@ describe('/api/health', () => {
         expect(response.status).toBe(503);
         expect(data.status).toBe('error');
         expect(data).toHaveProperty('error');
-
-        // Restore original function
-        process.uptime = originalUptime;
     });
 
     it('handles non-Error exceptions', async () => {
         // Mock process.uptime to throw a non-Error
-        const originalUptime = process.uptime;
-        process.uptime = jest.fn(() => {
+        mockUptime.mockImplementation(() => {
             throw 'String error';
-        }) as any;
+        });
 
         const response = await GET();
         const data = await response.json();
@@ -123,21 +127,17 @@ describe('/api/health', () => {
         expect(response.status).toBe(503);
         expect(data.status).toBe('error');
         expect(data.error).toBe('Unknown error');
-
-        // Restore original function
-        process.uptime = originalUptime;
     });
 
     it('returns degraded status when memory usage is high', async () => {
         // Mock memoryUsage to return high memory usage (76-90%)
-        const originalMemoryUsage = process.memoryUsage;
-        process.memoryUsage = jest.fn(() => ({
+        mockMemoryUsage.mockReturnValue({
             rss: 100 * 1024 * 1024,
             heapTotal: 100 * 1024 * 1024,
             heapUsed: 80 * 1024 * 1024, // 80% usage
             external: 0,
             arrayBuffers: 0,
-        })) as any;
+        });
 
         const response = await GET();
         const data = await response.json();
@@ -145,21 +145,17 @@ describe('/api/health', () => {
         expect(data.status).toBe('degraded');
         expect(data.checks.memory.status).toBe('warning');
         expect(response.status).toBe(200);
-
-        // Restore original function
-        process.memoryUsage = originalMemoryUsage;
     });
 
     it('returns error status when memory usage is critical', async () => {
         // Mock memoryUsage to return critical memory usage (>90%)
-        const originalMemoryUsage = process.memoryUsage;
-        process.memoryUsage = jest.fn(() => ({
+        mockMemoryUsage.mockReturnValue({
             rss: 100 * 1024 * 1024,
             heapTotal: 100 * 1024 * 1024,
             heapUsed: 95 * 1024 * 1024, // 95% usage
             external: 0,
             arrayBuffers: 0,
-        })) as any;
+        });
 
         const response = await GET();
         const data = await response.json();
@@ -167,8 +163,5 @@ describe('/api/health', () => {
         expect(data.status).toBe('error');
         expect(data.checks.memory.status).toBe('error');
         expect(response.status).toBe(503);
-
-        // Restore original function
-        process.memoryUsage = originalMemoryUsage;
     });
 });

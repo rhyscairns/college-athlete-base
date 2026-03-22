@@ -38,13 +38,11 @@ function createMockRequest(
         headers.set('cookie', cookieString);
     }
 
-    const request = new NextRequest(url, {
+    return new NextRequest(url, {
         method: options.method || 'POST',
         headers,
         body: body ? JSON.stringify(body) : undefined,
     });
-
-    return request;
 }
 
 /**

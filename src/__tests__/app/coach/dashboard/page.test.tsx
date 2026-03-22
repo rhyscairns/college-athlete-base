@@ -148,7 +148,7 @@ describe('CoachDashboardPage', () => {
         });
 
         it('should display coach information correctly', async () => {
-            const result = await CoachDashboardPage({ params: Promise.resolve({ coachId: mockCoachId }) });
+            await CoachDashboardPage({ params: Promise.resolve({ coachId: mockCoachId }) });
 
             // The component should be rendered without redirecting
             expect(redirect).not.toHaveBeenCalled();

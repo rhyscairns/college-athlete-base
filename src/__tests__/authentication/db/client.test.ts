@@ -116,7 +116,7 @@ describe('Database Client', () => {
         });
 
         it('should register error handler on pool', () => {
-            const pool = getPool();
+            getPool();
 
             expect(mockPool.on).toHaveBeenCalledWith('error', expect.any(Function));
         });

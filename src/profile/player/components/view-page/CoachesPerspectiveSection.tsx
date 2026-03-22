@@ -169,7 +169,7 @@ export function CoachesPerspectiveSection({
                                 <span className="text-2xl">💬</span>
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-white">Coaches' Perspective</h2>
+                                <h2 className="text-2xl font-bold text-white">Coaches&apos; Perspective</h2>
                                 <p className="text-yellow-100">What the coaches say</p>
                             </div>
                         </div>
