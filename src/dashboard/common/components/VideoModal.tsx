@@ -104,6 +104,17 @@ export function VideoModal({
         }
     };
 
+    // Handle backdrop keyboard interaction (for accessibility)
+    const handleBackdropKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+        // Escape key is already handled by the global listener
+        // This handler exists to satisfy accessibility linting
+        if (event.key === 'Enter' || event.key === ' ') {
+            if (event.target === event.currentTarget) {
+                onClose();
+            }
+        }
+    };
+
     // Handle iframe load
     const handleIframeLoad = () => {
         setIsLoading(false);
@@ -148,6 +159,7 @@ export function VideoModal({
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
             onClick={handleBackdropClick}
+            onKeyDown={handleBackdropKeyDown}
             role="dialog"
             aria-modal="true"
             aria-labelledby={videoTitle ? 'video-modal-title' : undefined}
