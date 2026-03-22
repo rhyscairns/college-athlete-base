@@ -539,4 +539,139 @@ describe('PlayerCard', () => {
             expect(screen.getByText('Defensive Midfielder / Central Midfielder')).toBeInTheDocument();
         });
     });
+
+    describe('Watch Video Button', () => {
+        it('should render "Watch Video" button when onWatchVideo is provided', () => {
+            const handleWatchVideo = jest.fn();
+            const dataWithVideo = {
+                ...mockPlayerData,
+                onWatchVideo: handleWatchVideo,
+            };
+
+            render(<PlayerCard {...dataWithVideo} />);
+
+            const button = screen.getByRole('button', { name: /watch highlight video/i });
+            expect(button).toBeInTheDocument();
+            expect(screen.getByText('Watch Video')).toBeInTheDocument();
+        });
+
+        it('should not render "Watch Video" button when onWatchVideo is not provided', () => {
+            render(<PlayerCard {...mockPlayerData} />);
+
+            expect(screen.queryByRole('button', { name: /watch highlight video/i })).not.toBeInTheDocument();
+            expect(screen.queryByText('Watch Video')).not.toBeInTheDocument();
+        });
+
+        it('should call onWatchVideo handler when button is clicked', () => {
+            const handleWatchVideo = jest.fn();
+            const dataWithVideo = {
+                ...mockPlayerData,
+                onWatchVideo: handleWatchVideo,
+            };
+
+            render(<PlayerCard {...dataWithVideo} />);
+
+            const button = screen.getByRole('button', { name: /watch highlight video/i });
+            button.click();
+
+            expect(handleWatchVideo).toHaveBeenCalledTimes(1);
+        });
+
+        it('should replace secondary button when onWatchVideo is provided', () => {
+            const handleWatchVideo = jest.fn();
+            const dataWithVideo = {
+                ...mockPlayerData,
+                secondaryButtonLabel: 'Contact',
+                onSecondaryClick: jest.fn(),
+                onWatchVideo: handleWatchVideo,
+            };
+
+            render(<PlayerCard {...dataWithVideo} />);
+
+            // Should show Watch Video button
+            expect(screen.getByRole('button', { name: /watch highlight video/i })).toBeInTheDocument();
+            // Should NOT show secondary button
+            expect(screen.queryByRole('button', { name: /contact/i })).not.toBeInTheDocument();
+        });
+
+        it('should have yellow gradient styling', () => {
+            const handleWatchVideo = jest.fn();
+            const dataWithVideo = {
+                ...mockPlayerData,
+                onWatchVideo: handleWatchVideo,
+            };
+
+            render(<PlayerCard {...dataWithVideo} />);
+
+            const button = screen.getByRole('button', { name: /watch highlight video/i });
+            expect(button).toHaveClass('bg-gradient-to-r', 'from-yellow-400', 'to-yellow-500');
+        });
+
+        it('should have hover state styling', () => {
+            const handleWatchVideo = jest.fn();
+            const dataWithVideo = {
+                ...mockPlayerData,
+                onWatchVideo: handleWatchVideo,
+            };
+
+            render(<PlayerCard {...dataWithVideo} />);
+
+            const button = screen.getByRole('button', { name: /watch highlight video/i });
+            expect(button).toHaveClass('hover:from-yellow-300', 'hover:to-yellow-400', 'hover:shadow-lg');
+        });
+
+        it('should meet minimum touch target size (44x44px)', () => {
+            const handleWatchVideo = jest.fn();
+            const dataWithVideo = {
+                ...mockPlayerData,
+                onWatchVideo: handleWatchVideo,
+            };
+
+            render(<PlayerCard {...dataWithVideo} />);
+
+            const button = screen.getByRole('button', { name: /watch highlight video/i });
+            expect(button).toHaveClass('min-h-[44px]');
+        });
+
+        it('should have appropriate aria-label for accessibility', () => {
+            const handleWatchVideo = jest.fn();
+            const dataWithVideo = {
+                ...mockPlayerData,
+                onWatchVideo: handleWatchVideo,
+            };
+
+            render(<PlayerCard {...dataWithVideo} />);
+
+            const button = screen.getByRole('button', { name: 'Watch highlight video for John Smith' });
+            expect(button).toBeInTheDocument();
+        });
+
+        it('should display play icon', () => {
+            const handleWatchVideo = jest.fn();
+            const dataWithVideo = {
+                ...mockPlayerData,
+                onWatchVideo: handleWatchVideo,
+            };
+
+            const { container } = render(<PlayerCard {...dataWithVideo} />);
+
+            const button = screen.getByRole('button', { name: /watch highlight video/i });
+            const svg = button.querySelector('svg');
+            expect(svg).toBeInTheDocument();
+            expect(svg).toHaveClass('w-5', 'h-5');
+        });
+
+        it('should have focus ring for keyboard navigation', () => {
+            const handleWatchVideo = jest.fn();
+            const dataWithVideo = {
+                ...mockPlayerData,
+                onWatchVideo: handleWatchVideo,
+            };
+
+            render(<PlayerCard {...dataWithVideo} />);
+
+            const button = screen.getByRole('button', { name: /watch highlight video/i });
+            expect(button).toHaveClass('focus:outline-none', 'focus:ring-2', 'focus:ring-yellow-500');
+        });
+    });
 });

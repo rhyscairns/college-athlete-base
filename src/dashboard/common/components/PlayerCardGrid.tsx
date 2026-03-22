@@ -2,15 +2,7 @@
 
 import React from 'react';
 import { PlayerCard } from './PlayerCard';
-import type { PlayerCardData } from '../types';
-
-export interface PlayerCardGridProps {
-    players: PlayerCardData[];
-    currentUserId: string;
-    userType: 'coach' | 'player';
-    isLoading?: boolean;
-    emptyMessage?: string;
-}
+import type { PlayerCardData, PlayerCardGridProps } from '../types';
 
 export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
     players,
@@ -18,6 +10,7 @@ export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
     userType,
     isLoading = false,
     emptyMessage = 'No players found',
+    onWatchVideo,
 }) => {
     // Filter out current user's card
     const filteredPlayers = players.filter(
@@ -119,6 +112,16 @@ export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
                     secondaryButtonLabel={buttonLabels.secondary}
                     onPrimaryClick={player.onPrimaryClick}
                     onSecondaryClick={player.onSecondaryClick}
+                    onWatchVideo={
+                        player.videoUrl && onWatchVideo
+                            ? () => onWatchVideo(
+                                player.playerId,
+                                player.videoUrl!,
+                                player.videoTitle,
+                                `${player.firstName} ${player.lastName}`
+                            )
+                            : undefined
+                    }
                     priority={index < 3}
                 />
             ))}

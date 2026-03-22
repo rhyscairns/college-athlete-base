@@ -3,6 +3,7 @@ export { DashboardHeader } from './DashboardHeader';
 export { FilterBar } from './FilterBar';
 export { PlayerCardGrid } from './PlayerCardGrid';
 export { Pagination } from './Pagination';
+export { VideoModal } from './VideoModal';
 export type { FilterBarProps } from './FilterBar';
-export type { PlayerCardGridProps } from './PlayerCardGrid';
+export type { PlayerCardGridProps } from '../types';
 export type { PaginationProps } from './Pagination';

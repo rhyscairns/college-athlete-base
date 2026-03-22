@@ -3,11 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { PlayerDashboardProps } from '../types';
-import type { PlayerCardData } from '../../common/types';
+import type { PlayerCardData, VideoModalState } from '../../common/types';
 import { DashboardHeader } from '../../common/components/DashboardHeader';
 import { FilterBar } from '../../common/components/FilterBar';
 import { PlayerCardGrid } from '../../common/components/PlayerCardGrid';
 import { Pagination } from '../../common/components/Pagination';
+import { VideoModal } from '../../common/components/VideoModal';
 import { useDebounce } from '@/hooks/useDebounce';
 import { playerFilterCache } from '@/lib/cache/filterCache';
 
@@ -32,6 +33,14 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const pageSize = 6;
+
+    // Video modal state
+    const [videoModalState, setVideoModalState] = useState<VideoModalState>({
+        isOpen: false,
+        videoUrl: null,
+        videoTitle: null,
+        playerName: null,
+    });
 
     // Available sports and positions (placeholder - will be populated from API in task 9)
     const [availableSports] = useState<string[]>(['All Sports', 'Football', 'Basketball', 'Soccer', 'Baseball']);
@@ -91,7 +100,10 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
             // Check cache first
             const cachedData = playerFilterCache.get(params);
             if (cachedData) {
-                setPlayers(cachedData.players || []);
+                setPlayers((cachedData.players || []).map((player: any) => ({
+                    ...player,
+                    playerId: player.id,
+                })));
                 if (cachedData.pagination) {
                     setTotalPages(cachedData.pagination.totalPages || 1);
                 }
@@ -133,8 +145,11 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
             // Cache the results
             playerFilterCache.set(params, data.data);
 
-            // Update players state with response
-            setPlayers(data.data.players || []);
+            // Update players state with response, mapping id to playerId
+            setPlayers((data.data.players || []).map((player: any) => ({
+                ...player,
+                playerId: player.id,
+            })));
 
             // Handle pagination data from response
             if (data.data.pagination) {
@@ -198,6 +213,26 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     const handleConnect = (targetPlayerId: string) => {
         // TODO: Implement connect modal/dialog
         console.log('Connect with player:', targetPlayerId);
+    };
+
+    // Handler for watching video
+    const handleWatchVideo = (playerId: string, videoUrl: string, videoTitle?: string, playerName?: string) => {
+        setVideoModalState({
+            isOpen: true,
+            videoUrl,
+            videoTitle: videoTitle || null,
+            playerName: playerName || null,
+        });
+    };
+
+    // Handler for closing video modal
+    const handleCloseVideoModal = () => {
+        setVideoModalState({
+            isOpen: false,
+            videoUrl: null,
+            videoTitle: null,
+            playerName: null,
+        });
     };
 
     // Handler for page change
@@ -319,6 +354,7 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
                     userType="player"
                     isLoading={isLoading}
                     emptyMessage="No players found matching your filters"
+                    onWatchVideo={handleWatchVideo}
                 />
 
                 {/* Pagination */}
@@ -330,6 +366,17 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
                     />
                 )}
             </main>
+
+            {/* Video Modal */}
+            {videoModalState.isOpen && videoModalState.videoUrl && (
+                <VideoModal
+                    isOpen={videoModalState.isOpen}
+                    onClose={handleCloseVideoModal}
+                    videoUrl={videoModalState.videoUrl}
+                    videoTitle={videoModalState.videoTitle || undefined}
+                    playerName={videoModalState.playerName || undefined}
+                />
+            )}
         </div>
     );
 }

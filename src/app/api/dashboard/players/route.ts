@@ -14,6 +14,8 @@ interface DashboardPlayer {
     position: string;
     profileImage?: string;
     videoThumbnail?: string;
+    videoUrl?: string;
+    videoTitle?: string;
 }
 
 /**
@@ -213,7 +215,9 @@ export async function GET(request: NextRequest) {
                     sport, 
                     position,
                     profile_image,
-                    video_thumbnail
+                    video_thumbnail,
+                    video_url,
+                    video_title
                 FROM players 
                 ${whereClause}
                 ORDER BY created_at DESC
@@ -229,6 +233,8 @@ export async function GET(request: NextRequest) {
                 position: row.position,
                 profileImage: row.profile_image || undefined,
                 videoThumbnail: row.video_thumbnail || undefined,
+                videoUrl: row.video_url || undefined,
+                videoTitle: row.video_title || undefined,
             }));
         } catch (error) {
             logger.dbError('getPlayers', error instanceof Error ? error : new Error('Unknown database error'), {
