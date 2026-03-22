@@ -9,11 +9,11 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Store the onSuccess callback for testing
-let capturedOnSuccess: ((user: User) => void) | undefined;
+let capturedOnSuccess: ((_user: User) => void) | undefined;
 
 // Mock the LoginPage component
 jest.mock('@/authentication/pages/LoginPage', () => ({
-    LoginPage: ({ onSuccess }: { onSuccess?: (user: User) => void }) => {
+    LoginPage: ({ onSuccess }: { onSuccess?: (_user: User) => void }) => {
         capturedOnSuccess = onSuccess;
         return <div data-testid="login-page">Login Page</div>;
     },

@@ -9,7 +9,7 @@
  * - Edit prompts appear correctly
  */
 
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { HeroSection } from '../HeroSection';
 import { StatsShowcase } from '../StatsShowcase';
 import { AcademicProfileSection } from '../AcademicProfileSection';

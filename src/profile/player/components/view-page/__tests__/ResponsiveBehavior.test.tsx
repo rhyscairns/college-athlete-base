@@ -13,7 +13,7 @@ describe('Responsive Behavior', () => {
             render(<EditButton onClick={() => { }} />);
             const button = screen.getByRole('button', { name: /edit section/i });
 
-            const styles = window.getComputedStyle(button);
+            window.getComputedStyle(button);
             expect(button).toHaveClass('min-h-[44px]');
             expect(button).toHaveClass('min-w-[44px]');
         });

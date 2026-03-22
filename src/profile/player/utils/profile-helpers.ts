@@ -8,9 +8,6 @@ import type { PlayerProfile } from '../types';
 import type {
     Academic,
     Stats,
-    Video,
-    Achievement,
-    Testimonial,
     Contact
 } from '../types';
 
@@ -60,15 +57,12 @@ function hasAcademicData(academic: Academic): boolean {
     if (!academic) return false;
 
     // Check if any optional fields have values
-    const hasOptionalData =
-        academic.gpa > 0 ||
+    return academic.gpa > 0 ||
         (academic.satScore && academic.satScore > 0) ||
         (academic.actScore && academic.actScore > 0) ||
         (academic.coursework && academic.coursework.length > 0) ||
         !!academic.ncaaEligibilityCenter ||
         !!academic.classRank;
-
-    return hasOptionalData;
 }
 
 /**
@@ -94,16 +88,13 @@ function hasContactData(contact: Contact): boolean {
     if (!contact) return false;
 
     // Email is required, so check for additional optional fields
-    const hasOptionalData =
-        !!contact.phone ||
+    return !!contact.phone ||
         !!contact.parentGuardianName ||
         !!contact.parentGuardianPhone ||
         !!contact.parentGuardianEmail ||
         !!contact.preferredContactMethod ||
         hasSocialMediaData(contact.socialMedia) ||
         (contact.headCoach && hasHeadCoachData(contact.headCoach));
-
-    return hasOptionalData;
 }
 
 /**

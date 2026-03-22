@@ -182,7 +182,7 @@ describe('CoachRegisterPage', () => {
 
     describe('Error Handling', () => {
         it('handles validation errors from API', async () => {
-            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+            jest.spyOn(console, 'error').mockImplementation();
 
             (global.fetch as jest.Mock).mockResolvedValueOnce({
                 ok: false,

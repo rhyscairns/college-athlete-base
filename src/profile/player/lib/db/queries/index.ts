@@ -110,7 +110,7 @@ function transformPlayerData(player: PlayerProfileRow): PlayerProfile {
 
     // Transform to PlayerProfile structure
     // Using type assertion since we're providing default values for missing fields
-    const profileData = {
+    return {
         id: player.id,
         firstName: player.first_name,
         lastName: player.last_name,
@@ -174,8 +174,6 @@ function transformPlayerData(player: PlayerProfileRow): PlayerProfile {
         recruitmentStatus: 'open',
         commitmentStatus: null,
     } as PlayerProfile;
-
-    return profileData;
 }
 
 /**

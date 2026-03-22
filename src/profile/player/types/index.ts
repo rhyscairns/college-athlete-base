@@ -139,7 +139,7 @@ export interface TextInputProps {
     name: string;
     type?: 'text' | 'number' | 'date' | 'tel';
     value: string;
-    onChange: (value: string) => void;
+    onChange: (_value: string) => void;
     onBlur?: () => void;
     error?: string;
     required?: boolean;
@@ -154,7 +154,7 @@ export interface SelectInputProps {
     label: string;
     name: string;
     value: string;
-    onChange: (value: string) => void;
+    onChange: (_value: string) => void;
     onBlur?: () => void;
     error?: string;
     options: ReadonlyArray<{ readonly value: string; readonly label: string }>;
@@ -167,7 +167,7 @@ export interface EmailInputProps {
     label?: string;
     name?: string;
     value: string;
-    onChange: (value: string) => void;
+    onChange: (_value: string) => void;
     onBlur?: () => void;
     error?: string;
     placeholder?: string;
@@ -192,7 +192,7 @@ export interface HeroSectionProps {
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<PlayerProfile>) => void;
+    onSave?: (_updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
@@ -202,7 +202,7 @@ export interface StatsShowcaseProps {
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<PlayerProfile>) => void;
+    onSave?: (_updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
@@ -212,7 +212,7 @@ export interface AthleticAchievementsSectionProps {
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<PlayerProfile>) => void;
+    onSave?: (_updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
@@ -222,7 +222,7 @@ export interface AcademicProfileSectionProps {
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<PlayerProfile>) => void;
+    onSave?: (_updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
@@ -232,7 +232,7 @@ export interface GameHighlightsSectionProps {
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<PlayerProfile>) => void;
+    onSave?: (_updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
@@ -242,7 +242,7 @@ export interface CoachesPerspectiveSectionProps {
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<PlayerProfile>) => void;
+    onSave?: (_updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
@@ -252,7 +252,7 @@ export interface RecruitingContactSectionProps {
     isEditing?: boolean;
     isAnyOtherSectionEditing?: boolean;
     onEdit?: () => void;
-    onSave?: (updatedData: Partial<PlayerProfile>) => void;
+    onSave?: (_updatedData: Partial<PlayerProfile>) => void;
     onCancel?: () => void;
 }
 
@@ -260,7 +260,7 @@ export interface PlayerProfileViewProps {
     playerId: string;
     currentUserId?: string;
     initialData: PlayerProfile;
-    onDataUpdate?: (updatedData: Partial<PlayerProfile>) => void;
+    onDataUpdate?: (_updatedData: Partial<PlayerProfile>) => void;
 }
 
 // Legacy type alias for backwards compatibility

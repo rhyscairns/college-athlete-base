@@ -7,8 +7,7 @@
 // Mock the database client module
 jest.mock('@/authentication/db/client');
 
-import { checkEmailExists, createPlayer, getPlayerByEmail, getPlayerById } from '@/authentication/db/players';
-import { PlayerRecord } from '@/authentication/types';
+import { checkEmailExists, getPlayerById } from '@/authentication/db/players';
 import { query } from '@/authentication/db/client';
 
 const mockQuery = query as jest.MockedFunction<typeof query>;

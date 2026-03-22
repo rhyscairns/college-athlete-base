@@ -142,7 +142,7 @@ describe('SuccessNotification', () => {
     });
 
     it('returns null after dismissing', () => {
-        const { container } = render(
+        render(
             <SuccessNotification message="Success!" onDismiss={mockOnDismiss} />
         );
 
