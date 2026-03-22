@@ -79,7 +79,8 @@ export function HeroSection({
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
-    }, [isEditing, handleCancel]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isEditing]);
 
     const validateHeroSection = (data: Hero): ValidationErrors => {
         const validationErrors: ValidationErrors = {};
