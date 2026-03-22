@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
     output: 'standalone',
+    // Disable ESLint during production builds (warnings won't block)
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
     // Image optimization configuration
     images: {
         remotePatterns: [

@@ -10,7 +10,7 @@ export default function CoachProfileNotFound() {
                         Coach Profile Not Found
                     </h2>
                     <p className="text-slate-300">
-                        The coach profile you're looking for doesn't exist or has been removed.
+                        The coach profile you&apos;re looking for doesn&apos;t exist or has been removed.
                     </p>
                 </div>
 

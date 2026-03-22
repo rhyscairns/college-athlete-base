@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
 import type { Hero, HeroSectionProps, ValidationErrors } from '../../types';
 import { HeroSectionEdit } from '../edit/components/sections/HeroSectionEdit';
 
