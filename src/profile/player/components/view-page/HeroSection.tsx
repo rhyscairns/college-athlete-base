@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import type { Hero, HeroSectionProps, ValidationErrors } from '../../types';
 import { HeroSectionEdit } from '../edit/components/sections/HeroSectionEdit';
+import { hasSportPositions, hasSportEvents } from '@/constants/sports';
 
 export function HeroSection({
     player,
@@ -19,6 +20,7 @@ export function HeroSection({
         lastName: player.lastName,
         initials: player.initials,
         position: player.position,
+        sport: player.sport,
         school: player.school,
         location: player.location,
         classYear: player.classYear,
@@ -31,6 +33,12 @@ export function HeroSection({
     const fullName = `${player.firstName || 'First'} ${player.lastName || 'Last'}`;
     const initials = player.initials || `${player.firstName?.charAt(0) || 'F'}${player.lastName?.charAt(0) || 'L'}`;
 
+    // Determine correct label for position/event based on sport
+    const positionEventLabel = useMemo(() => {
+        if (!player.sport) return 'Position';
+        return hasSportEvents(player.sport) && !hasSportPositions(player.sport) ? 'Event' : 'Position';
+    }, [player.sport]);
+
     // Reset form data when player data changes or when exiting edit mode
     useEffect(() => {
         if (!isEditing) {
@@ -39,6 +47,7 @@ export function HeroSection({
                 lastName: player.lastName,
                 initials: player.initials,
                 position: player.position,
+                sport: player.sport,
                 school: player.school,
                 location: player.location,
                 classYear: player.classYear,
@@ -105,6 +114,7 @@ export function HeroSection({
                 firstName: formData.firstName,
                 lastName: formData.lastName,
                 position: formData.position,
+                sport: formData.sport,
                 school: formData.school,
                 location: formData.location,
                 classYear: formData.classYear,
@@ -123,6 +133,7 @@ export function HeroSection({
             lastName: player.lastName,
             initials: player.initials,
             position: player.position,
+            sport: player.sport,
             school: player.school,
             location: player.location,
             classYear: player.classYear,
@@ -236,20 +247,39 @@ export function HeroSection({
                         </div>
 
                         <div className="space-y-4">
-                            {/* Position */}
-                            <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500">Position</p>
-                                        <p className="text-sm font-medium text-gray-900">{player.position || 'Not specified'}</p>
+                            {/* Sport */}
+                            {player.sport && (
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">Sport</p>
+                                            <p className="text-sm font-medium text-gray-900">{player.sport}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
+
+                            {/* Position/Event */}
+                            {player.position && (
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">{positionEventLabel}</p>
+                                            <p className="text-sm font-medium text-gray-900">{player.position}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Height */}
                             {player.height && (

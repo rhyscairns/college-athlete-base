@@ -67,7 +67,8 @@ export interface Hero {
     firstName: string;
     lastName: string;
     initials: string;
-    position: string;
+    position?: string; // Stores position or event depending on sport (made optional for backward compatibility)
+    sport?: string; // Player's sport
     school: string;
     location: string;
     classYear: string;
@@ -112,7 +113,8 @@ export interface PlayerProfile {
     lastName: string;
     initials: string;
     classYear: string;
-    position: string;
+    position?: string; // Made optional for backward compatibility
+    sport?: string; // Player's sport
     school: string;
     location: string;
     height: string;

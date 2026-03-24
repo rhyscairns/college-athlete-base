@@ -253,3 +253,93 @@ function transformPlayerData(player: PlayerProfileRow): PlayerProfile {
 //         coachOrganization: row.coach_organization,
 //     }));
 // }
+
+/**
+ * Update player profile data in the database
+ *
+ * @param playerId - The UUID of the player
+ * @param updates - Partial player profile data to update
+ * @returns Promise<boolean> - True if update was successful
+ * @throws Error if database update fails
+ */
+export async function updatePlayerProfile(
+    playerId: string,
+    updates: Partial<PlayerProfile>
+): Promise<boolean> {
+    try {
+        logger.debug('Updating player profile', { playerId, updates });
+
+        // Build dynamic UPDATE query based on provided fields
+        const updateFields: string[] = [];
+        const values: any[] = [];
+        let paramIndex = 1;
+
+        // Map PlayerProfile fields to database columns
+        if (updates.firstName !== undefined) {
+            updateFields.push(`first_name = $${paramIndex++}`);
+            values.push(updates.firstName);
+        }
+        if (updates.lastName !== undefined) {
+            updateFields.push(`last_name = $${paramIndex++}`);
+            values.push(updates.lastName);
+        }
+        if (updates.sport !== undefined) {
+            updateFields.push(`sport = $${paramIndex++}`);
+            values.push(updates.sport || '');
+        }
+        if (updates.position !== undefined) {
+            updateFields.push(`position = $${paramIndex++}`);
+            values.push(updates.position || '');
+        }
+        if (updates.academic?.gpa !== undefined) {
+            updateFields.push(`gpa = $${paramIndex++}`);
+            values.push(updates.academic.gpa.toString());
+        }
+
+        // Handle test scores (stored as JSON)
+        if (updates.academic) {
+            const { satScore, satMath, satReading, actScore } = updates.academic;
+            if (satScore !== undefined || satMath !== undefined || satReading !== undefined || actScore !== undefined) {
+                const testScores = {
+                    satScore,
+                    satMath,
+                    satReading,
+                    actScore,
+                };
+                updateFields.push(`test_scores = $${paramIndex++}`);
+                values.push(JSON.stringify(testScores));
+            }
+        }
+
+        // Note: The following fields are not in the current database schema:
+        // - school, location, classYear, height, weight
+        // These will be added in future migrations
+
+        // If no fields to update, return early
+        if (updateFields.length === 0) {
+            logger.debug('No fields to update', { playerId });
+            return true;
+        }
+
+        // Add updated_at timestamp
+        updateFields.push(`updated_at = NOW()`);
+
+        // Add playerId as the last parameter
+        values.push(playerId);
+
+        // Build and execute UPDATE query
+        const updateQuery = `
+            UPDATE players 
+            SET ${updateFields.join(', ')}
+            WHERE id = $${paramIndex}
+        `;
+
+        const result = await query(updateQuery, values);
+
+        logger.debug('Player profile updated successfully', { playerId, rowCount: result.length });
+        return true;
+    } catch (error) {
+        logger.error('Failed to update player profile', { playerId }, error instanceof Error ? error : new Error('Unknown error'));
+        throw new Error('Failed to update player profile');
+    }
+}

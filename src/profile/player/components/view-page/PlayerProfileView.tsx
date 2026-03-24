@@ -33,17 +33,42 @@ export function PlayerProfileView({
     };
 
     // Handler to save section changes
-    const handleSectionSave = (sectionId: string, updatedData: Partial<PlayerProfile>) => {
-        setPlayerData((prev) => ({ ...prev, ...updatedData }));
-        setEditingSection(null);
+    const handleSectionSave = async (sectionId: string, updatedData: Partial<PlayerProfile>) => {
+        try {
+            // Call API to save changes
+            const response = await fetch(`/api/player/${playerId}/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedData),
+            });
 
-        // Show success notification
-        setSuccessMessage('Changes saved successfully!');
-        setShowSuccessNotification(true);
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Failed to save profile:', errorData);
+                // Show error notification
+                setSuccessMessage('Failed to save changes. Please try again.');
+                setShowSuccessNotification(true);
+                return;
+            }
 
-        // Call optional callback for future API integration
-        if (onDataUpdate) {
-            onDataUpdate(updatedData);
+            // Update local state on success
+            setPlayerData((prev) => ({ ...prev, ...updatedData }));
+            setEditingSection(null);
+
+            // Show success notification
+            setSuccessMessage('Changes saved successfully!');
+            setShowSuccessNotification(true);
+
+            // Call optional callback for future integration
+            if (onDataUpdate) {
+                onDataUpdate(updatedData);
+            }
+        } catch (error) {
+            console.error('Error saving profile:', error);
+            setSuccessMessage('Failed to save changes. Please try again.');
+            setShowSuccessNotification(true);
         }
     };
 

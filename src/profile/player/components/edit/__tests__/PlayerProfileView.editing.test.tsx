@@ -1,6 +1,9 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import { PlayerProfileView } from '../../view-page/PlayerProfileView';
 import { mockPlayerData } from '../../../data/mockPlayerData';
+
+// Mock fetch
+global.fetch = jest.fn();
 
 // Mock all child components with props inspection
 const mockHeroSection = jest.fn((props: any) => <div data-testid="hero-section">Hero Section</div>);
@@ -60,6 +63,11 @@ describe('PlayerProfileView - Editing State Management', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        // Mock successful fetch response
+        (global.fetch as jest.Mock).mockResolvedValue({
+            ok: true,
+            json: async () => ({ success: true, message: 'Profile updated successfully' }),
+        });
     });
 
     describe('isOwner calculation', () => {
@@ -199,7 +207,7 @@ describe('PlayerProfileView - Editing State Management', () => {
     });
 
     describe('handleSectionSave', () => {
-        it('updates playerData and clears editing section when onSave is called', () => {
+        it('updates playerData and clears editing section when onSave is called', async () => {
             render(<PlayerProfileView {...defaultProps} />);
 
             // Get the onEdit and onSave handlers from HeroSection
@@ -214,21 +222,24 @@ describe('PlayerProfileView - Editing State Management', () => {
 
             // Save with updated data
             const updatedData = { firstName: 'Updated', lastName: 'Name' };
-            act(() => {
-                heroOnSave?.(updatedData);
+            await act(async () => {
+                await heroOnSave?.(updatedData);
             });
 
-            // After save, no section should be editing
-            expect(mockHeroSection).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    isEditing: false,
-                    isAnyOtherSectionEditing: false,
-                    player: expect.objectContaining(updatedData),
-                })
-            );
+            // Wait for state updates
+            await waitFor(() => {
+                // After save, no section should be editing
+                expect(mockHeroSection).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        isEditing: false,
+                        isAnyOtherSectionEditing: false,
+                        player: expect.objectContaining(updatedData),
+                    })
+                );
+            });
         });
 
-        it('calls onDataUpdate callback when provided', () => {
+        it('calls onDataUpdate callback when provided', async () => {
             const onDataUpdate = jest.fn();
             render(<PlayerProfileView {...defaultProps} onDataUpdate={onDataUpdate} />);
 
@@ -237,12 +248,15 @@ describe('PlayerProfileView - Editing State Management', () => {
 
             // Save with updated data
             const updatedData = { firstName: 'Updated', lastName: 'Name' };
-            act(() => {
-                heroOnSave?.(updatedData);
+            await act(async () => {
+                await heroOnSave?.(updatedData);
             });
 
-            // onDataUpdate should have been called with the updated data
-            expect(onDataUpdate).toHaveBeenCalledWith(updatedData);
+            // Wait for callback
+            await waitFor(() => {
+                // onDataUpdate should have been called with the updated data
+                expect(onDataUpdate).toHaveBeenCalledWith(updatedData);
+            });
         });
     });
 
@@ -325,7 +339,7 @@ describe('PlayerProfileView - Editing State Management', () => {
             );
         });
 
-        it('passes updated data to sections after save', () => {
+        it('passes updated data to sections after save', async () => {
             render(<PlayerProfileView {...defaultProps} />);
 
             // Get the onSave handler from HeroSection
@@ -335,19 +349,22 @@ describe('PlayerProfileView - Editing State Management', () => {
 
             // Save with updated data
             const updatedData = { firstName: 'NewFirst', lastName: 'NewLast' };
-            act(() => {
-                heroOnSave?.(updatedData);
+            await act(async () => {
+                await heroOnSave?.(updatedData);
             });
 
-            // HeroSection should receive the merged data
-            expect(mockHeroSection).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    player: expect.objectContaining({
-                        ...mockPlayerData,
-                        ...updatedData,
-                    }),
-                })
-            );
+            // Wait for state updates
+            await waitFor(() => {
+                // HeroSection should receive the merged data
+                expect(mockHeroSection).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        player: expect.objectContaining({
+                            ...mockPlayerData,
+                            ...updatedData,
+                        }),
+                    })
+                );
+            });
         });
     });
 
@@ -358,7 +375,7 @@ describe('PlayerProfileView - Editing State Management', () => {
             expect(screen.queryByTestId('success-notification')).not.toBeInTheDocument();
         });
 
-        it('shows success notification after saving a section', () => {
+        it('shows success notification after saving a section', async () => {
             render(<PlayerProfileView {...defaultProps} />);
 
             // Get the onSave handler from HeroSection
@@ -366,28 +383,33 @@ describe('PlayerProfileView - Editing State Management', () => {
 
             // Save with updated data
             const updatedData = { firstName: 'Updated', lastName: 'Name' };
-            act(() => {
-                heroOnSave?.(updatedData);
+            await act(async () => {
+                await heroOnSave?.(updatedData);
             });
 
-            // Success notification should be visible
-            expect(screen.getByTestId('success-notification')).toBeInTheDocument();
-            expect(screen.getByTestId('success-notification')).toHaveTextContent('Changes saved successfully!');
+            // Wait for notification to appear
+            await waitFor(() => {
+                // Success notification should be visible
+                expect(screen.getByTestId('success-notification')).toBeInTheDocument();
+                expect(screen.getByTestId('success-notification')).toHaveTextContent('Changes saved successfully!');
+            });
         });
 
-        it('hides success notification when dismissed', () => {
+        it('hides success notification when dismissed', async () => {
             render(<PlayerProfileView {...defaultProps} />);
 
             // Get the onSave handler from HeroSection
             const heroOnSave = mockHeroSection.mock.calls[0]?.[0]?.onSave;
 
             // Save to show notification
-            act(() => {
-                heroOnSave?.({ firstName: 'Updated' });
+            await act(async () => {
+                await heroOnSave?.({ firstName: 'Updated' });
             });
 
-            // Notification should be visible
-            expect(screen.getByTestId('success-notification')).toBeInTheDocument();
+            // Wait for notification to appear
+            await waitFor(() => {
+                expect(screen.getByTestId('success-notification')).toBeInTheDocument();
+            });
 
             // Click to dismiss
             act(() => {
@@ -398,16 +420,18 @@ describe('PlayerProfileView - Editing State Management', () => {
             expect(screen.queryByTestId('success-notification')).not.toBeInTheDocument();
         });
 
-        it('shows success notification for different sections', () => {
+        it('shows success notification for different sections', async () => {
             render(<PlayerProfileView {...defaultProps} />);
 
             // Save HeroSection
             const heroOnSave = mockHeroSection.mock.calls[0]?.[0]?.onSave;
-            act(() => {
-                heroOnSave?.({ firstName: 'Updated' });
+            await act(async () => {
+                await heroOnSave?.({ firstName: 'Updated' });
             });
 
-            expect(screen.getByTestId('success-notification')).toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.getByTestId('success-notification')).toBeInTheDocument();
+            });
 
             // Dismiss notification
             act(() => {
@@ -416,12 +440,14 @@ describe('PlayerProfileView - Editing State Management', () => {
 
             // Save StatsShowcase
             const statsOnSave = mockStatsShowcase.mock.calls[0]?.[0]?.onSave;
-            act(() => {
-                statsOnSave?.({ stats: { newStat: 100 } });
+            await act(async () => {
+                await statsOnSave?.({ stats: { newStat: 100 } });
             });
 
             // Notification should appear again
-            expect(screen.getByTestId('success-notification')).toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.getByTestId('success-notification')).toBeInTheDocument();
+            });
         });
     });
 });
