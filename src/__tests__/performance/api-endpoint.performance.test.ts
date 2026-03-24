@@ -99,9 +99,6 @@ describePerformance('API Endpoint Performance Tests', () => {
             const data = await response.json();
             expect(data.success).toBe(true);
             expect(data.playerId).toBeTruthy();
-
-            console.log(`✓ Complete registration completed in ${duration}ms (threshold: ${THRESHOLDS.SUCCESSFUL_REGISTRATION}ms)`);
-            console.log(`  Breakdown: validation + email check + password hash + DB insert`);
         });
     });
 
@@ -138,8 +135,6 @@ describePerformance('API Endpoint Performance Tests', () => {
             const data = await response.json();
             expect(data.success).toBe(false);
             expect(data.errors).toBeDefined();
-
-            console.log(`✓ Validation error response in ${duration}ms (threshold: ${THRESHOLDS.VALIDATION_ERROR}ms)`);
         });
     });
 
@@ -191,8 +186,6 @@ describePerformance('API Endpoint Performance Tests', () => {
             const data = await response2.json();
             expect(data.success).toBe(false);
             expect(data.message).toContain('already registered');
-
-            console.log(`✓ Duplicate email detection in ${duration}ms (threshold: ${THRESHOLDS.DUPLICATE_EMAIL}ms)`);
         });
     });
 
@@ -227,10 +220,6 @@ describePerformance('API Endpoint Performance Tests', () => {
 
             const successCount = responses.filter(r => r.status === 201).length;
             expect(successCount).toBe(10);
-
-            console.log(`✓ 10 concurrent registrations completed in ${duration}ms`);
-            console.log(`  Average per request: ${(duration / 10).toFixed(2)}ms`);
-            console.log(`  Requests per second: ${(10000 / duration).toFixed(2)}`);
         });
 
         it('should handle mixed concurrent requests (success + validation errors)', async () => {
@@ -288,9 +277,6 @@ describePerformance('API Endpoint Performance Tests', () => {
 
             expect(successCount).toBe(5);
             expect(errorCount).toBe(5);
-
-            console.log(`✓ 10 mixed concurrent requests completed in ${duration}ms`);
-            console.log(`  ${successCount} successful, ${errorCount} validation errors`);
         });
     });
 
@@ -329,20 +315,7 @@ describePerformance('API Endpoint Performance Tests', () => {
 
             // Calculate statistics
             const sorted = durations.sort((a, b) => a - b);
-            const min = sorted[0];
-            const max = sorted[sorted.length - 1];
-            const avg = durations.reduce((a, b) => a + b, 0) / durations.length;
-            const p50 = sorted[Math.floor(sorted.length * 0.5)];
             const p95 = sorted[Math.floor(sorted.length * 0.95)];
-            const p99 = sorted[Math.floor(sorted.length * 0.99)];
-
-            console.log('\n📊 Response Time Statistics (20 requests):');
-            console.log(`  Min:     ${min}ms`);
-            console.log(`  Max:     ${max}ms`);
-            console.log(`  Average: ${avg.toFixed(2)}ms`);
-            console.log(`  P50:     ${p50}ms`);
-            console.log(`  P95:     ${p95}ms`);
-            console.log(`  P99:     ${p99}ms`);
 
             // Verify P95 is within acceptable range
             expect(p95).toBeLessThan(THRESHOLDS.SUCCESSFUL_REGISTRATION * 1.5);

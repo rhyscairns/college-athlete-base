@@ -232,7 +232,6 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
             await onSubmit(registrationData);
         } catch (error) {
             setGeneralError('An error occurred during registration. Please try again.');
-            console.error('Registration error:', error);
         } finally {
             setIsSubmitting(false);
         }

@@ -100,7 +100,6 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Unable to load player profile. Please check your connection.';
                 setError(errorMessage);
-                console.error('Error fetching player profile:', err);
             } finally {
                 setIsLoading(false);
             }
@@ -260,7 +259,6 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     // Handler for connecting with player
     const handleConnect = (targetPlayerId: string) => {
         // TODO: Implement connect modal/dialog
-        console.log('Connect with player:', targetPlayerId);
     };
 
     // Handler for watching video

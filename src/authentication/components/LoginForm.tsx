@@ -132,7 +132,6 @@ export function LoginForm({ onSuccess, redirectTo }: LoginFormProps) {
             }
         } catch (error) {
             setGeneralError('An error occurred during login. Please try again.');
-            console.error('Login error:', error);
         } finally {
             setLoading(false);
         }

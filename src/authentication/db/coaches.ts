@@ -39,7 +39,6 @@ export async function checkCoachEmailExists(email: string): Promise<boolean> {
         );
         return result[0]?.exists || false;
     } catch (error) {
-        console.error('Error checking coach email existence:', error);
         throw new Error('Failed to check email availability');
     }
 }
@@ -81,8 +80,6 @@ export async function createCoach(data: CoachRecord): Promise<string> {
 
         return result[0].id;
     } catch (error) {
-        console.error('Error creating coach:', error);
-
         // Check for unique constraint violation (duplicate email)
         if (error instanceof Error && error.message.includes('duplicate key')) {
             throw new Error('Email already registered');
@@ -133,7 +130,6 @@ export async function getCoachByEmail(email: string): Promise<CoachDatabaseRecor
             updatedAt: new Date(row.updated_at),
         };
     } catch (error) {
-        console.error('Error fetching coach by email:', error);
         throw new Error('Failed to fetch coach record');
     }
 }
@@ -177,7 +173,6 @@ export async function getCoachById(id: string): Promise<CoachDatabaseRecord | nu
             updatedAt: new Date(row.updated_at),
         };
     } catch (error) {
-        console.error('Error fetching coach by ID:', error);
         throw new Error('Failed to fetch coach record');
     }
 }

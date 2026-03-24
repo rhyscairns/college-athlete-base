@@ -87,9 +87,6 @@ describe('Coach Profile Edit - Integration Tests', () => {
             const response = await PUT(request, { params: Promise.resolve({ coachId: validCoachId }) });
 
             const data = await response.json();
-            if (response.status !== 200) {
-                console.log('Error response:', JSON.stringify(data, null, 2));
-            }
             expect(response.status).toBe(200);
 
             expect(data.success).toBe(true);

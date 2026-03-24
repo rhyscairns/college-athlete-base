@@ -24,8 +24,6 @@ const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
 describe('ErrorBoundary', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        // Suppress console.error for these tests
-        jest.spyOn(console, 'error').mockImplementation(() => { });
     });
 
     afterEach(() => {

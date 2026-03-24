@@ -19,7 +19,7 @@ skipIfNoDb('Player Database Operations - Integration', () => {
             await query('DELETE FROM players WHERE email LIKE $1', ['%@test-integration.com']);
             await closePool();
         } catch (error) {
-            console.error('Cleanup error:', error);
+            // Cleanup error
         }
     });
 

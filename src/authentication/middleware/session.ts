@@ -18,8 +18,6 @@ export function getTokenFromCookie(request: NextRequest): string | null {
 
         return sessionCookie.value;
     } catch (error) {
-        // Log error but don't expose details
-        console.error('Error extracting token from cookie:', error);
         return null;
     }
 }
@@ -61,7 +59,6 @@ export async function validateSession(
             type: payload.type
         };
     } catch (error) {
-        console.error('Session validation error:', error);
         return {
             isValid: false,
             error: 'Session validation failed'

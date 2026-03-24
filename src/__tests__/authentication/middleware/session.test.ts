@@ -64,10 +64,6 @@ describe('Session Middleware', () => {
             const token = getTokenFromCookie(mockRequest);
 
             expect(token).toBeNull();
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                'Error extracting token from cookie:',
-                expect.any(Error)
-            );
 
             consoleErrorSpy.mockRestore();
         });
@@ -196,10 +192,6 @@ describe('Session Middleware', () => {
                 isValid: false,
                 error: 'Session validation failed'
             });
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                'Session validation error:',
-                expect.any(Error)
-            );
 
             consoleErrorSpy.mockRestore();
         });

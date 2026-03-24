@@ -95,7 +95,6 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Failed to load coach profile';
                 setError(errorMessage);
-                console.error('Error fetching coach profile:', err);
             } finally {
                 setIsLoading(false);
             }
@@ -186,7 +185,6 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to load players';
             setError(errorMessage);
-            console.error('Error fetching players:', err);
             setPlayers([]);
         } finally {
             setIsLoading(false);
@@ -251,7 +249,6 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
     // Handler for contacting player
     const handleContact = (playerId: string) => {
         // TODO: Implement contact modal/dialog
-        console.log('Contact player:', playerId);
     };
 
     // Handler for watching video

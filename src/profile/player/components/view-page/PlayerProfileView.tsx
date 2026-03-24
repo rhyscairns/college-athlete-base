@@ -46,7 +46,6 @@ export function PlayerProfileView({
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Failed to save profile:', errorData);
                 // Show error notification
                 setSuccessMessage('Failed to save changes. Please try again.');
                 setShowSuccessNotification(true);
@@ -66,7 +65,6 @@ export function PlayerProfileView({
                 onDataUpdate(updatedData);
             }
         } catch (error) {
-            console.error('Error saving profile:', error);
             setSuccessMessage('Failed to save changes. Please try again.');
             setShowSuccessNotification(true);
         }
