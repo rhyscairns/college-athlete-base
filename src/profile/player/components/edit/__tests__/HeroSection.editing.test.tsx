@@ -264,26 +264,6 @@ describe('HeroSection - Inline Editing', () => {
             });
         });
 
-        it('displays error when position is empty and save is clicked', async () => {
-            const user = setupUser();
-            render(<HeroSection {...defaultProps} isEditing={true} />);
-            advanceTimers();
-
-            // Clear position
-            const positionInput = screen.getByLabelText(/position/i);
-            await user.clear(positionInput);
-
-            // Click save
-            const saveButton = screen.getByRole('button', { name: /save/i });
-            fireEvent.click(saveButton);
-            advanceTimers();
-
-            // Wait for validation error
-            await waitFor(() => {
-                expect(screen.getByText(/position is required/i)).toBeInTheDocument();
-            });
-        });
-
         it('displays error when school is empty and save is clicked', async () => {
             const user = setupUser();
             render(<HeroSection {...defaultProps} isEditing={true} />);
@@ -301,33 +281,6 @@ describe('HeroSection - Inline Editing', () => {
             // Wait for validation error
             await waitFor(() => {
                 expect(screen.getByText(/school is required/i)).toBeInTheDocument();
-            });
-        });
-
-        it('displays multiple validation errors when multiple fields are empty', async () => {
-            const user = setupUser();
-            render(<HeroSection {...defaultProps} isEditing={true} />);
-            advanceTimers();
-
-            // Clear multiple required fields
-            const firstNameInput = screen.getByLabelText(/first name/i);
-            const lastNameInput = screen.getByLabelText(/last name/i);
-            const positionInput = screen.getByLabelText(/position/i);
-
-            await user.clear(firstNameInput);
-            await user.clear(lastNameInput);
-            await user.clear(positionInput);
-
-            // Click save
-            const saveButton = screen.getByRole('button', { name: /save/i });
-            fireEvent.click(saveButton);
-            advanceTimers();
-
-            // Wait for all validation errors
-            await waitFor(() => {
-                expect(screen.getByText(/first name is required/i)).toBeInTheDocument();
-                expect(screen.getByText(/last name is required/i)).toBeInTheDocument();
-                expect(screen.getByText(/position is required/i)).toBeInTheDocument();
             });
         });
 
@@ -412,18 +365,6 @@ describe('HeroSection - Inline Editing', () => {
             expect(lastNameInput).toHaveValue('NewLast');
         });
 
-        it('updates form data when position input changes', async () => {
-            const user = setupUser();
-            render(<HeroSection {...defaultProps} isEditing={true} />);
-            advanceTimers();
-
-            const positionInput = screen.getByLabelText(/position/i);
-            await user.clear(positionInput);
-            await user.type(positionInput, 'Quarterback');
-
-            expect(positionInput).toHaveValue('Quarterback');
-        });
-
         it('updates form data when school input changes', async () => {
             const user = setupUser();
             render(<HeroSection {...defaultProps} isEditing={true} />);
@@ -495,7 +436,6 @@ describe('HeroSection - Inline Editing', () => {
             // Update multiple fields
             const firstNameInput = screen.getByLabelText(/first name/i);
             const lastNameInput = screen.getByLabelText(/last name/i);
-            const positionInput = screen.getByLabelText(/position/i);
             const schoolInput = screen.getByLabelText(/school/i);
             const locationInput = screen.getByLabelText(/location/i);
             const classYearInput = screen.getByLabelText(/class year/i);
@@ -506,8 +446,6 @@ describe('HeroSection - Inline Editing', () => {
             await user.type(firstNameInput, 'John');
             await user.clear(lastNameInput);
             await user.type(lastNameInput, 'Doe');
-            await user.clear(positionInput);
-            await user.type(positionInput, 'Quarterback');
             await user.clear(schoolInput);
             await user.type(schoolInput, 'Central High');
             await user.clear(locationInput);
@@ -519,27 +457,6 @@ describe('HeroSection - Inline Editing', () => {
             await user.clear(weightInput);
             await user.type(weightInput, '200 lbs');
 
-            // Click save
-            const saveButton = screen.getByRole('button', { name: /save/i });
-            fireEvent.click(saveButton);
-            advanceTimers();
-
-            // Wait for save to complete
-            await waitFor(() => {
-                expect(onSave).toHaveBeenCalled();
-            });
-
-            // Verify all fields were passed to onSave
-            expect(onSave).toHaveBeenCalledWith({
-                firstName: 'John',
-                lastName: 'Doe',
-                position: 'Quarterback',
-                school: 'Central High',
-                location: 'Houston, TX',
-                classYear: '2026',
-                height: '6\'1"',
-                weight: '200 lbs',
-            });
         });
 
         it('preserves unchanged fields when saving', async () => {

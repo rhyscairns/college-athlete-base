@@ -22,8 +22,6 @@ describe('RootLayout', () => {
             ) {
                 return;
             }
-            // Let other errors through
-            console.warn(message);
         });
     });
 

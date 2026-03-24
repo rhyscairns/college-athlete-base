@@ -124,7 +124,7 @@ export function VideoModal({
     if (!videoUrl || videoUrl.trim() === '') {
         // If modal is open but no video URL, treat as error
         if (isOpen) {
-            console.error('VideoModal: Missing or empty video URL');
+            // Missing or empty video URL
         }
     }
 
@@ -143,7 +143,6 @@ export function VideoModal({
     } catch (error) {
         hasError = true;
         if (error instanceof Error) {
-            console.error('VideoModal: Error transforming YouTube URL:', error.message);
             // Provide user-friendly error message
             if (error.message.includes('Unable to extract video ID')) {
                 errorMessage = 'The video URL format is not recognized. Please check the URL.';

@@ -50,7 +50,6 @@ describe('Registration API Performance Tests', () => {
 
             expect(exists).toBe(false);
             expect(duration).toBeLessThan(THRESHOLDS.EMAIL_CHECK);
-            console.log(`✓ Email check completed in ${duration}ms (threshold: ${THRESHOLDS.EMAIL_CHECK}ms)`);
         });
 
         it('should check existing email quickly', async () => {
@@ -76,7 +75,6 @@ describe('Registration API Performance Tests', () => {
 
             expect(exists).toBe(true);
             expect(duration).toBeLessThan(THRESHOLDS.EMAIL_CHECK);
-            console.log(`✓ Existing email check completed in ${duration}ms (threshold: ${THRESHOLDS.EMAIL_CHECK}ms)`);
         });
 
         it('should fetch player by email quickly', async () => {
@@ -87,7 +85,6 @@ describe('Registration API Performance Tests', () => {
             expect(player).not.toBeNull();
             expect(player?.email).toBe(testEmail.toLowerCase());
             expect(duration).toBeLessThan(THRESHOLDS.PLAYER_FETCH);
-            console.log(`✓ Player fetch completed in ${duration}ms (threshold: ${THRESHOLDS.PLAYER_FETCH}ms)`);
         });
 
         it('should verify email index is being used', async () => {
@@ -103,12 +100,6 @@ describe('Registration API Performance Tests', () => {
 
             // Note: Small datasets might use sequential scan instead of index scan
             // This is expected and optimal for small tables
-            if (usesIndex) {
-                console.log('✓ Email query uses index: idx_players_email');
-            } else {
-                console.log('ℹ Email query uses sequential scan (expected for small datasets)');
-            }
-
             // Just verify the index exists, not that it's always used
             expect(true).toBe(true);
         });
@@ -123,7 +114,6 @@ describe('Registration API Performance Tests', () => {
             expect(hash).toBeTruthy();
             expect(hash.length).toBeGreaterThan(50);
             expect(duration).toBeLessThan(THRESHOLDS.PASSWORD_HASH);
-            console.log(`✓ Password hashing completed in ${duration}ms (threshold: ${THRESHOLDS.PASSWORD_HASH}ms)`);
         });
     });
 
@@ -148,7 +138,6 @@ describe('Registration API Performance Tests', () => {
 
             expect(playerId).toBeTruthy();
             expect(duration).toBeLessThan(THRESHOLDS.PLAYER_CREATE);
-            console.log(`✓ Player creation completed in ${duration}ms (threshold: ${THRESHOLDS.PLAYER_CREATE}ms)`);
 
             // Clean up
             await query('DELETE FROM players WHERE id = $1', [playerId]);
@@ -168,8 +157,6 @@ describe('Registration API Performance Tests', () => {
             expect(results).toHaveLength(10);
             expect(results.every(r => r === false)).toBe(true);
             expect(duration).toBeLessThan(THRESHOLDS.CONCURRENT_10);
-            console.log(`✓ 10 concurrent email checks completed in ${duration}ms (threshold: ${THRESHOLDS.CONCURRENT_10}ms)`);
-            console.log(`  Average per request: ${(duration / 10).toFixed(2)}ms`);
         });
 
         it('should handle 50 concurrent email checks efficiently', async () => {
@@ -184,8 +171,6 @@ describe('Registration API Performance Tests', () => {
             expect(results).toHaveLength(50);
             expect(results.every(r => r === false)).toBe(true);
             expect(duration).toBeLessThan(THRESHOLDS.CONCURRENT_50);
-            console.log(`✓ 50 concurrent email checks completed in ${duration}ms (threshold: ${THRESHOLDS.CONCURRENT_50}ms)`);
-            console.log(`  Average per request: ${(duration / 50).toFixed(2)}ms`);
         });
 
         it('should handle concurrent player creations', async () => {
@@ -211,8 +196,6 @@ describe('Registration API Performance Tests', () => {
 
             expect(playerIds).toHaveLength(playerCount);
             expect(playerIds.every(id => id.length > 0)).toBe(true);
-            console.log(`✓ ${playerCount} concurrent player creations completed in ${duration}ms`);
-            console.log(`  Average per request: ${(duration / playerCount).toFixed(2)}ms`);
 
             // Clean up
             await Promise.all(
@@ -231,12 +214,6 @@ describe('Registration API Performance Tests', () => {
             const idleCount = pool.idleCount;
             // @ts-ignore
             const waitingCount = pool.waitingCount;
-
-            console.log('\n📊 Connection Pool Statistics:');
-            console.log(`  Total connections: ${totalCount}`);
-            console.log(`  Idle connections: ${idleCount}`);
-            console.log(`  Waiting clients: ${waitingCount}`);
-            console.log(`  Max connections: ${process.env.DATABASE_MAX_CONNECTIONS || '20'}`);
 
             expect(totalCount).toBeGreaterThanOrEqual(0);
             expect(idleCount).toBeGreaterThanOrEqual(0);
@@ -259,7 +236,6 @@ describe('Registration API Performance Tests', () => {
 
             // Connection count should not grow linearly with queries
             expect(finalTotal).toBeLessThanOrEqual(initialTotal + 5);
-            console.log(`✓ Executed ${iterations} queries with ${finalTotal - initialTotal} new connections`);
         });
     });
 
@@ -273,11 +249,6 @@ describe('Registration API Performance Tests', () => {
             );
 
             const indexNames = result.map(r => r.indexname);
-
-            console.log('\n📑 Database Indexes:');
-            result.forEach(idx => {
-                console.log(`  ${idx.indexname}`);
-            });
 
             // Check for required indexes
             expect(indexNames).toContain('idx_players_email');
@@ -294,7 +265,6 @@ describe('Registration API Performance Tests', () => {
             );
             const duration = Date.now() - startTime;
 
-            console.log(`✓ Email pattern search completed in ${duration}ms`);
             expect(duration).toBeLessThan(200); // Should be fast even with pattern matching (increased threshold for CI/slower systems)
         });
     });

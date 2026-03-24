@@ -608,9 +608,7 @@ describe('VideoModal', () => {
             expect(mockOnClose).toHaveBeenCalledTimes(1);
         });
 
-        it('should log error to console when URL transformation fails', () => {
-            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
+        it('should handle URL transformation failures gracefully', () => {
             render(
                 <VideoModal
                     {...defaultProps}
@@ -618,24 +616,15 @@ describe('VideoModal', () => {
                 />
             );
 
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                expect.stringContaining('VideoModal: Error transforming YouTube URL'),
-                expect.any(String)
-            );
-
-            consoleErrorSpy.mockRestore();
+            // Should handle error gracefully without crashing
+            expect(screen.getByText(/unable to load video/i)).toBeInTheDocument();
         });
 
-        it('should log error to console when video URL is missing', () => {
-            const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
+        it('should handle missing video URL gracefully', () => {
             render(<VideoModal {...defaultProps} videoUrl="" />);
 
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                'VideoModal: Missing or empty video URL'
-            );
-
-            consoleErrorSpy.mockRestore();
+            // Should handle error gracefully without crashing
+            expect(screen.getByText(/unable to load video/i)).toBeInTheDocument();
         });
     });
 

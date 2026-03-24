@@ -24,7 +24,6 @@ export async function checkEmailExists(email: string): Promise<boolean> {
         );
         return result[0]?.exists || false;
     } catch (error) {
-        console.error('Error checking email existence:', error);
         throw new Error('Failed to check email availability');
     }
 }
@@ -70,8 +69,6 @@ export async function createPlayer(data: PlayerRecord): Promise<string> {
 
         return result[0].id;
     } catch (error) {
-        console.error('Error creating player:', error);
-
         // Check for unique constraint violation (duplicate email)
         if (error instanceof Error && error.message.includes('duplicate key')) {
             throw new Error('Email already registered');
@@ -127,7 +124,6 @@ export async function getPlayerByEmail(email: string): Promise<PlayerDatabaseRec
             updatedAt: new Date(row.updated_at),
         };
     } catch (error) {
-        console.error('Error fetching player by email:', error);
         throw new Error('Failed to fetch player record');
     }
 }
@@ -176,7 +172,6 @@ export async function getPlayerById(id: string): Promise<PlayerDatabaseRecord | 
             updatedAt: new Date(row.updated_at),
         };
     } catch (error) {
-        console.error('Error fetching player by ID:', error);
         throw new Error('Failed to fetch player record');
     }
 }

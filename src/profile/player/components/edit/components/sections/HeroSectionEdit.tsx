@@ -1,6 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { TextInput } from '../inputs/TextInput';
 import { ActionButtons } from './ActionButtons';
+import { TypeaheadInput } from '@/components/common/TypeaheadInput';
+import {
+    getAllSportNames,
+    getPositionsForSport,
+    getEventsForSport,
+    hasSportPositions,
+    hasSportEvents
+} from '@/constants/sports';
 import type { Hero, HeroSectionEditProps } from '../../../../types';
 
 export function HeroSectionEdit({
@@ -11,11 +19,117 @@ export function HeroSectionEdit({
     onSave,
     onCancel,
 }: HeroSectionEditProps) {
+    const [allSports] = useState<string[]>(getAllSportNames());
+    const [sportError, setSportError] = useState<string | undefined>(errors.sport);
+    const [positionEventError, setPositionEventError] = useState<string | undefined>(errors.position);
+
+    // State for position/event field
+    const [selectedSport, setSelectedSport] = useState(formData.sport || '');
+    const [positionEventType, setPositionEventType] = useState<'position' | 'event'>('position');
+    const [availablePositionsEvents, setAvailablePositionsEvents] = useState<string[]>([]);
+
+    useEffect(() => {
+        setSportError(errors.sport);
+    }, [errors.sport]);
+
+    useEffect(() => {
+        setPositionEventError(errors.position);
+    }, [errors.position]);
+
+    // Initialize position/event options when component mounts with existing sport
+    useEffect(() => {
+        if (formData.sport) {
+            const hasEvents = hasSportEvents(formData.sport);
+            const hasPositions = hasSportPositions(formData.sport);
+
+            if (hasEvents && !hasPositions) {
+                setPositionEventType('event');
+                setAvailablePositionsEvents(getEventsForSport(formData.sport));
+            } else {
+                setPositionEventType('position');
+                setAvailablePositionsEvents(getPositionsForSport(formData.sport));
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run on mount
+
+    // Determine field label and no results message
+    const positionEventLabel = useMemo(() => {
+        return positionEventType === 'event' ? 'Event' : 'Position';
+    }, [positionEventType]);
+
+    const positionEventPlaceholder = useMemo(() => {
+        return positionEventType === 'event'
+            ? 'e.g., 100m Freestyle, High Jump'
+            : 'e.g., Point Guard, Quarterback';
+    }, [positionEventType]);
+
+    const positionEventNoResultsMessage = useMemo(() => {
+        return positionEventType === 'event' ? 'No events found' : 'No positions found';
+    }, [positionEventType]);
+
     const handleFieldChange = (field: keyof Hero, value: string | number) => {
         setFormData((prev) => ({
             ...prev,
             [field]: value,
         }));
+    };
+
+    const handleSportChange = (sport: string) => {
+        // Validate sport selection
+        const isValidSport = allSports.some(s => s.toLowerCase() === sport.toLowerCase());
+
+        if (sport && !isValidSport) {
+            setSportError('Please select a sport from the list');
+        } else {
+            setSportError(undefined);
+        }
+
+        // Update selected sport state
+        setSelectedSport(sport);
+
+        // Clear position/event when sport changes
+        handleFieldChange('sport', sport);
+        handleFieldChange('position', '');
+        setPositionEventError(undefined);
+
+        // Determine if sport has positions or events
+        if (sport) {
+            const hasEvents = hasSportEvents(sport);
+            const hasPositions = hasSportPositions(sport);
+
+            if (hasEvents && !hasPositions) {
+                // Sport has events (e.g., Swimming, Track & Field)
+                setPositionEventType('event');
+                setAvailablePositionsEvents(getEventsForSport(sport));
+            } else {
+                // Sport has positions (e.g., Soccer, Football) or both
+                setPositionEventType('position');
+                setAvailablePositionsEvents(getPositionsForSport(sport));
+            }
+        } else {
+            // No sport selected, clear options
+            setAvailablePositionsEvents([]);
+        }
+    };
+
+    const handlePositionEventChange = (value: string) => {
+        // Validate position/event selection
+        if (value && selectedSport) {
+            const isValid = availablePositionsEvents.some(
+                opt => opt.toLowerCase() === value.toLowerCase()
+            );
+
+            if (!isValid) {
+                setPositionEventError(`Please select a valid ${positionEventType} from the list`);
+            } else {
+                setPositionEventError(undefined);
+            }
+        } else {
+            setPositionEventError(undefined);
+        }
+
+        handleFieldChange('position', value);
     };
 
     const initials = `${formData.firstName?.charAt(0) || 'F'}${formData.lastName?.charAt(0) || 'L'}`;
@@ -84,15 +198,29 @@ export function HeroSectionEdit({
                             Athletic Information
                         </h3>
                         <div className="space-y-4">
-                            <TextInput
-                                label="Position"
-                                name="position"
-                                value={formData.position}
-                                onChange={(value: string) => handleFieldChange('position', value)}
-                                error={errors.position}
-                                required
+                            <TypeaheadInput
+                                label="Sport"
+                                name="sport"
+                                value={formData.sport || ''}
+                                options={allSports}
+                                onChange={handleSportChange}
+                                error={sportError}
                                 disabled={isSaving}
-                                placeholder="e.g., Point Guard, Quarterback"
+                                placeholder="e.g., Basketball, Soccer, Football"
+                                minChars={3}
+                                noResultsMessage="No sports found"
+                            />
+                            <TypeaheadInput
+                                label={positionEventLabel}
+                                name="position"
+                                value={formData.position || ''}
+                                options={availablePositionsEvents}
+                                onChange={handlePositionEventChange}
+                                error={positionEventError}
+                                disabled={isSaving || !selectedSport}
+                                placeholder={!selectedSport ? 'Please select a sport first' : positionEventPlaceholder}
+                                minChars={3}
+                                noResultsMessage={positionEventNoResultsMessage}
                             />
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <TextInput

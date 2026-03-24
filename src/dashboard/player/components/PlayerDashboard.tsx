@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { PlayerDashboardProps } from '../types';
 import type { PlayerCardData, VideoModalState } from '../../common/types';
@@ -11,6 +11,7 @@ import { Pagination } from '../../common/components/Pagination';
 import { VideoModal } from '../../common/components/VideoModal';
 import { useDebounce } from '@/hooks/useDebounce';
 import { playerFilterCache } from '@/lib/cache/filterCache';
+import { getPositionsForSport, getEventsForSport, hasSportPositions, hasSportEvents } from '@/constants';
 
 export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     const router = useRouter();
@@ -43,8 +44,34 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     });
 
     // Available sports and positions (placeholder - will be populated from API in task 9)
-    const [availableSports] = useState<string[]>(['All Sports', 'Football', 'Basketball', 'Soccer', 'Baseball']);
-    const [availablePositions] = useState<string[]>(['All Positions', 'Quarterback', 'Wide Receiver', 'Running Back']);
+    const [availableSports, setAvailableSports] = useState<string[]>(['All Sports']);
+
+    // Dynamically get positions or events based on selected sport
+    const availablePositions = useMemo(() => {
+        if (selectedSport === 'All Sports') {
+            return ['All Positions'];
+        }
+
+        const positions = getPositionsForSport(selectedSport);
+        const events = getEventsForSport(selectedSport);
+
+        // Use positions if available, otherwise use events
+        if (positions.length > 0) {
+            return ['All Positions', ...positions];
+        } else if (events.length > 0) {
+            return ['All Events', ...events];
+        }
+
+        return ['All Positions'];
+    }, [selectedSport]);
+
+    // Update position label based on sport
+    const positionLabel = useMemo(() => {
+        if (selectedSport === 'All Sports') {
+            return 'All Positions';
+        }
+        return hasSportEvents(selectedSport) && !hasSportPositions(selectedSport) ? 'All Events' : 'All Positions';
+    }, [selectedSport]);
 
     // Fetch player profile and set initial filters
     useEffect(() => {
@@ -73,7 +100,6 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Unable to load player profile. Please check your connection.';
                 setError(errorMessage);
-                console.error('Error fetching player profile:', err);
             } finally {
                 setIsLoading(false);
             }
@@ -81,6 +107,25 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
 
         fetchPlayerProfile();
     }, [playerId, router]);
+
+    // Fetch available sports from players
+    useEffect(() => {
+        const fetchAvailableSports = async () => {
+            try {
+                const response = await fetch('/api/dashboard/players/sports');
+                const data = await response.json();
+
+                if (response.ok && data.success && data.data?.sports) {
+                    setAvailableSports(['All Sports', ...data.data.sports]);
+                }
+            } catch (err) {
+                console.error('Error fetching available sports:', err);
+                // Keep default 'All Sports' if fetch fails
+            }
+        };
+
+        fetchAvailableSports();
+    }, []);
 
     // Fetch filtered players list
     const fetchPlayers = useCallback(async () => {
@@ -176,6 +221,8 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     // Handler for sport filter change
     const handleSportChange = (sport: string) => {
         setSelectedSport(sport);
+        // Reset position to default when sport changes
+        setSelectedPosition(sport === 'All Sports' ? 'All Positions' : positionLabel);
         setCurrentPage(1); // Reset to first page when filter changes
     };
 
@@ -212,7 +259,6 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     // Handler for connecting with player
     const handleConnect = (targetPlayerId: string) => {
         // TODO: Implement connect modal/dialog
-        console.log('Connect with player:', targetPlayerId);
     };
 
     // Handler for watching video
