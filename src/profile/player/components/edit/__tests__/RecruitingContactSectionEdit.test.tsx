@@ -59,6 +59,11 @@ describe('RecruitingContactSectionEdit', () => {
         expect(screen.getByLabelText(/YouTube/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/TikTok/i)).toBeInTheDocument();
 
+        // Head coach fields
+        expect(screen.getByLabelText(/Head Coach Name/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/Head Coach Email/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/Head Coach Phone/i)).toBeInTheDocument();
+
         // Preferred contact method
         expect(screen.getByLabelText(/Preferred Contact Method/i)).toBeInTheDocument();
     });
@@ -75,6 +80,9 @@ describe('RecruitingContactSectionEdit', () => {
         expect(screen.getByDisplayValue('https://instagram.com/player')).toBeInTheDocument();
         expect(screen.getByDisplayValue('https://youtube.com/@player')).toBeInTheDocument();
         expect(screen.getByDisplayValue('https://tiktok.com/@player')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('Coach Smith')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('coach@school.com')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('(555) 111-2222')).toBeInTheDocument();
         expect(screen.getByDisplayValue('Email')).toBeInTheDocument();
     });
 
@@ -119,6 +127,33 @@ describe('RecruitingContactSectionEdit', () => {
 
         const methodInput = screen.getByLabelText(/Preferred Contact Method/i);
         fireEvent.change(methodInput, { target: { value: 'Phone' } });
+
+        expect(mockSetFormData).toHaveBeenCalled();
+    });
+
+    it('calls setFormData when head coach name is changed', () => {
+        render(<RecruitingContactSectionEdit {...defaultProps} />);
+
+        const nameInput = screen.getByLabelText(/Head Coach Name/i);
+        fireEvent.change(nameInput, { target: { value: 'Coach Johnson' } });
+
+        expect(mockSetFormData).toHaveBeenCalled();
+    });
+
+    it('calls setFormData when head coach email is changed', () => {
+        render(<RecruitingContactSectionEdit {...defaultProps} />);
+
+        const emailInput = screen.getByLabelText(/Head Coach Email/i);
+        fireEvent.change(emailInput, { target: { value: 'newcoach@school.com' } });
+
+        expect(mockSetFormData).toHaveBeenCalled();
+    });
+
+    it('calls setFormData when head coach phone is changed', () => {
+        render(<RecruitingContactSectionEdit {...defaultProps} />);
+
+        const phoneInput = screen.getByLabelText(/Head Coach Phone/i);
+        fireEvent.change(phoneInput, { target: { value: '(555) 333-4444' } });
 
         expect(mockSetFormData).toHaveBeenCalled();
     });
@@ -238,5 +273,26 @@ describe('RecruitingContactSectionEdit', () => {
         expect(screen.getByText('Player Contact')).toBeInTheDocument();
         expect(screen.getByText('Parent/Guardian Contact')).toBeInTheDocument();
         expect(screen.getByText('Social Media')).toBeInTheDocument();
+        expect(screen.getByText('Head Coach Contact')).toBeInTheDocument();
+    });
+
+    it('handles empty head coach fields', () => {
+        const propsWithEmptyHeadCoach = {
+            ...defaultProps,
+            formData: {
+                ...mockFormData,
+                headCoach: {
+                    name: undefined,
+                    email: undefined,
+                    phone: undefined,
+                },
+            },
+        };
+
+        render(<RecruitingContactSectionEdit {...propsWithEmptyHeadCoach} />);
+
+        expect(screen.getByLabelText(/Head Coach Name/i)).toHaveValue('');
+        expect(screen.getByLabelText(/Head Coach Email/i)).toHaveValue('');
+        expect(screen.getByLabelText(/Head Coach Phone/i)).toHaveValue('');
     });
 });

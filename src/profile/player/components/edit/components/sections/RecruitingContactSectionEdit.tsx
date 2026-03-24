@@ -30,6 +30,16 @@ export function RecruitingContactSectionEdit({
         }));
     };
 
+    const handleHeadCoachChange = (field: 'name' | 'email' | 'phone', value: string) => {
+        setFormData((prev) => ({
+            ...prev,
+            headCoach: {
+                ...prev.headCoach,
+                [field]: value,
+            },
+        }));
+    };
+
     return (
         <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fade-in">
             {/* Player Contact Information */}
@@ -135,6 +145,42 @@ export function RecruitingContactSectionEdit({
                         onChange={(value: string) => handleSocialMediaChange('tiktok', value)}
                         error={errors['socialMedia.tiktok']}
                         placeholder="https://tiktok.com/@username"
+                        disabled={isSaving}
+                    />
+                </div>
+            </div>
+
+            {/* Head Coach Contact */}
+            <div className="space-y-4 pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900">Head Coach Contact</h3>
+
+                <TextInput
+                    label="Head Coach Name"
+                    name="headCoachName"
+                    value={formData.headCoach?.name || ''}
+                    onChange={(value: string) => handleHeadCoachChange('name', value)}
+                    error={errors['headCoach.name']}
+                    disabled={isSaving}
+                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <EmailInput
+                        label="Head Coach Email"
+                        name="headCoachEmail"
+                        value={formData.headCoach?.email || ''}
+                        onChange={(value: string) => handleHeadCoachChange('email', value)}
+                        error={errors['headCoach.email']}
+                        disabled={isSaving}
+                    />
+
+                    <TextInput
+                        label="Head Coach Phone"
+                        name="headCoachPhone"
+                        type="tel"
+                        value={formData.headCoach?.phone || ''}
+                        onChange={(value: string) => handleHeadCoachChange('phone', value)}
+                        error={errors['headCoach.phone']}
+                        placeholder="(555) 555-5555"
                         disabled={isSaving}
                     />
                 </div>
