@@ -36,9 +36,10 @@ export interface ValidationErrors {
 export interface PlayerRegistrationData {
     firstName: string;
     lastName: string;
+    dateOfBirth: string;
     email: string;
     password: string;
-    gender: string;
+    sex: string;
     sport: string;
     position: string;
     gpa: number;
@@ -169,6 +170,7 @@ export type ApiResponse = ApiSuccessResponse | ApiErrorResponse;
 export interface PlayerRecord {
     firstName: string;
     lastName: string;
+    dateOfBirth: string;
     email: string;
     passwordHash: string;
     sex: string;
@@ -240,7 +242,7 @@ export interface LoginLinkProps {
 export interface TextInputProps {
     label: string;
     name: string;
-    type?: 'text' | 'email' | 'password' | 'number';
+    type?: 'text' | 'email' | 'password' | 'number' | 'date';
     value: string;
     onChange: (value: string) => void;
     onBlur?: () => void;
@@ -249,7 +251,7 @@ export interface TextInputProps {
     placeholder?: string;
     disabled?: boolean;
     min?: number;
-    max?: number;
+    max?: number | string;
     step?: number;
 }
 

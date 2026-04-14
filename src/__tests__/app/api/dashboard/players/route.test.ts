@@ -39,9 +39,9 @@ describe('GET /api/dashboard/players', () => {
                     last_name: 'Doe',
                     sport: 'Football',
                     position: 'Wide Receiver',
-                    profile_image: 'https://example.com/image.jpg',
-                    video_thumbnail: 'https://example.com/thumb.jpg',
-                    video_url: 'https://youtube.com/watch?v=abc123',
+                    profile_image_url: 'https://example.com/image.jpg',
+                    video_thumbnail_url: 'https://example.com/thumb.jpg',
+                    highlight_video_url: 'https://youtube.com/watch?v=abc123',
                     video_title: 'Season Highlights 2024',
                 },
             ]);
@@ -76,9 +76,9 @@ describe('GET /api/dashboard/players', () => {
                     last_name: 'Smith',
                     sport: 'Basketball',
                     position: 'Point Guard',
-                    profile_image: 'https://example.com/image.jpg',
-                    video_thumbnail: null,
-                    video_url: null,
+                    profile_image_url: 'https://example.com/image.jpg',
+                    video_thumbnail_url: null,
+                    highlight_video_url: null,
                     video_title: null,
                 },
             ]);
@@ -114,9 +114,9 @@ describe('GET /api/dashboard/players', () => {
                     last_name: 'One',
                     sport: 'Football',
                     position: 'Quarterback',
-                    profile_image: null,
-                    video_thumbnail: 'https://example.com/thumb1.jpg',
-                    video_url: 'https://youtube.com/watch?v=video1',
+                    profile_image_url: null,
+                    video_thumbnail_url: 'https://example.com/thumb1.jpg',
+                    highlight_video_url: 'https://youtube.com/watch?v=video1',
                     video_title: 'Highlights Reel',
                 },
                 {
@@ -125,9 +125,9 @@ describe('GET /api/dashboard/players', () => {
                     last_name: 'Two',
                     sport: 'Basketball',
                     position: 'Center',
-                    profile_image: null,
-                    video_thumbnail: null,
-                    video_url: null,
+                    profile_image_url: null,
+                    video_thumbnail_url: null,
+                    highlight_video_url: null,
                     video_title: null,
                 },
                 {
@@ -136,9 +136,9 @@ describe('GET /api/dashboard/players', () => {
                     last_name: 'Three',
                     sport: 'Soccer',
                     position: 'Forward',
-                    profile_image: null,
-                    video_thumbnail: 'https://example.com/thumb3.jpg',
-                    video_url: 'https://youtube.com/watch?v=video3',
+                    profile_image_url: null,
+                    video_thumbnail_url: 'https://example.com/thumb3.jpg',
+                    highlight_video_url: 'https://youtube.com/watch?v=video3',
                     video_title: 'Best Goals',
                 },
             ]);
@@ -166,7 +166,7 @@ describe('GET /api/dashboard/players', () => {
     });
 
     describe('SQL query structure', () => {
-        it('should query video_url and video_title columns from database', async () => {
+        it('should query highlight_video_url and video_title columns from database', async () => {
             // Mock count query
             mockQuery.mockResolvedValueOnce([{ count: '0' }]);
 
@@ -178,7 +178,7 @@ describe('GET /api/dashboard/players', () => {
 
             // Verify the SQL query includes video columns
             expect(mockQuery).toHaveBeenCalledWith(
-                expect.stringContaining('video_url'),
+                expect.stringContaining('highlight_video_url'),
                 expect.any(Array)
             );
             expect(mockQuery).toHaveBeenCalledWith(

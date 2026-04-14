@@ -26,6 +26,16 @@ export function HeroSection({
         classYear: player.classYear,
         height: player.height,
         weight: player.weight,
+        age: player.age,
+        dateOfBirth: player.dateOfBirth,
+        profileImage: player.profileImage,
+        heightInches: player.heightInches,
+        weightLbs: player.weightLbs,
+        desiredDivision: player.desiredDivision,
+        affordableAmount: player.affordableAmount,
+        academicStanding: player.academicStanding,
+        recruitmentStatus: player.recruitmentStatus,
+        performanceMetrics: player.performanceMetrics,
     });
     const [errors, setErrors] = useState<ValidationErrors>({});
     const [isSaving, setIsSaving] = useState(false);
@@ -53,6 +63,16 @@ export function HeroSection({
                 classYear: player.classYear,
                 height: player.height,
                 weight: player.weight,
+                age: player.age,
+                dateOfBirth: player.dateOfBirth,
+                profileImage: player.profileImage,
+                heightInches: player.heightInches,
+                weightLbs: player.weightLbs,
+                desiredDivision: player.desiredDivision,
+                affordableAmount: player.affordableAmount,
+                academicStanding: player.academicStanding,
+                recruitmentStatus: player.recruitmentStatus,
+                performanceMetrics: player.performanceMetrics,
             });
             setErrors({});
         }
@@ -94,8 +114,7 @@ export function HeroSection({
         const validationErrors: ValidationErrors = {};
         if (!data.firstName?.trim()) validationErrors.firstName = 'First name is required';
         if (!data.lastName?.trim()) validationErrors.lastName = 'Last name is required';
-        if (!data.position?.trim()) validationErrors.position = 'Position is required';
-        if (!data.school?.trim()) validationErrors.school = 'School is required';
+        // School and position are optional since some profiles might not have them set yet
         return validationErrors;
     };
 
@@ -120,6 +139,16 @@ export function HeroSection({
                 classYear: formData.classYear,
                 height: formData.height,
                 weight: formData.weight,
+                age: formData.age,
+                dateOfBirth: formData.dateOfBirth,
+                profileImage: formData.profileImage,
+                heightInches: formData.heightInches,
+                weightLbs: formData.weightLbs,
+                desiredDivision: formData.desiredDivision,
+                affordableAmount: formData.affordableAmount,
+                academicStanding: formData.academicStanding,
+                recruitmentStatus: formData.recruitmentStatus,
+                performanceMetrics: formData.performanceMetrics,
             });
         }
 
@@ -139,6 +168,16 @@ export function HeroSection({
             classYear: player.classYear,
             height: player.height,
             weight: player.weight,
+            age: player.age,
+            dateOfBirth: player.dateOfBirth,
+            profileImage: player.profileImage,
+            heightInches: player.heightInches,
+            weightLbs: player.weightLbs,
+            desiredDivision: player.desiredDivision,
+            affordableAmount: player.affordableAmount,
+            academicStanding: player.academicStanding,
+            recruitmentStatus: player.recruitmentStatus,
+            performanceMetrics: player.performanceMetrics,
         });
         setErrors({});
         if (onCancel) {
@@ -310,6 +349,23 @@ export function HeroSection({
                                         <div>
                                             <p className="text-xs text-gray-500">Weight</p>
                                             <p className="text-sm font-medium text-gray-900">{player.weight}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Age */}
+                            {player.age && player.age > 0 && (
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">Age</p>
+                                            <p className="text-sm font-medium text-gray-900">{player.age} years old</p>
                                         </div>
                                     </div>
                                 </div>

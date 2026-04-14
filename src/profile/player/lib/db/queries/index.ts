@@ -24,6 +24,11 @@ interface PlayerProfileRow {
     region: string | null;
     scholarship_amount: string | null;
     test_scores: string | null;
+    date_of_birth: string | null;
+    age: number | null;
+    profile_image_url: string | null;
+    academic_standing: string | null;
+    recruitment_status: string | null;
     created_at: Date;
     updated_at: Date;
 }
@@ -44,6 +49,13 @@ export async function getPlayerProfileById(playerId: string): Promise<PlayerProf
             `SELECT 
                 id, first_name, last_name, email, sex, sport, position,
                 gpa, country, state, region, scholarship_amount, test_scores,
+                date_of_birth,
+                CASE 
+                    WHEN date_of_birth IS NOT NULL 
+                    THEN EXTRACT(YEAR FROM AGE(date_of_birth))::INTEGER
+                    ELSE age
+                END as age,
+                profile_image_url, academic_standing, recruitment_status,
                 created_at, updated_at
             FROM players 
             WHERE id = $1`,
@@ -56,11 +68,6 @@ export async function getPlayerProfileById(playerId: string): Promise<PlayerProf
         }
 
         const player = playerRows[0];
-
-        // TODO: In future phases, fetch related data from additional tables
-        // const videos = await getPlayerVideos(playerId);
-        // const achievements = await getPlayerAchievements(playerId);
-        // const testimonials = await getPlayerTestimonials(playerId);
 
         // Transform database result to PlayerProfile structure
         const profileData = transformPlayerData(player);
@@ -81,13 +88,13 @@ export async function getPlayerProfileById(playerId: string): Promise<PlayerProf
  */
 function transformPlayerData(player: PlayerProfileRow): PlayerProfile {
     // Generate initials from first and last name
-    const initials = `${player.first_name.charAt(0)}${player.last_name.charAt(0)}`.toUpperCase();
+    const initials = player.first_name.charAt(0) + player.last_name.charAt(0);
 
     // Format location string
     const location = player.state
-        ? `${player.state}, ${player.country}`
+        ? player.state + ', ' + player.country
         : player.region
-            ? `${player.region}, ${player.country}`
+            ? player.region + ', ' + player.country
             : player.country;
 
     // Parse test scores if available (stored as JSON string)
@@ -109,53 +116,53 @@ function transformPlayerData(player: PlayerProfileRow): PlayerProfile {
     }
 
     // Transform to PlayerProfile structure
-    // Using type assertion since we're providing default values for missing fields
     return {
         id: player.id,
         firstName: player.first_name,
         lastName: player.last_name,
-        initials,
-        classYear: '', // Not in current DB schema - will be empty for now
+        initials: initials.toUpperCase(),
+        classYear: '',
         position: player.position,
-        school: '', // Not in current DB schema - will be empty for now
+        school: '',
         location,
-        height: '', // Not in current DB schema - will be empty for now
-        weight: '', // Not in current DB schema - will be empty for now
-        age: 0, // Not in current DB schema - default to 0
-        profileImage: '', // Not in current DB schema - empty string for now
-        performanceMetrics: [], // Not in current DB schema - empty array for now
+        height: '',
+        weight: '',
+        age: player.age || undefined,
+        dateOfBirth: player.date_of_birth || undefined,
+        profileImage: player.profile_image_url || '',
+        performanceMetrics: [],
 
         academic: {
-            ncaaEligibilityCenter: '', // Not in current DB schema
-            ncaaQualifier: false, // Not in current DB schema - default to false
+            ncaaEligibilityCenter: '',
+            ncaaQualifier: false,
             gpa: parseFloat(player.gpa),
             gpaScale: '4.0 Scale',
-            satScore: satScore || 0, // Default to 0 if not available
-            satMath: satMath || 0, // Default to 0 if not available
-            satReading: satReading || 0, // Default to 0 if not available
-            actScore: actScore, // Can be undefined
-            classRank: '', // Not in current DB schema
-            classRankDetail: '', // Not in current DB schema
+            satScore: satScore || 0,
+            satMath: satMath || 0,
+            satReading: satReading || 0,
+            actScore: actScore,
+            classRank: '',
+            classRankDetail: '',
             coursework: [],
         },
 
-        videos: [], // Will be populated from separate table in future
-        coachTestimonials: [], // Will be populated from separate table in future
-        achievements: [], // Will be populated from separate table in future
+        videos: [],
+        coachTestimonials: [],
+        achievements: [],
 
         contact: {
             email: player.email,
-            phone: '', // Not in current DB schema
-            parentGuardianName: '', // Not in current DB schema
-            parentGuardianPhone: '', // Not in current DB schema
-            parentGuardianEmail: '', // Not in current DB schema
+            phone: '',
+            parentGuardianName: '',
+            parentGuardianPhone: '',
+            parentGuardianEmail: '',
             socialMedia: {
-                twitter: '', // Not in current DB schema
-                instagram: '', // Not in current DB schema
-                youtube: '', // Not in current DB schema
-                tiktok: '', // Not in current DB schema
+                twitter: '',
+                instagram: '',
+                youtube: '',
+                tiktok: '',
             },
-            preferredContactMethod: '', // Not in current DB schema
+            preferredContactMethod: '',
             headCoach: {
                 name: '',
                 email: '',
@@ -169,90 +176,12 @@ function transformPlayerData(player: PlayerProfileRow): PlayerProfile {
             'Receptions': '',
             'Yards Per Catch': '',
             'Longest Reception': '',
-        }, // Not in current DB schema - empty values for now
+        },
 
-        recruitmentStatus: 'open',
+        recruitmentStatus: player.recruitment_status || 'open',
         commitmentStatus: null,
     } as PlayerProfile;
 }
-
-/**
- * Placeholder function for fetching player videos
- * TODO: Implement when videos table is created
- *
- * @param playerId - The UUID of the player
- * @returns Promise<Video[]> - Array of player videos
- */
-// async function getPlayerVideos(playerId: string): Promise<Video[]> {
-//     const rows = await query<any>(
-//         `SELECT id, title, description, url, thumbnail, duration, is_featured, created_at
-//          FROM player_videos
-//          WHERE player_id = $1
-//          ORDER BY is_featured DESC, created_at DESC`,
-//         [playerId]
-//     );
-//
-//     return rows.map(row => ({
-//         id: row.id,
-//         title: row.title,
-//         description: row.description,
-//         url: row.url,
-//         thumbnail: row.thumbnail,
-//         duration: row.duration,
-//         isFeatured: row.is_featured,
-//         date: row.created_at,
-//     }));
-// }
-
-/**
- * Placeholder function for fetching player achievements
- * TODO: Implement when achievements table is created
- *
- * @param playerId - The UUID of the player
- * @returns Promise<Achievement[]> - Array of player achievements
- */
-// async function getPlayerAchievements(playerId: string): Promise<Achievement[]> {
-//     const rows = await query<any>(
-//         `SELECT id, icon, title, description, color, created_at
-//          FROM player_achievements
-//          WHERE player_id = $1
-//          ORDER BY created_at DESC`,
-//         [playerId]
-//     );
-//
-//     return rows.map(row => ({
-//         id: row.id,
-//         icon: row.icon,
-//         title: row.title,
-//         description: row.description,
-//         color: row.color,
-//     }));
-// }
-
-/**
- * Placeholder function for fetching coach testimonials
- * TODO: Implement when testimonials table is created
- *
- * @param playerId - The UUID of the player
- * @returns Promise<Testimonial[]> - Array of coach testimonials
- */
-// async function getPlayerTestimonials(playerId: string): Promise<Testimonial[]> {
-//     const rows = await query<any>(
-//         `SELECT id, quote, coach_name, coach_title, coach_organization, created_at
-//          FROM coach_testimonials
-//          WHERE player_id = $1
-//          ORDER BY created_at DESC`,
-//         [playerId]
-//     );
-//
-//     return rows.map(row => ({
-//         id: row.id,
-//         quote: row.quote,
-//         coachName: row.coach_name,
-//         coachTitle: row.coach_title,
-//         coachOrganization: row.coach_organization,
-//     }));
-// }
 
 /**
  * Update player profile data in the database
@@ -276,23 +205,41 @@ export async function updatePlayerProfile(
 
         // Map PlayerProfile fields to database columns
         if (updates.firstName !== undefined) {
-            updateFields.push(`first_name = $${paramIndex++}`);
+            updateFields.push('first_name = $' + paramIndex++);
             values.push(updates.firstName);
         }
         if (updates.lastName !== undefined) {
-            updateFields.push(`last_name = $${paramIndex++}`);
+            updateFields.push('last_name = $' + paramIndex++);
             values.push(updates.lastName);
         }
         if (updates.sport !== undefined) {
-            updateFields.push(`sport = $${paramIndex++}`);
+            updateFields.push('sport = $' + paramIndex++);
             values.push(updates.sport || '');
         }
         if (updates.position !== undefined) {
-            updateFields.push(`position = $${paramIndex++}`);
+            updateFields.push('position = $' + paramIndex++);
             values.push(updates.position || '');
         }
+        if (updates.dateOfBirth !== undefined) {
+            updateFields.push('date_of_birth = $' + paramIndex++);
+            values.push(updates.dateOfBirth);
+        }
+        if (updates.age !== undefined) {
+            updateFields.push('age = $' + paramIndex++);
+            // Ensure age is a valid number or null
+            const ageValue = updates.age === 0 ? null : updates.age;
+            values.push(ageValue);
+        }
+        if (updates.profileImage !== undefined) {
+            updateFields.push('profile_image_url = $' + paramIndex++);
+            values.push(updates.profileImage);
+        }
+        if (updates.recruitmentStatus !== undefined) {
+            updateFields.push('recruitment_status = $' + paramIndex++);
+            values.push(updates.recruitmentStatus);
+        }
         if (updates.academic?.gpa !== undefined) {
-            updateFields.push(`gpa = $${paramIndex++}`);
+            updateFields.push('gpa = $' + paramIndex++);
             values.push(updates.academic.gpa.toString());
         }
 
@@ -306,14 +253,10 @@ export async function updatePlayerProfile(
                     satReading,
                     actScore,
                 };
-                updateFields.push(`test_scores = $${paramIndex++}`);
+                updateFields.push('test_scores = $' + paramIndex++);
                 values.push(JSON.stringify(testScores));
             }
         }
-
-        // Note: The following fields are not in the current database schema:
-        // - school, location, classYear, height, weight
-        // These will be added in future migrations
 
         // If no fields to update, return early
         if (updateFields.length === 0) {
@@ -322,24 +265,22 @@ export async function updatePlayerProfile(
         }
 
         // Add updated_at timestamp
-        updateFields.push(`updated_at = NOW()`);
+        updateFields.push('updated_at = NOW()');
 
         // Add playerId as the last parameter
         values.push(playerId);
 
         // Build and execute UPDATE query
-        const updateQuery = `
-            UPDATE players 
-            SET ${updateFields.join(', ')}
-            WHERE id = $${paramIndex}
-        `;
+        const updateQuery = 'UPDATE players SET ' + updateFields.join(', ') + ' WHERE id = $' + paramIndex;
+
+        logger.debug('Executing update query', { playerId, updateQuery, values });
 
         const result = await query(updateQuery, values);
 
         logger.debug('Player profile updated successfully', { playerId, rowCount: result.length });
         return true;
     } catch (error) {
-        logger.error('Failed to update player profile', { playerId }, error instanceof Error ? error : new Error('Unknown error'));
-        throw new Error('Failed to update player profile');
+        logger.error('Failed to update player profile', { playerId, error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined }, error instanceof Error ? error : new Error('Unknown error'));
+        throw error;
     }
 }

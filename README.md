@@ -27,54 +27,56 @@ A comprehensive platform for college athletes built with Next.js, TypeScript, an
 
 - Node.js 20 or higher
 - AWS CLI configured (for connecting to dev environment)
-- Access to the development AWS environment
+### Prerequisites
 
-### Local Development (Recommended)
+- Node.js 20 or higher
+- Docker Desktop installed and running
 
-Run the Next.js application locally while connecting to the shared development environment (AWS) for database and Redis.
+### Local Development
 
-**Quick Setup:**
+**🚀 Quick Start - One Command:**
+
+```bash
+npm run dev:full
+```
+
+This single command will:
+- Start a local PostgreSQL database in Docker
+- Run all database migrations
+- Seed the database with test data (if empty)
+- Start the Next.js development server at [http://localhost:3000](http://localhost:3000)
+
+**First Time Setup:**
 
 1. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Get development environment credentials:
+2. Create your environment file:
 ```bash
-npm run dev:setup
-# or: ./scripts/get-dev-credentials.sh
+cp .env.local.example .env.local
 ```
 
-This script will:
-- Retrieve database and Redis connection details from AWS
-- Optionally create your `.env.local` file automatically
-- Test network connectivity
-
-3. Ensure network access (choose one):
-   - Connect to team VPN, or
-   - Use SSH tunnel via bastion host, or
-   - Temporarily add your IP to security groups
-
-4. Run the development server:
+3. Start everything:
 ```bash
-npm run dev
+npm run dev:full
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+That's it! The script handles everything automatically.
 
-**Your local app will connect to the shared dev database and Redis on AWS.**
+**What You Get:**
+- Local PostgreSQL database with sample players and coaches
+- Automatic database migrations on every start
+- Hot-reload development server
+- All services managed together
 
-For detailed setup instructions, troubleshooting, and network configuration options, see:
-- [AWS Dev Environment Access Guide](docs/AWS_DEV_ENVIRONMENT_ACCESS.md) - **NEW!** Complete AWS connection guide
-- [Local Development Setup Guide](docs/LOCAL_DEVELOPMENT_SETUP.md)
+**To stop:** Press `Ctrl+C` - this will cleanly shut down both the database and dev server.
 
-### Alternative: Fully Local Development with Docker
-
-If you prefer to run everything locally (isolated from the dev environment):
-
-1. Start all services (app, database, redis):
-```bash
+**Troubleshooting:**
+- If you get port conflicts, make sure no other PostgreSQL instance is running on port 5432
+- Ensure Docker Desktop is running before executing `npm run dev:full`
+- Check logs with `npm run db:local:logs` if the database fails to start
 npm run docker:up
 ```
 
@@ -90,107 +92,40 @@ npm run docker:down
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
 
-**Note**: With Docker, you'll have a local database that won't sync with other developers or the dev environment.
+**Note**: This approach requires manual management of migrations and seeds. Use `npm run dev:full` for an automated experience.
 
-### Local Database Setup (For API Development)
+### Testing
 
-If you're working on backend features (like the player registration API), you'll need a local PostgreSQL database.
-
-**Quick Setup:**
-
-1. **Start local PostgreSQL database:**
-```bash
-npm run db:local:start
-```
-
-2. **Create `.env.local` file:**
-```bash
-cp .env.local.example .env.local
-```
-
-3. **Run migrations:**
-```bash
-npm run db:migrate:local
-```
-
-4. **Seed test data:**
-```bash
-npm run db:seed:local
-```
-
-5. **Start development:**
-```bash
-npm run dev
-```
-
-**For complete workflow documentation, see:** [Local Database Workflow Guide](docs/LOCAL_DATABASE_WORKFLOW.md)
-
-This comprehensive guide covers:
-- Step-by-step setup instructions
-- Running migrations and seeding data
-- Switching between local and AWS dev databases
-- Database management commands
-- Troubleshooting common issues
-- Complete workflow examples
-
-**Test Your Setup:**
-```bash
-npm run db:test
-```
-
-This will verify that all database commands work correctly.
-
-**Quick Reference - Database Commands:**
-- `npm run db:local:start` - Start PostgreSQL container
-- `npm run db:local:stop` - Stop PostgreSQL container
-- `npm run db:local:reset` - Reset database (deletes all data)
-- `npm run db:local:logs` - View database logs
-- `npm run db:local:psql` - Connect to database with psql client
-- `npm run db:migrate:local` - Run database migrations
-- `npm run db:seed:local` - Seed test data
-- `npm run db:reset:local` - Complete reset and prepare
-
-**See also:** [Database Quick Reference Card](docs/DATABASE_QUICK_REFERENCE.md) - Printable cheat sheet
-
-### Available Scripts
-
-- `npm run dev` - Start development server
+#### Development
+- `npm run dev:full` - **🚀 Start everything for local development (recommended)**
+- `npm run dev` - Start development server only
 - `npm run build` - Build production bundle
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 - `npm run type-check` - Run TypeScript type checking
+#### Testing
 - `npm run test` - Run unit and integration tests
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:coverage` - Run tests with coverage report
 - `npm run test:e2e` - Run end-to-end tests
 - `npm run test:all` - Run all tests (unit + E2E)
 
-#### AWS Development Environment
-- `npm run dev:setup` - Get AWS dev credentials and create .env.local
-- `npm run dev:test-aws` - Test AWS connectivity (database & Redis)
-- `npm run db:switch:local` - Switch to local Docker database
-- `npm run db:switch:aws` - Switch to AWS dev database
+#### Database Management (Advanced)
+- `npm run db:local:start` - Start PostgreSQL container only
+- `npm run db:local:stop` - Stop PostgreSQL container
+- `npm run db:local:reset` - Reset database (deletes all data)
+- `npm run db:local:logs` - View database logs
+- `npm run db:local:psql` - Connect to database with psql client
+- `npm run db:migrate:local` - Run database migrations manually
+- `npm run db:seed:local` - Seed test data manually
 
-#### Logging and Monitoring
-- `npm run logs` - View application logs
-- `npm run logs:follow` - Follow logs in real-time
-- `npm run logs:error` - View error logs only
-- `npm run logs:docker` - View Docker container logs
+**Note:** These commands are for advanced use cases. `npm run dev:full` handles database setup automatically.
 
-#### Docker & Local Database
+#### Docker Commands
 - `npm run docker:build` - Build Docker image
 - `npm run docker:up` - Start Docker Compose services
 - `npm run docker:down` - Stop Docker Compose services
 - `npm run docker:logs` - View Docker Compose logs
-- `npm run db:local:start` - Start local PostgreSQL database
-- `npm run db:local:stop` - Stop local PostgreSQL database
-- `npm run db:local:reset` - Reset local database (deletes all data)
-- `npm run db:local:logs` - View database logs
-- `npm run db:local:psql` - Connect to database with psql
-- `npm run db:migrate:local` - Run database migrations locally
-- `npm run db:seed:local` - Seed local database with test data
-- `npm run db:reset:local` - Reset and prepare local database
-- `npm run db:test` - Test local database workflow
 
 ### Git Hooks
 

@@ -42,13 +42,14 @@ export async function createPlayer(data: PlayerRecord): Promise<string> {
 
         const result = await query<{ id: string }>(
             `INSERT INTO players (
-                first_name, last_name, email, password_hash, sex, sport, position,
+                first_name, last_name, date_of_birth, email, password_hash, sex, sport, position,
                 gpa, country, state, region, scholarship_amount, test_scores
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             RETURNING id`,
             [
                 data.firstName,
                 data.lastName,
+                data.dateOfBirth,
                 normalizedEmail,
                 data.passwordHash,
                 data.sex,

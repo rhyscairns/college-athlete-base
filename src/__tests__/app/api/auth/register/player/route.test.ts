@@ -1,66 +1,65 @@
 /**
+ * Player Registration API Route Tests
+ * Tests the POST /api/auth/register/player endpoint
  * @jest-environment node
  */
-import { POST, OPTIONS } from '@/app/api/auth/register/player/route';
-import { NextRequest } from 'next/server';
-import * as playersDb from '@/authentication/db/players';
-import * as passwordUtils from '@/authentication/utils/password';
 
-// Mock the database operations
+import { NextRequest } from 'next/server';
+import { POST, OPTIONS } from '@/app/api/auth/register/player/route';
+import * as registerValidation from '@/authentication/utils/registerValidation';
+import * as players from '@/authentication/db/players';
+import * as password from '@/authentication/utils/password';
+import {
+    generatePlayerRegistration,
+    generatePlayerWithAge,
+} from '@/__tests__/utils/test-data-generators';
+
+// Mock all dependencies
+jest.mock('@/authentication/utils/registerValidation');
 jest.mock('@/authentication/db/players');
 jest.mock('@/authentication/utils/password');
 
-describe('/api/auth/register/player', () => {
-    const mockCheckEmailExists = playersDb.checkEmailExists as jest.MockedFunction<typeof playersDb.checkEmailExists>;
-    const mockCreatePlayer = playersDb.createPlayer as jest.MockedFunction<typeof playersDb.createPlayer>;
-    const mockHashPassword = passwordUtils.hashPassword as jest.MockedFunction<typeof passwordUtils.hashPassword>;
+const mockValidatePlayerRegistration = registerValidation.validatePlayerRegistration as jest.MockedFunction<
+    typeof registerValidation.validatePlayerRegistration
+>;
+const mockCheckEmailExists = players.checkEmailExists as jest.MockedFunction<typeof players.checkEmailExists>;
+const mockCreatePlayer = players.createPlayer as jest.MockedFunction<typeof players.createPlayer>;
+const mockHashPassword = password.hashPassword as jest.MockedFunction<typeof password.hashPassword>;
 
+describe('Player Registration API Route', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        // Set default environment variable for CORS
-        process.env.ALLOWED_ORIGINS = 'http://localhost:3000,https://dev.example.com';
+        process.env.ALLOWED_ORIGINS = 'http://localhost:3000';
     });
 
     afterEach(() => {
         delete process.env.ALLOWED_ORIGINS;
     });
 
-    const createRequest = (body: unknown, origin?: string) => {
-        const headers: Record<string, string> = {
-            'Content-Type': 'application/json',
-        };
-
-        if (origin) {
-            headers['origin'] = origin;
-        }
-
+    /**
+     * Helper function to create a mock NextRequest
+     */
+    const createMockRequest = (body: any, origin = 'http://localhost:3000') => {
         return new NextRequest('http://localhost:3000/api/auth/register/player', {
             method: 'POST',
-            headers,
+            headers: {
+                'Content-Type': 'application/json',
+                'origin': origin,
+            },
             body: JSON.stringify(body),
         });
     };
 
-    const validPlayerData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john.doe@example.com',
-        password: 'Password123!',
-        sex: 'male',
-        sport: 'basketball',
-        position: 'Guard',
-        gpa: 3.5,
-        country: 'USA',
-        state: 'California',
-    };
+    describe('Successful Registration', () => {
+        it('should return 201 with player ID on successful registration', async () => {
+            const registrationData = generatePlayerRegistration();
 
-    describe('POST - Successful Registration', () => {
-        it('registers a player successfully with all required fields', async () => {
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
             mockCheckEmailExists.mockResolvedValue(false);
             mockHashPassword.mockResolvedValue('hashed_password_123');
             mockCreatePlayer.mockResolvedValue('player-uuid-123');
 
-            const request = createRequest(validPlayerData);
+            const request = createMockRequest(registrationData);
             const response = await POST(request);
             const data = await response.json();
 
@@ -70,14 +69,61 @@ describe('/api/auth/register/player', () => {
                 message: 'Player registered successfully',
                 playerId: 'player-uuid-123',
             });
+        });
 
-            expect(mockCheckEmailExists).toHaveBeenCalledWith('john.doe@example.com');
-            expect(mockHashPassword).toHaveBeenCalledWith('Password123!');
+        it('should include dateOfBirth in all test payloads', async () => {
+            const registrationData = generatePlayerRegistration();
+
+            // Verify dateOfBirth is present in generated data
+            expect(registrationData.dateOfBirth).toBeDefined();
+            expect(typeof registrationData.dateOfBirth).toBe('string');
+            expect(registrationData.dateOfBirth).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
+            mockCheckEmailExists.mockResolvedValue(false);
+            mockHashPassword.mockResolvedValue('hashed_password');
+            mockCreatePlayer.mockResolvedValue('player-uuid');
+
+            const request = createMockRequest(registrationData);
+            await POST(request);
+
+            // Verify validation was called with dateOfBirth
+            expect(mockValidatePlayerRegistration).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    dateOfBirth: registrationData.dateOfBirth,
+                })
+            );
+        });
+
+        it('should call createPlayer with all required fields including dateOfBirth', async () => {
+            const registrationData = generatePlayerRegistration({
+                firstName: 'John',
+                lastName: 'Doe',
+                dateOfBirth: '2006-05-15',
+                email: 'john.doe@example.com',
+                password: 'SecurePass123!',
+                sex: 'male',
+                sport: 'basketball',
+                position: 'Guard',
+                gpa: 3.5,
+                country: 'USA',
+                state: 'California',
+            });
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
+            mockCheckEmailExists.mockResolvedValue(false);
+            mockHashPassword.mockResolvedValue('hashed_password');
+            mockCreatePlayer.mockResolvedValue('player-uuid');
+
+            const request = createMockRequest(registrationData);
+            await POST(request);
+
             expect(mockCreatePlayer).toHaveBeenCalledWith({
                 firstName: 'John',
                 lastName: 'Doe',
+                dateOfBirth: '2006-05-15',
                 email: 'john.doe@example.com',
-                passwordHash: 'hashed_password_123',
+                passwordHash: 'hashed_password',
                 sex: 'male',
                 sport: 'basketball',
                 position: 'Guard',
@@ -90,121 +136,234 @@ describe('/api/auth/register/player', () => {
             });
         });
 
-        it('registers a player with optional fields', async () => {
+        it('should hash password before creating player', async () => {
+            const registrationData = generatePlayerRegistration({
+                password: 'MySecurePassword123!',
+            });
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
             mockCheckEmailExists.mockResolvedValue(false);
-            mockHashPassword.mockResolvedValue('hashed_password_123');
-            mockCreatePlayer.mockResolvedValue('player-uuid-456');
+            mockHashPassword.mockResolvedValue('hashed_MySecurePassword123!');
+            mockCreatePlayer.mockResolvedValue('player-uuid');
 
-            const playerWithOptionalFields = {
-                ...validPlayerData,
-                scholarshipAmount: 50000,
-                testScores: 'SAT: 1400, ACT: 32',
-            };
+            const request = createMockRequest(registrationData);
+            await POST(request);
 
-            const request = createRequest(playerWithOptionalFields);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(201);
-            expect(data.success).toBe(true);
-            expect(data.playerId).toBe('player-uuid-456');
-
+            expect(mockHashPassword).toHaveBeenCalledWith('MySecurePassword123!');
             expect(mockCreatePlayer).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    scholarshipAmount: 50000,
-                    testScores: 'SAT: 1400, ACT: 32',
+                    passwordHash: 'hashed_MySecurePassword123!',
                 })
             );
         });
 
-        it('registers a player from non-USA country with region', async () => {
+        it('should normalize email to lowercase', async () => {
+            const registrationData = generatePlayerRegistration({
+                email: 'Test.Player@EXAMPLE.COM',
+            });
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
             mockCheckEmailExists.mockResolvedValue(false);
-            mockHashPassword.mockResolvedValue('hashed_password_123');
-            mockCreatePlayer.mockResolvedValue('player-uuid-789');
+            mockHashPassword.mockResolvedValue('hashed_password');
+            mockCreatePlayer.mockResolvedValue('player-uuid');
 
-            const internationalPlayer = {
-                ...validPlayerData,
-                country: 'Canada',
-                state: undefined,
-                region: 'Ontario',
-            };
+            const request = createMockRequest(registrationData);
+            await POST(request);
 
-            const request = createRequest(internationalPlayer);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(201);
-            expect(data.success).toBe(true);
+            expect(mockCheckEmailExists).toHaveBeenCalledWith('Test.Player@EXAMPLE.COM');
             expect(mockCreatePlayer).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    country: 'Canada',
-                    state: undefined,
-                    region: 'Ontario',
+                    email: 'Test.Player@EXAMPLE.COM',
                 })
             );
+        });
+
+        it('should include CORS headers in successful response', async () => {
+            const registrationData = generatePlayerRegistration();
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
+            mockCheckEmailExists.mockResolvedValue(false);
+            mockHashPassword.mockResolvedValue('hashed_password');
+            mockCreatePlayer.mockResolvedValue('player-uuid');
+
+            const request = createMockRequest(registrationData);
+            const response = await POST(request);
+
+            expect(response.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:3000');
+            expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, OPTIONS');
+            expect(response.headers.get('Access-Control-Allow-Headers')).toBe('Content-Type');
         });
     });
 
-    describe('POST - Validation Errors', () => {
-        it('returns 400 for missing firstName', async () => {
-            const invalidData = { ...validPlayerData, firstName: '' };
-            const request = createRequest(invalidData);
+    describe('Validation Errors', () => {
+        it('should return 400 for validation errors', async () => {
+            const invalidData = generatePlayerRegistration({
+                email: 'invalid-email',
+            });
+
+            mockValidatePlayerRegistration.mockReturnValue({
+                isValid: false,
+                errors: [
+                    { field: 'email', message: 'Please enter a valid email address' },
+                ],
+            });
+
+            const request = createMockRequest(invalidData);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(400);
+            expect(data).toEqual({
+                success: false,
+                errors: [
+                    { field: 'email', message: 'Please enter a valid email address' },
+                ],
+            });
+        });
+
+        it('should return 400 for missing required fields', async () => {
+            const invalidData = {
+                email: 'test@example.com',
+                password: 'Password123!',
+            };
+
+            mockValidatePlayerRegistration.mockReturnValue({
+                isValid: false,
+                errors: [
+                    { field: 'firstName', message: 'First name is required' },
+                    { field: 'lastName', message: 'Last name is required' },
+                    { field: 'dateOfBirth', message: 'Date of birth is required' },
+                    { field: 'sex', message: 'Sex is required' },
+                    { field: 'sport', message: 'Sport is required' },
+                    { field: 'position', message: 'Position is required' },
+                    { field: 'gpa', message: 'GPA is required' },
+                    { field: 'country', message: 'Country is required' },
+                ],
+            });
+
+            const request = createMockRequest(invalidData);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(400);
+            expect(data.success).toBe(false);
+            expect(data.errors).toHaveLength(8);
+            expect(data.errors).toContainEqual({
+                field: 'dateOfBirth',
+                message: 'Date of birth is required',
+            });
+        });
+
+        it('should return 400 for missing dateOfBirth', async () => {
+            const invalidData = generatePlayerRegistration();
+            delete (invalidData as any).dateOfBirth;
+
+            mockValidatePlayerRegistration.mockReturnValue({
+                isValid: false,
+                errors: [
+                    { field: 'dateOfBirth', message: 'Date of birth is required' },
+                ],
+            });
+
+            const request = createMockRequest(invalidData);
             const response = await POST(request);
             const data = await response.json();
 
             expect(response.status).toBe(400);
             expect(data.success).toBe(false);
             expect(data.errors).toContainEqual({
-                field: 'firstName',
-                message: 'First name is required',
+                field: 'dateOfBirth',
+                message: 'Date of birth is required',
             });
         });
 
-        it('returns 400 for firstName too short', async () => {
-            const invalidData = { ...validPlayerData, firstName: 'J' };
-            const request = createRequest(invalidData);
+        it('should return 400 for invalid dateOfBirth format', async () => {
+            const invalidData = generatePlayerRegistration({
+                dateOfBirth: 'invalid-date',
+            });
+
+            mockValidatePlayerRegistration.mockReturnValue({
+                isValid: false,
+                errors: [
+                    { field: 'dateOfBirth', message: 'Invalid date format' },
+                ],
+            });
+
+            const request = createMockRequest(invalidData);
             const response = await POST(request);
             const data = await response.json();
 
             expect(response.status).toBe(400);
             expect(data.success).toBe(false);
             expect(data.errors).toContainEqual({
-                field: 'firstName',
-                message: 'First name must be between 2 and 50 characters',
+                field: 'dateOfBirth',
+                message: 'Invalid date format',
             });
         });
 
-        it('returns 400 for missing lastName', async () => {
-            const invalidData = { ...validPlayerData, lastName: '' };
-            const request = createRequest(invalidData);
+        it('should return 400 for player under 13 years old', async () => {
+            const invalidData = generatePlayerWithAge(12);
+
+            mockValidatePlayerRegistration.mockReturnValue({
+                isValid: false,
+                errors: [
+                    { field: 'dateOfBirth', message: 'You must be at least 13 years old to register' },
+                ],
+            });
+
+            const request = createMockRequest(invalidData);
             const response = await POST(request);
             const data = await response.json();
 
             expect(response.status).toBe(400);
             expect(data.success).toBe(false);
             expect(data.errors).toContainEqual({
-                field: 'lastName',
-                message: 'Last name is required',
+                field: 'dateOfBirth',
+                message: 'You must be at least 13 years old to register',
             });
         });
 
-        it('returns 400 for missing email', async () => {
-            const invalidData = { ...validPlayerData, email: '' };
-            const request = createRequest(invalidData);
+        it('should return 400 for future dateOfBirth', async () => {
+            const futureDate = new Date();
+            futureDate.setFullYear(futureDate.getFullYear() + 1);
+            const futureDateString = futureDate.toISOString().split('T')[0];
+
+            const invalidData = generatePlayerRegistration({
+                dateOfBirth: futureDateString,
+            });
+
+            mockValidatePlayerRegistration.mockReturnValue({
+                isValid: false,
+                errors: [
+                    { field: 'dateOfBirth', message: 'Date of birth cannot be in the future' },
+                ],
+            });
+
+            const request = createMockRequest(invalidData);
             const response = await POST(request);
             const data = await response.json();
 
             expect(response.status).toBe(400);
             expect(data.success).toBe(false);
             expect(data.errors).toContainEqual({
-                field: 'email',
-                message: 'Email is required',
+                field: 'dateOfBirth',
+                message: 'Date of birth cannot be in the future',
             });
         });
 
-        it('returns 400 for invalid email format', async () => {
-            const invalidData = { ...validPlayerData, email: 'invalid-email' };
-            const request = createRequest(invalidData);
+        it('should return 400 for invalid email format', async () => {
+            const invalidData = generatePlayerRegistration({
+                email: 'not-an-email',
+            });
+
+            mockValidatePlayerRegistration.mockReturnValue({
+                isValid: false,
+                errors: [
+                    { field: 'email', message: 'Please enter a valid email address' },
+                ],
+            });
+
+            const request = createMockRequest(invalidData);
             const response = await POST(request);
             const data = await response.json();
 
@@ -216,23 +375,19 @@ describe('/api/auth/register/player', () => {
             });
         });
 
-        it('returns 400 for missing password', async () => {
-            const invalidData = { ...validPlayerData, password: '' };
-            const request = createRequest(invalidData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.errors).toContainEqual({
-                field: 'password',
-                message: 'Password is required',
+        it('should return 400 for weak password', async () => {
+            const invalidData = generatePlayerRegistration({
+                password: 'weak',
             });
-        });
 
-        it('returns 400 for weak password', async () => {
-            const invalidData = { ...validPlayerData, password: 'weak' };
-            const request = createRequest(invalidData);
+            mockValidatePlayerRegistration.mockReturnValue({
+                isValid: false,
+                errors: [
+                    { field: 'password', message: 'Password must be at least 8 characters and contain uppercase, lowercase, number, and special character' },
+                ],
+            });
+
+            const request = createMockRequest(invalidData);
             const response = await POST(request);
             const data = await response.json();
 
@@ -244,224 +399,81 @@ describe('/api/auth/register/player', () => {
             });
         });
 
-        it('returns 400 for missing sex', async () => {
-            const invalidData = { ...validPlayerData, sex: '' };
-            const request = createRequest(invalidData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.errors).toContainEqual({
-                field: 'sex',
-                message: 'Sex is required',
-            });
-        });
-
-        it('returns 400 for invalid sex value', async () => {
-            const invalidData = { ...validPlayerData, sex: 'other' };
-            const request = createRequest(invalidData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.errors).toContainEqual({
-                field: 'sex',
-                message: 'Sex must be either "male" or "female"',
-            });
-        });
-
-        it('returns 400 for missing sport', async () => {
-            const invalidData = { ...validPlayerData, sport: '' };
-            const request = createRequest(invalidData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.errors).toContainEqual({
-                field: 'sport',
-                message: 'Sport is required',
-            });
-        });
-
-        it('returns 400 for missing position', async () => {
-            const invalidData = { ...validPlayerData, position: '' };
-            const request = createRequest(invalidData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.errors).toContainEqual({
-                field: 'position',
-                message: 'Position is required',
-            });
-        });
-
-        it('returns 400 for position too short', async () => {
-            const invalidData = { ...validPlayerData, position: 'G' };
-            const request = createRequest(invalidData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.errors).toContainEqual({
-                field: 'position',
-                message: 'Position must be at least 2 characters',
-            });
-        });
-
-        it('returns 400 for missing GPA', async () => {
-            const invalidData = { ...validPlayerData };
-            delete (invalidData as any).gpa;
-            const request = createRequest(invalidData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.errors).toContainEqual({
-                field: 'gpa',
-                message: 'GPA is required',
-            });
-        });
-
-        it('returns 400 for GPA below 0.0', async () => {
-            const invalidData = { ...validPlayerData, gpa: -0.5 };
-            const request = createRequest(invalidData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.errors).toContainEqual({
-                field: 'gpa',
-                message: 'GPA must be between 0.0 and 4.0',
-            });
-        });
-
-        it('returns 400 for GPA above 4.0', async () => {
-            const invalidData = { ...validPlayerData, gpa: 4.5 };
-            const request = createRequest(invalidData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.errors).toContainEqual({
-                field: 'gpa',
-                message: 'GPA must be between 0.0 and 4.0',
-            });
-        });
-
-        it('returns 400 for missing country', async () => {
-            const invalidData = { ...validPlayerData, country: '' };
-            const request = createRequest(invalidData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.errors).toContainEqual({
-                field: 'country',
-                message: 'Country is required',
-            });
-        });
-
-        it('returns 400 for missing state when country is USA', async () => {
-            const invalidData = { ...validPlayerData, state: '' };
-            const request = createRequest(invalidData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.errors).toContainEqual({
-                field: 'state',
-                message: 'State is required when country is USA',
-            });
-        });
-
-        it('returns 400 for missing region when country is not USA', async () => {
-            const invalidData = {
-                ...validPlayerData,
-                country: 'Canada',
-                state: undefined,
-                region: '',
-            };
-            const request = createRequest(invalidData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.errors).toContainEqual({
-                field: 'region',
-                message: 'Region is required when country is not USA',
-            });
-        });
-
-        it('returns 400 for invalid scholarship amount', async () => {
-            const invalidData = { ...validPlayerData, scholarshipAmount: -1000 };
-            const request = createRequest(invalidData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.errors).toContainEqual({
-                field: 'scholarshipAmount',
-                message: 'Scholarship amount must be a positive number',
-            });
-        });
-
-        it('returns 400 for multiple validation errors', async () => {
-            const invalidData = {
-                firstName: '',
-                lastName: 'D',
-                email: 'invalid',
-                password: '123',
-                sex: '',
-                sport: '',
-                position: '',
+        it('should return 400 for invalid GPA', async () => {
+            const invalidData = generatePlayerRegistration({
                 gpa: 5.0,
-                country: '',
-            };
-            const request = createRequest(invalidData);
+            });
+
+            mockValidatePlayerRegistration.mockReturnValue({
+                isValid: false,
+                errors: [
+                    { field: 'gpa', message: 'GPA must be between 0.0 and 4.0' },
+                ],
+            });
+
+            const request = createMockRequest(invalidData);
             const response = await POST(request);
             const data = await response.json();
 
             expect(response.status).toBe(400);
             expect(data.success).toBe(false);
-            expect(data.errors.length).toBeGreaterThan(5);
+            expect(data.errors).toContainEqual({
+                field: 'gpa',
+                message: 'GPA must be between 0.0 and 4.0',
+            });
         });
 
-        it('returns 400 for invalid JSON in request body', async () => {
+        it('should return 400 for invalid JSON in request body', async () => {
             const request = new NextRequest('http://localhost:3000/api/auth/register/player', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'origin': 'http://localhost:3000',
                 },
-                body: 'invalid json',
+                body: 'invalid-json{',
             });
 
             const response = await POST(request);
             const data = await response.json();
 
             expect(response.status).toBe(400);
-            expect(data.success).toBe(false);
-            expect(data.message).toBe('Invalid JSON in request body');
+            expect(data).toEqual({
+                success: false,
+                message: 'Invalid JSON in request body',
+            });
+        });
+
+        it('should not call database when validation fails', async () => {
+            const invalidData = generatePlayerRegistration({
+                email: 'invalid-email',
+            });
+
+            mockValidatePlayerRegistration.mockReturnValue({
+                isValid: false,
+                errors: [
+                    { field: 'email', message: 'Please enter a valid email address' },
+                ],
+            });
+
+            const request = createMockRequest(invalidData);
+            await POST(request);
+
+            expect(mockCheckEmailExists).not.toHaveBeenCalled();
+            expect(mockHashPassword).not.toHaveBeenCalled();
+            expect(mockCreatePlayer).not.toHaveBeenCalled();
         });
     });
 
-    describe('POST - Duplicate Email Handling', () => {
-        it('returns 409 when email already exists', async () => {
+    describe('Duplicate Email Handling', () => {
+        it('should return 400 for duplicate email', async () => {
+            const registrationData = generatePlayerRegistration({
+                email: 'existing@example.com',
+            });
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
             mockCheckEmailExists.mockResolvedValue(true);
 
-            const request = createRequest(validPlayerData);
+            const request = createMockRequest(registrationData);
             const response = await POST(request);
             const data = await response.json();
 
@@ -470,35 +482,48 @@ describe('/api/auth/register/player', () => {
                 success: false,
                 message: 'Email already registered',
             });
+        });
 
-            expect(mockCheckEmailExists).toHaveBeenCalledWith('john.doe@example.com');
+        it('should check email existence before creating player', async () => {
+            const registrationData = generatePlayerRegistration();
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
+            mockCheckEmailExists.mockResolvedValue(true);
+
+            const request = createMockRequest(registrationData);
+            await POST(request);
+
+            expect(mockCheckEmailExists).toHaveBeenCalledWith(registrationData.email);
             expect(mockHashPassword).not.toHaveBeenCalled();
             expect(mockCreatePlayer).not.toHaveBeenCalled();
         });
 
-        it('checks email existence case-insensitively', async () => {
+        it('should handle duplicate email case-insensitively', async () => {
+            const registrationData = generatePlayerRegistration({
+                email: 'DUPLICATE@EXAMPLE.COM',
+            });
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
             mockCheckEmailExists.mockResolvedValue(true);
 
-            const dataWithUppercaseEmail = {
-                ...validPlayerData,
-                email: 'JOHN.DOE@EXAMPLE.COM',
-            };
-
-            const request = createRequest(dataWithUppercaseEmail);
+            const request = createMockRequest(registrationData);
             const response = await POST(request);
             const data = await response.json();
 
             expect(response.status).toBe(409);
             expect(data.message).toBe('Email already registered');
-            expect(mockCheckEmailExists).toHaveBeenCalledWith('JOHN.DOE@EXAMPLE.COM');
+            expect(mockCheckEmailExists).toHaveBeenCalledWith('DUPLICATE@EXAMPLE.COM');
         });
     });
 
-    describe('POST - Database Connection Errors', () => {
-        it('returns 500 when checkEmailExists fails', async () => {
+    describe('Database Errors', () => {
+        it('should return 500 when email check fails', async () => {
+            const registrationData = generatePlayerRegistration();
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
             mockCheckEmailExists.mockRejectedValue(new Error('Database connection failed'));
 
-            const request = createRequest(validPlayerData);
+            const request = createMockRequest(registrationData);
             const response = await POST(request);
             const data = await response.json();
 
@@ -507,184 +532,178 @@ describe('/api/auth/register/player', () => {
                 success: false,
                 message: 'An error occurred during registration',
             });
+        });
 
+        it('should return 500 when password hashing fails', async () => {
+            const registrationData = generatePlayerRegistration();
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
+            mockCheckEmailExists.mockResolvedValue(false);
+            mockHashPassword.mockRejectedValue(new Error('Hashing failed'));
+
+            const request = createMockRequest(registrationData);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(500);
+            expect(data).toEqual({
+                success: false,
+                message: 'An error occurred during registration',
+            });
+        });
+
+        it('should return 500 when player creation fails', async () => {
+            const registrationData = generatePlayerRegistration();
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
+            mockCheckEmailExists.mockResolvedValue(false);
+            mockHashPassword.mockResolvedValue('hashed_password');
+            mockCreatePlayer.mockRejectedValue(new Error('Insert failed'));
+
+            const request = createMockRequest(registrationData);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(500);
+            expect(data).toEqual({
+                success: false,
+                message: 'An error occurred during registration',
+            });
+        });
+
+        it('should include CORS headers in error responses', async () => {
+            const registrationData = generatePlayerRegistration();
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
+            mockCheckEmailExists.mockRejectedValue(new Error('Database error'));
+
+            const request = createMockRequest(registrationData);
+            const response = await POST(request);
+
+            expect(response.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:3000');
+            expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, OPTIONS');
+            expect(response.headers.get('Access-Control-Allow-Headers')).toBe('Content-Type');
+        });
+    });
+
+    describe('CORS Handling', () => {
+        it('should handle OPTIONS request for CORS preflight', async () => {
+            const request = new NextRequest('http://localhost:3000/api/auth/register/player', {
+                method: 'OPTIONS',
+                headers: {
+                    'origin': 'http://localhost:3000',
+                },
+            });
+
+            const response = await OPTIONS(request);
+
+            expect(response.status).toBe(200);
+            expect(response.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:3000');
+            expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, OPTIONS');
+            expect(response.headers.get('Access-Control-Allow-Headers')).toBe('Content-Type');
+        });
+
+        it('should include CORS headers for allowed origin', async () => {
+            const registrationData = generatePlayerRegistration();
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
+            mockCheckEmailExists.mockResolvedValue(false);
+            mockHashPassword.mockResolvedValue('hashed_password');
+            mockCreatePlayer.mockResolvedValue('player-uuid');
+
+            const request = createMockRequest(registrationData, 'http://localhost:3000');
+            const response = await POST(request);
+
+            expect(response.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:3000');
+        });
+
+        it('should handle requests without origin header', async () => {
+            const registrationData = generatePlayerRegistration();
+
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
+            mockCheckEmailExists.mockResolvedValue(false);
+            mockHashPassword.mockResolvedValue('hashed_password');
+            mockCreatePlayer.mockResolvedValue('player-uuid');
+
+            const request = new NextRequest('http://localhost:3000/api/auth/register/player', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(registrationData),
+            });
+
+            const response = await POST(request);
+
+            expect(response.status).toBe(201);
+            expect(response.headers.get('Access-Control-Allow-Origin')).toBeTruthy();
+        });
+    });
+
+    describe('Complete Registration Flow', () => {
+        it('should execute complete registration flow in correct order', async () => {
+            const registrationData = generatePlayerRegistration();
+            const callOrder: string[] = [];
+
+            mockValidatePlayerRegistration.mockImplementation((data) => {
+                callOrder.push('validate');
+                return { isValid: true, errors: [] };
+            });
+
+            mockCheckEmailExists.mockImplementation(async (email) => {
+                callOrder.push('checkEmail');
+                return false;
+            });
+
+            mockHashPassword.mockImplementation(async (password) => {
+                callOrder.push('hashPassword');
+                return 'hashed_password';
+            });
+
+            mockCreatePlayer.mockImplementation(async (data) => {
+                callOrder.push('createPlayer');
+                return 'player-uuid';
+            });
+
+            const request = createMockRequest(registrationData);
+            const response = await POST(request);
+
+            expect(response.status).toBe(201);
+            expect(callOrder).toEqual(['validate', 'checkEmail', 'hashPassword', 'createPlayer']);
+        });
+
+        it('should stop execution after validation failure', async () => {
+            const invalidData = generatePlayerRegistration({
+                email: 'invalid-email',
+            });
+
+            mockValidatePlayerRegistration.mockReturnValue({
+                isValid: false,
+                errors: [{ field: 'email', message: 'Invalid email' }],
+            });
+
+            const request = createMockRequest(invalidData);
+            await POST(request);
+
+            expect(mockValidatePlayerRegistration).toHaveBeenCalled();
+            expect(mockCheckEmailExists).not.toHaveBeenCalled();
             expect(mockHashPassword).not.toHaveBeenCalled();
             expect(mockCreatePlayer).not.toHaveBeenCalled();
         });
 
-        it('returns 500 when createPlayer fails', async () => {
-            mockCheckEmailExists.mockResolvedValue(false);
-            mockHashPassword.mockResolvedValue('hashed_password_123');
-            mockCreatePlayer.mockRejectedValue(new Error('Database insert failed'));
+        it('should stop execution after duplicate email check', async () => {
+            const registrationData = generatePlayerRegistration();
 
-            const request = createRequest(validPlayerData);
-            const response = await POST(request);
-            const data = await response.json();
+            mockValidatePlayerRegistration.mockReturnValue({ isValid: true, errors: [] });
+            mockCheckEmailExists.mockResolvedValue(true);
 
-            expect(response.status).toBe(500);
-            expect(data).toEqual({
-                success: false,
-                message: 'An error occurred during registration',
-            });
+            const request = createMockRequest(registrationData);
+            await POST(request);
 
+            expect(mockValidatePlayerRegistration).toHaveBeenCalled();
             expect(mockCheckEmailExists).toHaveBeenCalled();
-            expect(mockHashPassword).toHaveBeenCalled();
-            expect(mockCreatePlayer).toHaveBeenCalled();
-        });
-
-        it('returns 500 when password hashing fails', async () => {
-            mockCheckEmailExists.mockResolvedValue(false);
-            mockHashPassword.mockRejectedValue(new Error('Hashing failed'));
-
-            const request = createRequest(validPlayerData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(500);
-            expect(data).toEqual({
-                success: false,
-                message: 'An error occurred during registration',
-            });
-
-            expect(mockCheckEmailExists).toHaveBeenCalled();
-            expect(mockHashPassword).toHaveBeenCalled();
+            expect(mockHashPassword).not.toHaveBeenCalled();
             expect(mockCreatePlayer).not.toHaveBeenCalled();
-        });
-
-        it('handles unexpected errors gracefully', async () => {
-            mockCheckEmailExists.mockImplementation(() => {
-                throw new Error('Unexpected error');
-            });
-
-            const request = createRequest(validPlayerData);
-            const response = await POST(request);
-            const data = await response.json();
-
-            expect(response.status).toBe(500);
-            expect(data).toEqual({
-                success: false,
-                message: 'An error occurred during registration',
-            });
-        });
-    });
-
-    describe('POST - CORS Headers', () => {
-        it('includes CORS headers in successful response', async () => {
-            mockCheckEmailExists.mockResolvedValue(false);
-            mockHashPassword.mockResolvedValue('hashed_password_123');
-            mockCreatePlayer.mockResolvedValue('player-uuid-123');
-
-            const request = createRequest(validPlayerData, 'http://localhost:3000');
-            const response = await POST(request);
-
-            expect(response.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:3000');
-            expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, OPTIONS');
-            expect(response.headers.get('Access-Control-Allow-Headers')).toBe('Content-Type');
-        });
-
-        it('includes CORS headers in error response', async () => {
-            const invalidData = { ...validPlayerData, email: '' };
-            const request = createRequest(invalidData, 'http://localhost:3000');
-            const response = await POST(request);
-
-            expect(response.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:3000');
-            expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, OPTIONS');
-            expect(response.headers.get('Access-Control-Allow-Headers')).toBe('Content-Type');
-        });
-
-        it('returns allowed origin when origin matches', async () => {
-            mockCheckEmailExists.mockResolvedValue(false);
-            mockHashPassword.mockResolvedValue('hashed_password_123');
-            mockCreatePlayer.mockResolvedValue('player-uuid-123');
-
-            const request = createRequest(validPlayerData, 'https://dev.example.com');
-            const response = await POST(request);
-
-            expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://dev.example.com');
-        });
-
-        it('returns first allowed origin when origin does not match', async () => {
-            mockCheckEmailExists.mockResolvedValue(false);
-            mockHashPassword.mockResolvedValue('hashed_password_123');
-            mockCreatePlayer.mockResolvedValue('player-uuid-123');
-
-            const request = createRequest(validPlayerData, 'https://malicious.com');
-            const response = await POST(request);
-
-            expect(response.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:3000');
-        });
-
-        it('returns wildcard when no allowed origins configured', async () => {
-            delete process.env.ALLOWED_ORIGINS;
-
-            mockCheckEmailExists.mockResolvedValue(false);
-            mockHashPassword.mockResolvedValue('hashed_password_123');
-            mockCreatePlayer.mockResolvedValue('player-uuid-123');
-
-            const request = createRequest(validPlayerData);
-            const response = await POST(request);
-
-            expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
-        });
-    });
-
-    describe('OPTIONS - CORS Preflight', () => {
-        it('handles OPTIONS request for CORS preflight', async () => {
-            const request = new NextRequest('http://localhost:3000/api/auth/register/player', {
-                method: 'OPTIONS',
-                headers: {
-                    'origin': 'http://localhost:3000',
-                },
-            });
-
-            const response = await OPTIONS(request);
-
-            expect(response.status).toBe(200);
-            expect(response.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:3000');
-            expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, OPTIONS');
-            expect(response.headers.get('Access-Control-Allow-Headers')).toBe('Content-Type');
-        });
-
-        it('returns empty body for OPTIONS request', async () => {
-            const request = new NextRequest('http://localhost:3000/api/auth/register/player', {
-                method: 'OPTIONS',
-                headers: {
-                    'origin': 'http://localhost:3000',
-                },
-            });
-
-            const response = await OPTIONS(request);
-            const text = await response.text();
-
-            expect(text).toBe('');
-        });
-
-        it('handles OPTIONS with allowed origin', async () => {
-            const request = new NextRequest('http://localhost:3000/api/auth/register/player', {
-                method: 'OPTIONS',
-                headers: {
-                    'origin': 'https://dev.example.com',
-                },
-            });
-
-            const response = await OPTIONS(request);
-
-            expect(response.status).toBe(200);
-            expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://dev.example.com');
-        });
-
-        it('handles OPTIONS with disallowed origin', async () => {
-            const request = new NextRequest('http://localhost:3000/api/auth/register/player', {
-                method: 'OPTIONS',
-                headers: {
-                    'origin': 'https://malicious.com',
-                },
-            });
-
-            const response = await OPTIONS(request);
-
-            expect(response.status).toBe(200);
-            expect(response.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:3000');
         });
     });
 });

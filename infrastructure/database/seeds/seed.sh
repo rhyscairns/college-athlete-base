@@ -114,16 +114,22 @@ echo -e "${GREEN}✓ Players table exists${NC}"
 
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SEED_FILE="$SCRIPT_DIR/players.sql"
+PLAYERS_SEED_FILE="$SCRIPT_DIR/players.sql"
+COACHES_SEED_FILE="$SCRIPT_DIR/coaches.sql"
 
-# Check if seed file exists
-if [ ! -f "$SEED_FILE" ]; then
-    echo -e "${RED}Error: Seed file not found at $SEED_FILE${NC}"
+# Check if seed files exist
+if [ ! -f "$PLAYERS_SEED_FILE" ]; then
+    echo -e "${RED}Error: Players seed file not found at $PLAYERS_SEED_FILE${NC}"
+    exit 1
+fi
+
+if [ ! -f "$COACHES_SEED_FILE" ]; then
+    echo -e "${RED}Error: Coaches seed file not found at $COACHES_SEED_FILE${NC}"
     exit 1
 fi
 
 # Ask for confirmation before seeding
-echo -e "${YELLOW}This will insert 20 dummy players into the database.${NC}"
+echo -e "${YELLOW}This will insert 20 dummy players and 10 dummy coaches into the database.${NC}"
 read -p "Continue? (y/n) " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -131,38 +137,66 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-# Load seed data
-echo -e "${YELLOW}Loading seed data from $SEED_FILE...${NC}"
+# Load players seed data
+echo -e "${YELLOW}Loading players seed data from $PLAYERS_SEED_FILE...${NC}"
 if [ "$USE_DOCKER" = true ]; then
-    if cat "$SEED_FILE" | docker-compose exec -T db psql -U "$DB_USER" -d "$DB_NAME"; then
-        echo -e "${GREEN}✓ Seed data loaded successfully${NC}"
+    if cat "$PLAYERS_SEED_FILE" | docker-compose exec -T db psql -U "$DB_USER" -d "$DB_NAME"; then
+        echo -e "${GREEN}✓ Players seed data loaded successfully${NC}"
     else
-        echo -e "${RED}Error: Failed to load seed data${NC}"
+        echo -e "${RED}Error: Failed to load players seed data${NC}"
         exit 1
     fi
 else
-    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$SEED_FILE"; then
-        echo -e "${GREEN}✓ Seed data loaded successfully${NC}"
+    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$PLAYERS_SEED_FILE"; then
+        echo -e "${GREEN}✓ Players seed data loaded successfully${NC}"
     else
-        echo -e "${RED}Error: Failed to load seed data${NC}"
+        echo -e "${RED}Error: Failed to load players seed data${NC}"
         exit 1
     fi
 fi
 
-# Count players in database
+# Load coaches seed data
+echo -e "${YELLOW}Loading coaches seed data from $COACHES_SEED_FILE...${NC}"
+if [ "$USE_DOCKER" = true ]; then
+    if cat "$COACHES_SEED_FILE" | docker-compose exec -T db psql -U "$DB_USER" -d "$DB_NAME"; then
+        echo -e "${GREEN}✓ Coaches seed data loaded successfully${NC}"
+    else
+        echo -e "${RED}Error: Failed to load coaches seed data${NC}"
+        exit 1
+    fi
+else
+    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$COACHES_SEED_FILE"; then
+        echo -e "${GREEN}✓ Coaches seed data loaded successfully${NC}"
+    else
+        echo -e "${RED}Error: Failed to load coaches seed data${NC}"
+        exit 1
+    fi
+fi
+
+# Count players and coaches in database
 if [ "$USE_DOCKER" = true ]; then
     PLAYER_COUNT=$(docker-compose exec -T db psql -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM players;")
+    COACH_COUNT=$(docker-compose exec -T db psql -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM coaches;")
 else
     PLAYER_COUNT=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM players;")
+    COACH_COUNT=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT COUNT(*) FROM coaches;")
 fi
 echo -e "${GREEN}Total players in database: $PLAYER_COUNT${NC}"
+echo -e "${GREEN}Total coaches in database: $COACH_COUNT${NC}"
 
 # Show sample data
 echo -e "${YELLOW}Sample players:${NC}"
 if [ "$USE_DOCKER" = true ]; then
-    docker-compose exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "SELECT id, first_name, last_name, email, sport, position, gpa FROM players LIMIT 5;"
+    docker-compose exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "SELECT id, first_name, last_name, email, sport, position, gpa, promo_code FROM players LIMIT 5;"
 else
-    psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT id, first_name, last_name, email, sport, position, gpa FROM players LIMIT 5;"
+    psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT id, first_name, last_name, email, sport, position, gpa, promo_code FROM players LIMIT 5;"
+fi
+
+echo -e "${YELLOW}Sample coaches:${NC}"
+if [ "$USE_DOCKER" = true ]; then
+    docker-compose exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "SELECT id, first_name, last_name, email, current_organization, sport, promo_code FROM coaches LIMIT 5;"
+else
+    psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT id, first_name, last_name, email, current_organization, sport, promo_code FROM coaches LIMIT 5;"
 fi
 
 echo -e "${GREEN}Seeding complete!${NC}"

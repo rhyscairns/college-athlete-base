@@ -82,6 +82,51 @@ export function validatePlayerRegistration(data: any): ValidationResult {
         });
     }
 
+    // Validate dateOfBirth
+    if (!validateRequired(data.dateOfBirth)) {
+        errors.push({
+            field: 'dateOfBirth',
+            message: 'Date of birth is required',
+        });
+    } else {
+        const dob = new Date(data.dateOfBirth);
+        const today = new Date();
+
+        // Check if valid date
+        if (isNaN(dob.getTime())) {
+            errors.push({
+                field: 'dateOfBirth',
+                message: 'Invalid date format',
+            });
+        } else {
+            // Check if at least 13 years old
+            const minDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
+            if (dob > minDate) {
+                errors.push({
+                    field: 'dateOfBirth',
+                    message: 'You must be at least 13 years old to register',
+                });
+            }
+
+            // Check if date is not in the future
+            if (dob > today) {
+                errors.push({
+                    field: 'dateOfBirth',
+                    message: 'Date of birth cannot be in the future',
+                });
+            }
+
+            // Check if date is reasonable (not more than 100 years ago)
+            const maxDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
+            if (dob < maxDate) {
+                errors.push({
+                    field: 'dateOfBirth',
+                    message: 'Please enter a valid date of birth',
+                });
+            }
+        }
+    }
+
     // Validate email
     if (!validateRequired(data.email)) {
         errors.push({

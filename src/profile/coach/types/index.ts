@@ -1,3 +1,9 @@
+// Achievement structure
+export interface Achievement {
+    title: string;
+    year?: number;
+}
+
 // Core coach profile data structure
 export interface CoachProfile {
     id: string;
@@ -9,8 +15,19 @@ export interface CoachProfile {
     university?: string;
     position?: string;
     sport?: string;
+    yearsExperience?: number;
     profileImage?: string;
     teamWebsiteUrl?: string;
+    // University information
+    universityLogoUrl?: string;
+    conference?: string;
+    division?: string;
+    teamName?: string;
+    // Office information
+    officeLocation?: string;
+    officeHours?: string;
+    // Achievements
+    achievements?: Achievement[];
     createdAt: Date;
     updatedAt: Date;
 }
