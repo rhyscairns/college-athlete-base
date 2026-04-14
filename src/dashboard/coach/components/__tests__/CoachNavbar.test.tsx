@@ -1,6 +1,18 @@
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { CoachNavbar } from '../CoachNavbar';
 
+// Mock the AthleteSearchModal component
+jest.mock('../AthleteSearchModal', () => ({
+    AthleteSearchModal: ({ isOpen, onClose, coachId }: { isOpen: boolean; onClose: () => void; coachId: string }) => (
+        isOpen ? (
+            <div data-testid="athlete-search-modal">
+                <div>Modal Content for Coach: {coachId}</div>
+                <button onClick={onClose}>Close Modal</button>
+            </div>
+        ) : null
+    ),
+}));
+
 describe('CoachNavbar', () => {
     const mockCoachId = 'coach-123';
 
@@ -498,6 +510,113 @@ describe('CoachNavbar', () => {
                 // Clean up after each iteration
                 unmount();
             });
+        });
+    });
+
+    describe('Search Modal Integration', () => {
+        it('does not render modal initially', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+
+            const modal = screen.queryByTestId('athlete-search-modal');
+            expect(modal).not.toBeInTheDocument();
+        });
+
+        it('opens modal when Search button is clicked', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+
+            const searchButton = screen.getByText('Search').closest('button');
+            fireEvent.click(searchButton!);
+
+            const modal = screen.getByTestId('athlete-search-modal');
+            expect(modal).toBeInTheDocument();
+        });
+
+        it('passes coachId to modal', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+
+            const searchButton = screen.getByText('Search').closest('button');
+            fireEvent.click(searchButton!);
+
+            expect(screen.getByText(`Modal Content for Coach: ${mockCoachId}`)).toBeInTheDocument();
+        });
+
+        it('closes modal when onClose is called', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+
+            // Open modal
+            const searchButton = screen.getByText('Search').closest('button');
+            fireEvent.click(searchButton!);
+
+            expect(screen.getByTestId('athlete-search-modal')).toBeInTheDocument();
+
+            // Close modal
+            const closeButton = screen.getByText('Close Modal');
+            fireEvent.click(closeButton);
+
+            expect(screen.queryByTestId('athlete-search-modal')).not.toBeInTheDocument();
+        });
+
+        it('closes mobile menu when opening search modal', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+
+            // Open mobile menu
+            const mobileButton = screen.getByLabelText('Toggle menu');
+            fireEvent.click(mobileButton);
+            expect(mobileButton).toHaveAttribute('aria-expanded', 'true');
+
+            // Click Search in mobile menu
+            const searchButtons = screen.getAllByText('Search');
+            const mobileSearchButton = searchButtons.find(btn =>
+                btn.closest('.mobile-dropdown')
+            );
+
+            if (mobileSearchButton) {
+                fireEvent.click(mobileSearchButton);
+            }
+
+            // Mobile menu should be closed
+            expect(mobileButton).toHaveAttribute('aria-expanded', 'false');
+
+            // Modal should be open
+            expect(screen.getByTestId('athlete-search-modal')).toBeInTheDocument();
+        });
+
+        it('opens modal from desktop Search button', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+
+            // Find desktop search button (not in mobile dropdown)
+            const searchButtons = screen.getAllByText('Search');
+            const desktopSearchButton = searchButtons.find(btn =>
+                !btn.closest('.mobile-dropdown')
+            );
+
+            fireEvent.click(desktopSearchButton!);
+
+            expect(screen.getByTestId('athlete-search-modal')).toBeInTheDocument();
+        });
+
+        it('can open and close modal multiple times', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+
+            const searchButton = screen.getByText('Search').closest('button');
+
+            // Open modal
+            fireEvent.click(searchButton!);
+            expect(screen.getByTestId('athlete-search-modal')).toBeInTheDocument();
+
+            // Close modal
+            const closeButton = screen.getByText('Close Modal');
+            fireEvent.click(closeButton);
+            expect(screen.queryByTestId('athlete-search-modal')).not.toBeInTheDocument();
+
+            // Open again
+            fireEvent.click(searchButton!);
+            expect(screen.getByTestId('athlete-search-modal')).toBeInTheDocument();
+
+            // Close again
+            const closeButton2 = screen.getByText('Close Modal');
+            fireEvent.click(closeButton2);
+            expect(screen.queryByTestId('athlete-search-modal')).not.toBeInTheDocument();
         });
     });
 });

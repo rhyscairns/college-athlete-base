@@ -106,26 +106,26 @@ function buildQuery(params: {
 
     // Filter by sport (case-insensitive)
     if (params.sport && params.sport !== 'All Sports') {
-        conditions.push(`LOWER(sport) = LOWER($${paramIndex})`);
+        conditions.push('LOWER(sport) = LOWER($' + paramIndex + ')');
         queryParams.push(params.sport);
         paramIndex++;
     }
 
     // Filter by position (case-insensitive)
     if (params.position && params.position !== 'All Positions') {
-        conditions.push(`LOWER(position) = LOWER($${paramIndex})`);
+        conditions.push('LOWER(position) = LOWER($' + paramIndex + ')');
         queryParams.push(params.position);
         paramIndex++;
     }
 
     // Exclude specific user
     if (params.excludeUserId) {
-        conditions.push(`id != $${paramIndex}`);
+        conditions.push('id != $' + paramIndex);
         queryParams.push(params.excludeUserId);
         paramIndex++;
     }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
 
     return { whereClause, queryParams };
 }
@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
         try {
             logger.dbOperation('countPlayers', { requestId, sport, position, excludeUserId });
             const countResult = await query<{ count: string }>(
-                `SELECT COUNT(*) as count FROM players ${whereClause}`,
+                'SELECT COUNT(*) as count FROM players ' + whereClause,
                 queryParams
             );
             totalCount = parseInt(countResult[0]?.count || '0', 10);
@@ -207,6 +207,8 @@ export async function GET(request: NextRequest) {
         let players: DashboardPlayer[] = [];
         try {
             logger.dbOperation('getPlayers', { requestId, sport, position, page, pageSize, excludeUserId });
+            const limitParam = queryParams.length + 1;
+            const offsetParam = queryParams.length + 2;
             const result = await query<any>(
                 `SELECT 
                     id, 
@@ -214,14 +216,14 @@ export async function GET(request: NextRequest) {
                     last_name, 
                     sport, 
                     position,
-                    profile_image,
-                    video_thumbnail,
-                    video_url,
+                    profile_image_url,
+                    video_thumbnail_url,
+                    highlight_video_url,
                     video_title
                 FROM players 
                 ${whereClause}
                 ORDER BY created_at DESC
-                LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`,
+                LIMIT $${limitParam} OFFSET $${offsetParam}`,
                 [...queryParams, pageSize, offset]
             );
 
@@ -231,9 +233,9 @@ export async function GET(request: NextRequest) {
                 lastName: row.last_name,
                 sport: row.sport,
                 position: row.position,
-                profileImage: row.profile_image || undefined,
-                videoThumbnail: row.video_thumbnail || undefined,
-                videoUrl: row.video_url || undefined,
+                profileImage: row.profile_image_url || undefined,
+                videoThumbnail: row.video_thumbnail_url || undefined,
+                videoUrl: row.highlight_video_url || undefined,
                 videoTitle: row.video_title || undefined,
             }));
         } catch (error) {

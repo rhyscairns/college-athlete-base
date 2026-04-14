@@ -227,8 +227,16 @@ export async function PUT(
             university: body.university,
             position: body.position,
             sport: body.sport,
+            yearsExperience: body.yearsExperience,
             profileImage: body.profileImage,
             teamWebsiteUrl: body.teamWebsiteUrl,
+            universityLogoUrl: body.universityLogoUrl,
+            conference: body.conference,
+            division: body.division,
+            teamName: body.teamName,
+            officeLocation: body.officeLocation,
+            officeHours: body.officeHours,
+            achievements: body.achievements,
         });
 
         if (Object.keys(validationErrors).length > 0) {
@@ -265,8 +273,16 @@ export async function PUT(
             if (body.university !== undefined) updates.university = body.university;
             if (body.position !== undefined) updates.position = body.position;
             if (body.sport !== undefined) updates.sport = body.sport;
+            if (body.yearsExperience !== undefined) updates.yearsExperience = body.yearsExperience;
             if (body.profileImage !== undefined) updates.profileImage = body.profileImage;
             if (body.teamWebsiteUrl !== undefined) updates.teamWebsiteUrl = body.teamWebsiteUrl;
+            if (body.universityLogoUrl !== undefined) updates.universityLogoUrl = body.universityLogoUrl;
+            if (body.conference !== undefined) updates.conference = body.conference;
+            if (body.division !== undefined) updates.division = body.division;
+            if (body.teamName !== undefined) updates.teamName = body.teamName;
+            if (body.officeLocation !== undefined) updates.officeLocation = body.officeLocation;
+            if (body.officeHours !== undefined) updates.officeHours = body.officeHours;
+            if (body.achievements !== undefined) updates.achievements = body.achievements;
 
             updatedProfile = await updateCoachProfile(coachId, updates);
         } catch (error) {

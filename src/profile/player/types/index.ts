@@ -75,8 +75,17 @@ export interface Hero {
     height: string;
     weight: string;
     age?: number;
+    dateOfBirth?: string; // Date of birth in YYYY-MM-DD format
     profileImage?: string;
     performanceMetrics?: PerformanceMetric[];
+    // Search-related fields
+    heightInches?: number; // Height in inches for search
+    weightLbs?: number; // Weight in pounds for search
+    desiredDivision?: string; // Desired college division
+    affordableAmount?: number; // Amount athlete can afford per year
+    // Status fields
+    academicStanding?: string; // Academic standing (e.g., Honor Roll, Good Standing, Dean's List)
+    recruitmentStatus?: string; // Recruitment status (e.g., Open, Committed, Closed)
 }
 
 export interface Academic {
@@ -120,8 +129,14 @@ export interface PlayerProfile {
     height: string;
     weight: string;
     age?: number;
+    dateOfBirth?: string; // Date of birth in YYYY-MM-DD format
     profileImage?: string;
     performanceMetrics?: PerformanceMetric[];
+    // Search-related fields
+    heightInches?: number; // Height in inches for search
+    weightLbs?: number; // Weight in pounds for search
+    desiredDivision?: string; // Desired college division
+    affordableAmount?: number; // Amount athlete can afford per year
     academic: Academic;
     stats: Stats;
     videos: Video[];

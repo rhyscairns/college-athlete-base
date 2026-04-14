@@ -164,6 +164,7 @@ export async function POST(request: NextRequest) {
             playerId = await createPlayer({
                 firstName: body.firstName,
                 lastName: body.lastName,
+                dateOfBirth: body.dateOfBirth,
                 email: body.email,
                 passwordHash,
                 sex: body.sex,

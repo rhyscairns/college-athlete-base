@@ -1,7 +1,7 @@
-import React, { useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useRef, useEffect, useState } from 'react';
 import { TextInput } from '../../../../authentication/components/TextInput';
 import { EmailInput } from '../../../../authentication/components/EmailInput';
-import type { CoachHeroSectionEditProps, CoachProfile } from '../../types';
+import type { CoachHeroSectionEditProps, CoachProfile, Achievement } from '../../types';
 
 export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
     formData,
@@ -12,6 +12,7 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
     onCancel,
 }: CoachHeroSectionEditProps) {
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const [newAchievement, setNewAchievement] = useState({ title: '', year: '' });
 
     useEffect(() => {
         return () => {
@@ -29,6 +30,29 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
         setFormData((prev) => ({
             ...prev,
             [field]: value,
+        }));
+    }, [setFormData]);
+
+    const handleAddAchievement = useCallback(() => {
+        if (!newAchievement.title.trim()) return;
+
+        const achievement: Achievement = {
+            title: newAchievement.title.trim(),
+            year: newAchievement.year ? parseInt(newAchievement.year) : undefined,
+        };
+
+        setFormData((prev) => ({
+            ...prev,
+            achievements: [...(prev.achievements || []), achievement],
+        }));
+
+        setNewAchievement({ title: '', year: '' });
+    }, [newAchievement, setFormData]);
+
+    const handleRemoveAchievement = useCallback((index: number) => {
+        setFormData((prev) => ({
+            ...prev,
+            achievements: prev.achievements?.filter((_, i) => i !== index) || [],
         }));
     }, [setFormData]);
 
@@ -149,7 +173,7 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
                                     value={formData.university || ''}
                                     onChange={(value: string) => handleFieldChange('university', value)}
                                     error={errors.university}
-                                    placeholder="e.g., University of California, Los Angeles"
+                                    placeholder="e.g., Duke University"
                                     disabled={isSaving}
                                 />
                                 <TextInput
@@ -158,17 +182,115 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
                                     value={formData.position || ''}
                                     onChange={(value: string) => handleFieldChange('position', value)}
                                     error={errors.position}
-                                    placeholder="e.g., Head Basketball Coach"
+                                    placeholder="e.g., Assistant Coach"
                                     disabled={isSaving}
                                 />
                             </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <TextInput
+                                    label="Sport"
+                                    name="sport"
+                                    value={formData.sport || ''}
+                                    onChange={(value: string) => handleFieldChange('sport', value)}
+                                    error={errors.sport}
+                                    placeholder="e.g., Basketball"
+                                    disabled={isSaving}
+                                />
+                                <TextInput
+                                    label="Years of Experience"
+                                    name="yearsExperience"
+                                    type="number"
+                                    value={formData.yearsExperience?.toString() || ''}
+                                    onChange={(value: string) => handleFieldChange('yearsExperience', value ? parseInt(value) : undefined as any)}
+                                    error={errors.yearsExperience}
+                                    placeholder="e.g., 8"
+                                    disabled={isSaving}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* University Information Section */}
+                    <div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                            University Details
+                        </h3>
+                        <div className="space-y-4">
                             <TextInput
-                                label="Sport"
-                                name="sport"
-                                value={formData.sport || ''}
-                                onChange={(value: string) => handleFieldChange('sport', value)}
-                                error={errors.sport}
-                                placeholder="e.g., Basketball, Football, Soccer"
+                                label="University Logo URL"
+                                name="universityLogoUrl"
+                                type="text"
+                                value={formData.universityLogoUrl || ''}
+                                onChange={(value: string) => handleFieldChange('universityLogoUrl', value)}
+                                error={errors.universityLogoUrl}
+                                placeholder="https://example.com/logo.png"
+                                disabled={isSaving}
+                            />
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <TextInput
+                                    label="Conference"
+                                    name="conference"
+                                    value={formData.conference || ''}
+                                    onChange={(value: string) => handleFieldChange('conference', value)}
+                                    error={errors.conference}
+                                    placeholder="e.g., ACC"
+                                    disabled={isSaving}
+                                />
+                                <TextInput
+                                    label="Division"
+                                    name="division"
+                                    value={formData.division || ''}
+                                    onChange={(value: string) => handleFieldChange('division', value)}
+                                    error={errors.division}
+                                    placeholder="e.g., NCAA Division I"
+                                    disabled={isSaving}
+                                />
+                                <TextInput
+                                    label="Team Name"
+                                    name="teamName"
+                                    value={formData.teamName || ''}
+                                    onChange={(value: string) => handleFieldChange('teamName', value)}
+                                    error={errors.teamName}
+                                    placeholder="e.g., Duke Blue Devils"
+                                    disabled={isSaving}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Office Information Section */}
+                    <div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            Office Information
+                        </h3>
+                        <div className="space-y-4">
+                            <TextInput
+                                label="Office Location"
+                                name="officeLocation"
+                                value={formData.officeLocation || ''}
+                                onChange={(value: string) => handleFieldChange('officeLocation', value)}
+                                error={errors.officeLocation}
+                                placeholder="e.g., Cameron Indoor Stadium, Room 201"
+                                disabled={isSaving}
+                            />
+                            <TextInput
+                                label="Office Hours"
+                                name="officeHours"
+                                value={formData.officeHours || ''}
+                                onChange={(value: string) => handleFieldChange('officeHours', value)}
+                                error={errors.officeHours}
+                                placeholder="e.g., Mon-Fri: 10:00 AM - 4:00 PM"
                                 disabled={isSaving}
                             />
                         </div>
@@ -205,6 +327,78 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
                                 placeholder="https://uclabruins.com/sports/basketball"
                                 disabled={isSaving}
                             />
+                        </div>
+                    </div>
+
+                    {/* Achievements Section */}
+                    <div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <span className="text-2xl">🏆</span>
+                            Recent Achievements
+                        </h3>
+
+                        {/* Existing Achievements List */}
+                        {formData.achievements && formData.achievements.length > 0 && (
+                            <div className="mb-4 space-y-2">
+                                {formData.achievements.map((achievement, index) => (
+                                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex-1">
+                                            <p className="text-sm font-medium text-gray-900">{achievement.title}</p>
+                                            {achievement.year && (
+                                                <p className="text-xs text-gray-500">Year: {achievement.year}</p>
+                                            )}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveAchievement(index)}
+                                            disabled={isSaving}
+                                            className="ml-3 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                                            aria-label="Remove achievement"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Add New Achievement */}
+                        <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
+                            <p className="text-sm font-medium text-gray-700">Add New Achievement</p>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div className="md:col-span-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Achievement title (e.g., Conference Champion 2023)"
+                                        value={newAchievement.title}
+                                        onChange={(e) => setNewAchievement(prev => ({ ...prev, title: e.target.value }))}
+                                        disabled={isSaving}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="number"
+                                        placeholder="Year (optional)"
+                                        value={newAchievement.year}
+                                        onChange={(e) => setNewAchievement(prev => ({ ...prev, year: e.target.value }))}
+                                        disabled={isSaving}
+                                        min="1900"
+                                        max="2100"
+                                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleAddAchievement}
+                                        disabled={isSaving || !newAchievement.title.trim()}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

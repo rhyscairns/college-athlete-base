@@ -249,6 +249,31 @@ export async function PUT(
             }
         }
 
+        // Validate age if provided
+        if (body.age !== undefined && body.age !== null && body.age !== 0) {
+            const age = Number(body.age);
+            if (isNaN(age) || age < 13 || age > 25) {
+                logger.validationError('Invalid age', [
+                    { field: 'age', message: 'Age must be between 13 and 25 years' }
+                ], { requestId, playerId, age: body.age });
+
+                const response = NextResponse.json(
+                    {
+                        success: false,
+                        error: 'Invalid age',
+                        validationErrors: {
+                            age: 'Age must be between 13 and 25 years'
+                        },
+                        data: null,
+                    },
+                    { status: 400 }
+                );
+
+                logger.apiResponse('PUT', `/api/player/${playerId}/profile`, 400, Date.now() - startTime, { requestId });
+                return response;
+            }
+        }
+
         // Update player profile in database
         try {
             logger.dbOperation('updatePlayerProfile', { requestId, playerId, updates: body });

@@ -29,6 +29,7 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
     // Form state for all fields
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
+    const [dateOfBirth, setDateOfBirth] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [gender, setGender] = useState('');
@@ -120,6 +121,32 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                 }
                 break;
 
+            case 'dateOfBirth':
+                if (!validateRequired(value)) {
+                    return getRequiredFieldError();
+                }
+                // Validate date format
+                const date = new Date(value);
+                if (isNaN(date.getTime())) {
+                    return 'Invalid date format';
+                }
+                // Check if user is at least 13 years old
+                const today = new Date();
+                const minDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
+                if (date > minDate) {
+                    return 'You must be at least 13 years old to register';
+                }
+                // Check if date is not in the future
+                if (date > today) {
+                    return 'Date of birth cannot be in the future';
+                }
+                // Check if date is reasonable (not more than 100 years ago)
+                const maxDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
+                if (date < maxDate) {
+                    return 'Please enter a valid date of birth';
+                }
+                break;
+
             case 'scholarshipAmount':
                 if (value && parseFloat(value) < 0) {
                     return 'Must be a positive number';
@@ -152,6 +179,9 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
 
         const lastNameError = validateField('lastName', lastName);
         if (lastNameError) newErrors.lastName = lastNameError;
+
+        const dateOfBirthError = validateField('dateOfBirth', dateOfBirth);
+        if (dateOfBirthError) newErrors.dateOfBirth = dateOfBirthError;
 
         const emailError = validateField('email', email);
         if (emailError) newErrors.email = emailError;
@@ -217,6 +247,7 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
             const registrationData: PlayerRegistrationData = {
                 firstName,
                 lastName,
+                dateOfBirth,
                 email,
                 password,
                 gender,
@@ -240,6 +271,7 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
     const isFormValid =
         firstName.length > 0 &&
         lastName.length > 0 &&
+        dateOfBirth.length > 0 &&
         email.length > 0 &&
         password.length > 0 &&
         gender.length > 0 &&
@@ -281,6 +313,20 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                         disabled={isSubmitting}
                     />
                 </div>
+
+                {/* Date of Birth */}
+                <TextInput
+                    label="Date of Birth"
+                    name="dateOfBirth"
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={setDateOfBirth}
+                    onBlur={() => handleBlur('dateOfBirth', dateOfBirth)}
+                    error={errors.dateOfBirth}
+                    required
+                    disabled={isSubmitting}
+                    max={new Date().toISOString().split('T')[0]}
+                />
 
                 {/* Email and Password */}
                 <EmailInput

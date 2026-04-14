@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { CoachNavbarProps } from '../types';
+import { AthleteSearchModal } from './AthleteSearchModal';
 
 // Constants
 const COLORS = {
@@ -29,6 +30,7 @@ const mobileItemHoverHandlers = createHoverHandlers(COLORS.DARKER_GRAY, COLORS.L
 
 export function CoachNavbar({ coachId }: CoachNavbarProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [searchModalOpen, setSearchModalOpen] = useState(false);
 
     const handleLogout = async () => {
         try {
@@ -42,6 +44,11 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
     const handleSearchClick = (e: React.MouseEvent) => {
         e.preventDefault();
         setMobileMenuOpen(false);
+        setSearchModalOpen(true);
+    };
+
+    const handleCloseSearchModal = () => {
+        setSearchModalOpen(false);
     };
 
     const handleProfileClick = (e: React.MouseEvent) => {
@@ -82,6 +89,12 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
                     onLogout={handleLogout}
                 />
             )}
+
+            <AthleteSearchModal
+                isOpen={searchModalOpen}
+                onClose={handleCloseSearchModal}
+                coachId={coachId}
+            />
 
             <ResponsiveStyles />
         </nav>

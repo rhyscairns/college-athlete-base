@@ -82,12 +82,16 @@ export const CoachHeroSection = React.memo(function CoachHeroSection({
                                         {coach.sport}
                                     </span>
                                 )}
-                                <span className="px-3 py-1 bg-blue-500 text-white text-sm font-semibold rounded-full">
-                                    NCAA Division I
-                                </span>
-                                <span className="px-3 py-1 bg-blue-500 text-white text-sm font-semibold rounded-full">
-                                    15 Years Experience
-                                </span>
+                                {coach.division && (
+                                    <span className="px-3 py-1 bg-blue-500 text-white text-sm font-semibold rounded-full">
+                                        {coach.division}
+                                    </span>
+                                )}
+                                {coach.yearsExperience && (
+                                    <span className="px-3 py-1 bg-blue-500 text-white text-sm font-semibold rounded-full">
+                                        {coach.yearsExperience} Years Experience
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -140,35 +144,39 @@ export const CoachHeroSection = React.memo(function CoachHeroSection({
                             )}
 
                             {/* Office Location */}
-                            <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <div className="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center">
-                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500">Office Location</p>
-                                        <p className="text-sm font-medium text-gray-900">Pauley Pavilion, Room 201</p>
+                            {coach.officeLocation && (
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center">
+                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">Office Location</p>
+                                            <p className="text-sm font-medium text-gray-900">{coach.officeLocation}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Office Hours */}
-                            <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500">Office Hours</p>
-                                        <p className="text-sm font-medium text-gray-900">Mon-Fri: 9:00 AM - 5:00 PM</p>
+                            {coach.officeHours && (
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">Office Hours</p>
+                                            <p className="text-sm font-medium text-gray-900">{coach.officeHours}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
 
@@ -185,29 +193,49 @@ export const CoachHeroSection = React.memo(function CoachHeroSection({
 
                         {/* University Logo and Name */}
                         <div className="bg-blue-50 rounded-xl p-6 mb-4 text-center">
-                            <div className="w-20 h-20 mx-auto mb-3 bg-blue-600 rounded-full flex items-center justify-center">
-                                <span className="text-2xl font-bold text-white">UCLA</span>
-                            </div>
+                            {coach.universityLogoUrl ? (
+                                <div className="w-20 h-20 mx-auto mb-3 relative">
+                                    <Image
+                                        src={coach.universityLogoUrl}
+                                        alt={coach.university || 'University Logo'}
+                                        width={80}
+                                        height={80}
+                                        className="object-contain"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="w-20 h-20 mx-auto mb-3 bg-blue-600 rounded-full flex items-center justify-center">
+                                    <span className="text-2xl font-bold text-white">
+                                        {coach.university?.split(' ').map(w => w[0]).join('').slice(0, 3) || 'UNI'}
+                                    </span>
+                                </div>
+                            )}
                             <h3 className="text-lg font-bold text-gray-900 mb-1">
-                                {coach.university || 'University of California, Los Angeles'}
+                                {coach.university || 'University Name'}
                             </h3>
                             <p className="text-sm text-gray-600">Athletics Department</p>
                         </div>
 
                         {/* University Details */}
                         <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-600">Conference:</span>
-                                <span className="text-sm font-semibold text-gray-900">Pac-12</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-600">Division:</span>
-                                <span className="text-sm font-semibold text-gray-900">NCAA Division I</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-600">Team:</span>
-                                <span className="text-sm font-semibold text-gray-900">UCLA Bruins</span>
-                            </div>
+                            {coach.conference && (
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-600">Conference:</span>
+                                    <span className="text-sm font-semibold text-gray-900">{coach.conference}</span>
+                                </div>
+                            )}
+                            {coach.division && (
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-600">Division:</span>
+                                    <span className="text-sm font-semibold text-gray-900">{coach.division}</span>
+                                </div>
+                            )}
+                            {coach.teamName && (
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-600">Team:</span>
+                                    <span className="text-sm font-semibold text-gray-900">{coach.teamName}</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Visit Website Button */}
@@ -221,7 +249,7 @@ export const CoachHeroSection = React.memo(function CoachHeroSection({
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                 </svg>
-                                Visit UCLA Official Website
+                                Visit Team Official Website
                             </a>
                         )}
                     </div>
@@ -233,20 +261,21 @@ export const CoachHeroSection = React.memo(function CoachHeroSection({
                         <span className="text-2xl">🏆</span>
                         <h2 className="text-lg font-bold text-gray-900">Recent Achievements</h2>
                     </div>
-                    <ul className="space-y-2">
-                        <li className="flex items-start gap-2">
-                            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2"></span>
-                            <span className="text-sm text-gray-700">Pac-12 Conference Champion 2023</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2"></span>
-                            <span className="text-sm text-gray-700">NCAA Tournament Elite Eight 2023</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2"></span>
-                            <span className="text-sm text-gray-700">Coach of the Year Award 2022</span>
-                        </li>
-                    </ul>
+                    {coach.achievements && coach.achievements.length > 0 ? (
+                        <ul className="space-y-2">
+                            {coach.achievements.map((achievement, index) => (
+                                <li key={index} className="flex items-start gap-2">
+                                    <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2"></span>
+                                    <span className="text-sm text-gray-700">
+                                        {achievement.title}
+                                        {achievement.year && ` (${achievement.year})`}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-sm text-gray-500 italic">No achievements listed yet.</p>
+                    )}
                 </div>
             </div>
         </div>

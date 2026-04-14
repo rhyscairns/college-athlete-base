@@ -20,8 +20,16 @@ interface CoachProfileRow {
     current_organization: string | null;
     position_title: string | null;
     sport: string | null;
+    years_experience: number | null;
     profile_image_url: string | null;
     team_website_url: string | null;
+    university_logo_url: string | null;
+    conference: string | null;
+    division: string | null;
+    team_name: string | null;
+    office_location: string | null;
+    office_hours: string | null;
+    achievements: any | null;
     created_at: Date;
     updated_at: Date;
 }
@@ -40,8 +48,10 @@ export async function getCoachProfileById(coachId: string): Promise<CoachProfile
         const coachRows = await query<CoachProfileRow>(
             `SELECT 
                 id, first_name, last_name, email, phone,
-                current_organization, position_title, sport,
+                current_organization, position_title, sport, years_experience,
                 profile_image_url, team_website_url,
+                university_logo_url, conference, division, team_name,
+                office_location, office_hours, achievements,
                 created_at, updated_at
             FROM coaches 
             WHERE id = $1`,
@@ -96,16 +106,30 @@ export async function updateCoachProfile(
             university: 'current_organization',
             position: 'position_title',
             sport: 'sport',
+            yearsExperience: 'years_experience',
             profileImage: 'profile_image_url',
             teamWebsiteUrl: 'team_website_url',
+            universityLogoUrl: 'university_logo_url',
+            conference: 'conference',
+            division: 'division',
+            teamName: 'team_name',
+            officeLocation: 'office_location',
+            officeHours: 'office_hours',
+            achievements: 'achievements',
         };
 
         // Build SET clause dynamically
         for (const [key, value] of Object.entries(updates)) {
             const dbColumn = fieldMapping[key];
             if (dbColumn) {
-                updateFields.push(`${dbColumn} = $${paramIndex}`);
-                values.push(value === undefined ? null : value);
+                // Special handling for JSONB achievements field
+                if (key === 'achievements') {
+                    updateFields.push(`${dbColumn} = $${paramIndex}::jsonb`);
+                    values.push(value === undefined ? null : JSON.stringify(value));
+                } else {
+                    updateFields.push(`${dbColumn} = $${paramIndex}`);
+                    values.push(value === undefined ? null : value);
+                }
                 paramIndex++;
             }
         }
@@ -132,8 +156,10 @@ export async function updateCoachProfile(
             WHERE id = $${paramIndex}
             RETURNING 
                 id, first_name, last_name, email, phone,
-                current_organization, position_title, sport,
+                current_organization, position_title, sport, years_experience,
                 profile_image_url, team_website_url,
+                university_logo_url, conference, division, team_name,
+                office_location, office_hours, achievements,
                 created_at, updated_at
         `;
 
@@ -170,6 +196,19 @@ function transformCoachData(coach: CoachProfileRow): CoachProfile {
     // Generate initials from first and last name
     const initials = `${coach.first_name.charAt(0)}${coach.last_name.charAt(0)}`.toUpperCase();
 
+    // Parse achievements from JSONB
+    let achievements;
+    if (coach.achievements) {
+        try {
+            achievements = typeof coach.achievements === 'string'
+                ? JSON.parse(coach.achievements)
+                : coach.achievements;
+        } catch (error) {
+            logger.error('Failed to parse achievements JSON', {}, error instanceof Error ? error : new Error('Unknown error'));
+            achievements = [];
+        }
+    }
+
     return {
         id: coach.id,
         firstName: coach.first_name,
@@ -180,8 +219,16 @@ function transformCoachData(coach: CoachProfileRow): CoachProfile {
         university: coach.current_organization || undefined,
         position: coach.position_title || undefined,
         sport: coach.sport || undefined,
+        yearsExperience: coach.years_experience || undefined,
         profileImage: coach.profile_image_url || undefined,
         teamWebsiteUrl: coach.team_website_url || undefined,
+        universityLogoUrl: coach.university_logo_url || undefined,
+        conference: coach.conference || undefined,
+        division: coach.division || undefined,
+        teamName: coach.team_name || undefined,
+        officeLocation: coach.office_location || undefined,
+        officeHours: coach.office_hours || undefined,
+        achievements: achievements || undefined,
         createdAt: new Date(coach.created_at),
         updatedAt: new Date(coach.updated_at),
     };
