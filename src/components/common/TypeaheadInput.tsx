@@ -33,6 +33,7 @@ export const TypeaheadInput: React.FC<TypeaheadInputProps> = ({
     const [inputValue, setInputValue] = useState(value);
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const mouseDownOnOption = useRef(false);
 
     // Filter options based on input value
     const filteredOptions = useMemo(() => {
@@ -131,10 +132,11 @@ export const TypeaheadInput: React.FC<TypeaheadInputProps> = ({
     };
 
     const handleBlur = () => {
-        // Delay to allow click on option to register
-        setTimeout(() => {
+        // Only close if the user isn't clicking on an option
+        if (!mouseDownOnOption.current) {
             setIsOpen(false);
-        }, 200);
+        }
+        mouseDownOnOption.current = false;
     };
 
     return (
@@ -194,6 +196,7 @@ export const TypeaheadInput: React.FC<TypeaheadInputProps> = ({
                                 id={`${name}-option-${index}`}
                                 role="option"
                                 aria-selected={index === highlightedIndex}
+                                onMouseDown={() => { mouseDownOnOption.current = true; }}
                                 onClick={() => handleSelect(option)}
                                 onMouseEnter={() => setHighlightedIndex(index)}
                                 className={`
