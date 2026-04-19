@@ -1,8 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { JSX } from 'react/jsx-runtime';
 
-const sections = [
+/**
+ * Section configuration for profile navigation
+ */
+interface Section {
+    id: string;
+    label: string;
+}
+
+/**
+ * All available profile sections that can be navigated to
+ */
+const allSections: Section[] = [
     { id: 'hero', label: 'Profile' },
     { id: 'stats', label: 'Stats' },
     { id: 'achievements', label: 'Achievements' },
@@ -12,30 +24,90 @@ const sections = [
     { id: 'contact', label: 'Contact' },
 ];
 
-export function ProfileSideNav() {
+/**
+ * ProfileSideNav Component
+ * 
+ * A fixed side navigation bar for player profile pages that:
+ * - Automatically detects which sections are present in the DOM
+ * - Highlights the currently visible section based on scroll position
+ * - Provides smooth scroll navigation to each section
+ * - Only displays on desktop (lg breakpoint and above)
+ * 
+ * Features:
+ * - Dynamic section detection (only shows sections that exist)
+ * - Active section tracking with scroll spy
+ * - Smooth scroll with navbar offset compensation
+ * - Accessible keyboard navigation
+ * - Visual active indicator
+ * 
+ * @returns Side navigation component or null if no sections detected
+ * 
+ * @example
+ * ```tsx
+ * // Used in PlayerProfileView
+ * <ProfileSideNav />
+ * ```
+ */
+export function ProfileSideNav(): JSX.Element | null {
     const [activeSection, setActiveSection] = useState('hero');
+    const [availableSections, setAvailableSections] = useState<Section[]>([]);
+
+    // Detect which sections are actually present in the DOM
+    useEffect(() => {
+        const detectSections = () => {
+            const present = allSections.filter((section) => {
+                const element = document.getElementById(section.id);
+                return element !== null;
+            });
+            setAvailableSections(present);
+        };
+
+        // Initial detection
+        detectSections();
+
+        // Re-detect after a short delay to ensure all sections are rendered
+        const timeoutId = setTimeout(detectSections, 100);
+
+        return () => clearTimeout(timeoutId);
+    }, []);
 
     useEffect(() => {
-        const handleScroll = () => {
-            const scrollPosition = window.scrollY + 100;
+        let timeoutId: NodeJS.Timeout;
 
-            for (const section of sections) {
-                const element = document.getElementById(section.id);
-                if (element) {
-                    const { offsetTop, offsetHeight } = element;
-                    if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-                        setActiveSection(section.id);
-                        break;
+        const handleScroll = (): void => {
+            // Throttle scroll handler to improve performance
+            if (timeoutId) {
+                return;
+            }
+
+            timeoutId = setTimeout(() => {
+                const scrollPosition = window.scrollY + 100;
+
+                for (const section of availableSections) {
+                    const element = document.getElementById(section.id);
+                    if (element) {
+                        const { offsetTop, offsetHeight } = element;
+                        if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+                            setActiveSection(section.id);
+                            break;
+                        }
                     }
                 }
-            }
+
+                timeoutId = null as any;
+            }, 100);
         };
 
         window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
+    }, [availableSections]);
 
-    const scrollToSection = (sectionId: string) => {
+    const scrollToSection = (sectionId: string): void => {
         const element = document.getElementById(sectionId);
         if (element) {
             const navbarHeight = 80;
@@ -47,10 +119,15 @@ export function ProfileSideNav() {
         }
     };
 
+    // Don't render if no sections are available
+    if (availableSections.length === 0) {
+        return null;
+    }
+
     return (
-        <nav className="fixed left-0 top-0 h-screen w-48 bg-white border-r border-gray-200 z-40 hidden lg:flex flex-col items-center justify-center shadow-lg">
+        <nav className="fixed left-0 top-0 h-screen w-48 bg-white border-r border-gray-200 z-10 hidden lg:flex flex-col items-center justify-center shadow-lg">
             <div className="space-y-1 w-full px-3">
-                {sections.map((section) => (
+                {availableSections.map((section) => (
                     <button
                         key={section.id}
                         onClick={() => scrollToSection(section.id)}
@@ -59,6 +136,7 @@ export function ProfileSideNav() {
                             : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                             }`}
                         title={section.label}
+                        aria-current={activeSection === section.id ? 'location' : undefined}
                     >
                         <span className="text-sm">{section.label}</span>
 

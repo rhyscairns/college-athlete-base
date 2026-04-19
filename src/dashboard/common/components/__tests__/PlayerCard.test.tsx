@@ -5,8 +5,8 @@ import type { PlayerCardProps } from '../../types';
 
 // Mock Next.js Link component
 jest.mock('next/link', () => {
-    return ({ children, href }: { children: React.ReactNode; href: string }) => {
-        return <a href={href}>{children}</a>;
+    return ({ children, href, className, ...rest }: { children: React.ReactNode; href: string; className?: string;[key: string]: any }) => {
+        return <a href={href} className={className} {...rest}>{children}</a>;
     };
 });
 
@@ -186,13 +186,12 @@ describe('PlayerCard', () => {
         });
 
         it('should have minimum touch target size for button', () => {
-            const { container } = render(<PlayerCard {...mockPlayerData} />);
+            render(<PlayerCard {...mockPlayerData} />);
 
             const button = screen.getByRole('link', { name: /view profile/i });
             // Verify the button exists and has appropriate styling classes
             expect(button).toBeInTheDocument();
-            // Check that parent container has the card structure with light theme
-            expect(container.querySelector('.bg-white')).toBeInTheDocument();
+            expect(button).toHaveClass('min-h-[44px]');
         });
     });
 
@@ -282,7 +281,7 @@ describe('PlayerCard', () => {
                 status: 'available' as const,
             };
 
-            const { container } = render(<PlayerCard {...dataWithStatus} />);
+            render(<PlayerCard {...dataWithStatus} />);
 
             const badgeContainer = screen.getByText('Available').parentElement;
             expect(badgeContainer).toHaveClass('absolute', 'top-3', 'right-3');
@@ -409,41 +408,6 @@ describe('PlayerCard', () => {
             expect(handleClick).toHaveBeenCalledTimes(1);
         });
 
-        it('should render secondary button when secondaryButtonLabel is provided', () => {
-            const dataWithSecondary = {
-                ...mockPlayerData,
-                secondaryButtonLabel: 'Contact',
-            };
-
-            render(<PlayerCard {...dataWithSecondary} />);
-
-            expect(screen.getByRole('button', { name: /contact/i })).toBeInTheDocument();
-        });
-
-        it('should not render secondary button when secondaryButtonLabel is not provided', () => {
-            render(<PlayerCard {...mockPlayerData} />);
-
-            // Should only have one button/link (the primary one)
-            const buttons = screen.queryAllByRole('button');
-            expect(buttons).toHaveLength(0); // Primary is a link by default
-        });
-
-        it('should call onSecondaryClick when secondary button is clicked', () => {
-            const handleSecondaryClick = jest.fn();
-            const dataWithSecondary = {
-                ...mockPlayerData,
-                secondaryButtonLabel: 'Contact',
-                onSecondaryClick: handleSecondaryClick,
-            };
-
-            render(<PlayerCard {...dataWithSecondary} />);
-
-            const button = screen.getByRole('button', { name: /contact/i });
-            button.click();
-
-            expect(handleSecondaryClick).toHaveBeenCalledTimes(1);
-        });
-
         it('should style primary button with blue gradient', () => {
             const handleClick = jest.fn();
             const dataWithCallback = {
@@ -457,47 +421,17 @@ describe('PlayerCard', () => {
             expect(button).toHaveClass('bg-gradient-to-r', 'from-blue-500', 'to-blue-600');
         });
 
-        it('should style secondary button with light theme', () => {
-            const dataWithSecondary = {
+        it('should have minimum touch target size for button', () => {
+            const handleClick = jest.fn();
+            const dataWithCallback = {
                 ...mockPlayerData,
-                secondaryButtonLabel: 'Contact',
+                onPrimaryClick: handleClick,
             };
 
-            render(<PlayerCard {...dataWithSecondary} />);
+            render(<PlayerCard {...dataWithCallback} />);
 
-            const button = screen.getByRole('button', { name: /contact/i });
-            expect(button).toHaveClass('bg-gray-100');
-        });
-
-        it('should have minimum touch target size for both buttons', () => {
-            const dataWithBoth = {
-                ...mockPlayerData,
-                primaryButtonLabel: 'View Profile',
-                secondaryButtonLabel: 'Contact',
-                onPrimaryClick: jest.fn(),
-            };
-
-            render(<PlayerCard {...dataWithBoth} />);
-
-            const primaryButton = screen.getByRole('button', { name: /view profile/i });
-            const secondaryButton = screen.getByRole('button', { name: /contact/i });
-
-            expect(primaryButton).toHaveClass('min-h-[44px]');
-            expect(secondaryButton).toHaveClass('min-h-[44px]');
-        });
-
-        it('should render both buttons with custom labels', () => {
-            const dataWithCustom = {
-                ...mockPlayerData,
-                primaryButtonLabel: 'View Details',
-                secondaryButtonLabel: 'Send Message',
-                onPrimaryClick: jest.fn(),
-            };
-
-            render(<PlayerCard {...dataWithCustom} />);
-
-            expect(screen.getByRole('button', { name: /view details/i })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: /send message/i })).toBeInTheDocument();
+            const button = screen.getByRole('button', { name: /view profile/i });
+            expect(button).toHaveClass('min-h-[44px]');
         });
     });
 
@@ -540,11 +474,12 @@ describe('PlayerCard', () => {
         });
     });
 
-    describe('Watch Video Button', () => {
-        it('should render "Watch Video" button when onWatchVideo is provided', () => {
+    describe('Play Button Overlay', () => {
+        it('should render clickable play button when video thumbnail and onWatchVideo are provided', () => {
             const handleWatchVideo = jest.fn();
             const dataWithVideo = {
                 ...mockPlayerData,
+                videoThumbnail: 'https://example.com/video-thumb.jpg',
                 onWatchVideo: handleWatchVideo,
             };
 
@@ -552,20 +487,24 @@ describe('PlayerCard', () => {
 
             const button = screen.getByRole('button', { name: /watch highlight video/i });
             expect(button).toBeInTheDocument();
-            expect(screen.getByText('Watch Video')).toBeInTheDocument();
         });
 
-        it('should not render "Watch Video" button when onWatchVideo is not provided', () => {
-            render(<PlayerCard {...mockPlayerData} />);
+        it('should not render play button when onWatchVideo is not provided', () => {
+            const dataWithVideo = {
+                ...mockPlayerData,
+                videoThumbnail: 'https://example.com/video-thumb.jpg',
+            };
+
+            render(<PlayerCard {...dataWithVideo} />);
 
             expect(screen.queryByRole('button', { name: /watch highlight video/i })).not.toBeInTheDocument();
-            expect(screen.queryByText('Watch Video')).not.toBeInTheDocument();
         });
 
-        it('should call onWatchVideo handler when button is clicked', () => {
+        it('should call onWatchVideo when play button is clicked', () => {
             const handleWatchVideo = jest.fn();
             const dataWithVideo = {
                 ...mockPlayerData,
+                videoThumbnail: 'https://example.com/video-thumb.jpg',
                 onWatchVideo: handleWatchVideo,
             };
 
@@ -577,66 +516,11 @@ describe('PlayerCard', () => {
             expect(handleWatchVideo).toHaveBeenCalledTimes(1);
         });
 
-        it('should replace secondary button when onWatchVideo is provided', () => {
+        it('should have proper accessibility attributes', () => {
             const handleWatchVideo = jest.fn();
             const dataWithVideo = {
                 ...mockPlayerData,
-                secondaryButtonLabel: 'Contact',
-                onSecondaryClick: jest.fn(),
-                onWatchVideo: handleWatchVideo,
-            };
-
-            render(<PlayerCard {...dataWithVideo} />);
-
-            // Should show Watch Video button
-            expect(screen.getByRole('button', { name: /watch highlight video/i })).toBeInTheDocument();
-            // Should NOT show secondary button
-            expect(screen.queryByRole('button', { name: /contact/i })).not.toBeInTheDocument();
-        });
-
-        it('should have yellow gradient styling', () => {
-            const handleWatchVideo = jest.fn();
-            const dataWithVideo = {
-                ...mockPlayerData,
-                onWatchVideo: handleWatchVideo,
-            };
-
-            render(<PlayerCard {...dataWithVideo} />);
-
-            const button = screen.getByRole('button', { name: /watch highlight video/i });
-            expect(button).toHaveClass('bg-gradient-to-r', 'from-yellow-400', 'to-yellow-500');
-        });
-
-        it('should have hover state styling', () => {
-            const handleWatchVideo = jest.fn();
-            const dataWithVideo = {
-                ...mockPlayerData,
-                onWatchVideo: handleWatchVideo,
-            };
-
-            render(<PlayerCard {...dataWithVideo} />);
-
-            const button = screen.getByRole('button', { name: /watch highlight video/i });
-            expect(button).toHaveClass('hover:from-yellow-300', 'hover:to-yellow-400', 'hover:shadow-lg');
-        });
-
-        it('should meet minimum touch target size (44x44px)', () => {
-            const handleWatchVideo = jest.fn();
-            const dataWithVideo = {
-                ...mockPlayerData,
-                onWatchVideo: handleWatchVideo,
-            };
-
-            render(<PlayerCard {...dataWithVideo} />);
-
-            const button = screen.getByRole('button', { name: /watch highlight video/i });
-            expect(button).toHaveClass('min-h-[44px]');
-        });
-
-        it('should have appropriate aria-label for accessibility', () => {
-            const handleWatchVideo = jest.fn();
-            const dataWithVideo = {
-                ...mockPlayerData,
+                videoThumbnail: 'https://example.com/video-thumb.jpg',
                 onWatchVideo: handleWatchVideo,
             };
 
@@ -646,32 +530,33 @@ describe('PlayerCard', () => {
             expect(button).toBeInTheDocument();
         });
 
-        it('should display play icon', () => {
-            const handleWatchVideo = jest.fn();
-            const dataWithVideo = {
-                ...mockPlayerData,
-                onWatchVideo: handleWatchVideo,
-            };
-
-            const { container } = render(<PlayerCard {...dataWithVideo} />);
-
-            const button = screen.getByRole('button', { name: /watch highlight video/i });
-            const svg = button.querySelector('svg');
-            expect(svg).toBeInTheDocument();
-            expect(svg).toHaveClass('w-5', 'h-5');
-        });
-
         it('should have focus ring for keyboard navigation', () => {
             const handleWatchVideo = jest.fn();
             const dataWithVideo = {
                 ...mockPlayerData,
+                videoThumbnail: 'https://example.com/video-thumb.jpg',
                 onWatchVideo: handleWatchVideo,
             };
 
             render(<PlayerCard {...dataWithVideo} />);
 
             const button = screen.getByRole('button', { name: /watch highlight video/i });
-            expect(button).toHaveClass('focus:outline-none', 'focus:ring-2', 'focus:ring-yellow-500');
+            expect(button).toHaveClass('focus:ring-2', 'focus:ring-yellow-500');
+        });
+
+        it('should display play icon in button', () => {
+            const handleWatchVideo = jest.fn();
+            const dataWithVideo = {
+                ...mockPlayerData,
+                videoThumbnail: 'https://example.com/video-thumb.jpg',
+                onWatchVideo: handleWatchVideo,
+            };
+
+            render(<PlayerCard {...dataWithVideo} />);
+
+            const button = screen.getByRole('button', { name: /watch highlight video/i });
+            const svg = button.querySelector('svg');
+            expect(svg).toBeInTheDocument();
         });
     });
 });

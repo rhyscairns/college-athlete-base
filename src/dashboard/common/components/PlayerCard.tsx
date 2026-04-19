@@ -2,9 +2,73 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import type { PlayerCardProps } from '../types';
+import { PlayerMediaDisplay } from './PlayerMediaDisplay';
+import { PlayerStatusBadge } from './PlayerStatusBadge';
+import { PlayerInfoSection } from './PlayerInfoSection';
 
+/**
+ * PlayerCard Component
+ * 
+ * Displays a player's profile information in a card format with media, stats, and action buttons.
+ * Supports both coach and player views with dynamic routing based on user type.
+ * 
+ * Features:
+ * - Responsive design with hover effects
+ * - Video thumbnail or profile image display
+ * - Optional status badge (available, interested, contacted)
+ * - Configurable action button (link or callback)
+ * - Accessible with ARIA labels and keyboard navigation
+ * - Optimized with React.memo for performance
+ * 
+ * @param props - Component props
+ * @param props.playerId - Unique identifier for the player
+ * @param props.firstName - Player's first name
+ * @param props.lastName - Player's last name
+ * @param props.position - Player's position/role
+ * @param props.sport - Sport the player participates in
+ * @param props.videoThumbnail - Optional video thumbnail URL
+ * @param props.profileImage - Optional profile image URL
+ * @param props.status - Optional status badge (available, interested, contacted)
+ * @param props.height - Optional height display (e.g., "6'2\"")
+ * @param props.weight - Optional weight display (e.g., "210 lbs")
+ * @param props.primaryButtonLabel - Custom label for action button (default: "View Profile")
+ * @param props.onPrimaryClick - Optional callback for button click (renders button instead of link)
+ * @param props.onWatchVideo - Optional callback for video play button
+ * @param props.priority - Image loading priority for above-the-fold cards
+ * @param props.currentUserId - Current logged-in user ID for routing
+ * @param props.userType - Type of current user (coach or player) for routing
+ * @returns Memoized player card component
+ * 
+ * @example
+ * ```tsx
+ * // Coach viewing player card
+ * <PlayerCard
+ *   playerId="player-123"
+ *   firstName="John"
+ *   lastName="Smith"
+ *   position="Point Guard"
+ *   sport="Basketball"
+ *   height="6'2\""
+ *   weight="185 lbs"
+ *   status="available"
+ *   currentUserId="coach-456"
+ *   userType="coach"
+ *   onWatchVideo={() => handleVideoPlay()}
+ * />
+ * 
+ * // Player viewing another player's card
+ * <PlayerCard
+ *   playerId="player-789"
+ *   firstName="Sarah"
+ *   lastName="Johnson"
+ *   position="Forward"
+ *   sport="Soccer"
+ *   currentUserId="player-123"
+ *   userType="player"
+ * />
+ * ```
+ */
 export const PlayerCard = React.memo(function PlayerCard({
     playerId,
     firstName,
@@ -17,175 +81,86 @@ export const PlayerCard = React.memo(function PlayerCard({
     height,
     weight,
     primaryButtonLabel = 'View Profile',
-    secondaryButtonLabel,
     onPrimaryClick,
-    onSecondaryClick,
     onWatchVideo,
+    secondaryButtonLabel,
+    onSecondaryClick,
     priority = false,
+    currentUserId,
+    userType,
 }: PlayerCardProps) {
     const playerName = `${firstName} ${lastName}`;
     const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`;
 
-    // Status badge styles
-    const statusStyles = {
-        available: 'bg-green-500 text-white',
-        interested: 'bg-orange-500 text-white',
-        contacted: 'bg-red-500 text-white',
+    // Build the profile URL based on user type
+    const getProfileUrl = (): string => {
+        if (userType === 'coach' && currentUserId) {
+            return `/coach/dashboard/${currentUserId}/player-profile/${playerId}`;
+        }
+        if (userType === 'player' && currentUserId) {
+            return `/player/dashboard/${currentUserId}/player-profile/${playerId}`;
+        }
+        // Default to player profile view
+        return `/player/${playerId}/profile`;
     };
 
-    const statusLabels = {
-        available: 'Available',
-        interested: 'Interested',
-        contacted: 'Contacted',
-    };
-
-    // Build physical stats string for screen readers
-    const physicalStats = (height && weight)
-        ? `${height}, ${weight}`
-        : height || weight || '';
+    const profileUrl = getProfileUrl();
 
     return (
         <article
             className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-2xl hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
             aria-label={`Player card for ${playerName}`}
         >
-            {/* Video/Image Section */}
-            <div className="relative aspect-video bg-gradient-to-br from-slate-800 to-slate-900">
-                {videoThumbnail ? (
-                    <Image
-                        src={videoThumbnail}
-                        alt={`${playerName} highlight video thumbnail`}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        priority={priority}
-                        loading={priority ? undefined : 'lazy'}
-                    />
-                ) : profileImage ? (
-                    <Image
-                        src={profileImage}
-                        alt={`${playerName} profile photo`}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        priority={priority}
-                        loading={priority ? undefined : 'lazy'}
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-6xl font-black text-white/10" aria-hidden="true">
-                            {initials}
-                        </span>
-                    </div>
-                )}
-
-                {/* Play button overlay for video thumbnail */}
-                {videoThumbnail && (
-                    <div
-                        className="absolute inset-0 flex items-center justify-center bg-black/20"
-                        aria-hidden="true"
-                    >
-                        <div className="w-16 h-16 rounded-full bg-yellow-400/90 flex items-center justify-center shadow-lg">
-                            <svg
-                                className="w-8 h-8 text-slate-900 ml-1"
-                                fill="currentColor"
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-                                <path d="M8 5v14l11-7z" />
-                            </svg>
-                        </div>
-                    </div>
-                )}
-
-                {/* Status Badge */}
-                {status && (
-                    <div className="absolute top-3 right-3">
-                        <span
-                            className={`px-3 py-1 rounded-full text-sm font-semibold shadow-lg ${statusStyles[status]}`}
-                            role="status"
-                            aria-label={`Status: ${statusLabels[status]}`}
-                        >
-                            {statusLabels[status]}
-                        </span>
-                    </div>
-                )}
+            {/* Media Section with Status Badge */}
+            <div className="relative">
+                <PlayerMediaDisplay
+                    videoThumbnail={videoThumbnail}
+                    profileImage={profileImage}
+                    playerName={playerName}
+                    initials={initials}
+                    priority={priority}
+                    onWatchVideo={onWatchVideo}
+                />
+                {status && <PlayerStatusBadge status={status} />}
             </div>
 
-            {/* Player Info Section */}
-            <div className="p-4 sm:p-5 bg-white">
-                {/* Player Name */}
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 truncate">
-                    {playerName}
-                </h3>
+            {/* Player Info */}
+            <PlayerInfoSection
+                playerName={playerName}
+                position={position}
+                sport={sport}
+                height={height}
+                weight={weight}
+            />
 
-                {/* Position & Sport */}
-                <div className="space-y-1 mb-4">
-                    <p className="text-base sm:text-lg font-semibold text-blue-600">
-                        {position}
-                    </p>
-                    <p className="text-sm sm:text-base text-gray-700">
-                        {sport}
-                    </p>
-                    {/* Height & Weight */}
-                    {(height || weight) && (
-                        <p
-                            className="text-sm text-gray-500"
-                            aria-label={`Physical stats: ${physicalStats}`}
-                        >
-                            {height && weight ? `${height} • ${weight}` : height || weight}
-                        </p>
-                    )}
-                </div>
-
-                {/* Action Buttons */}
-                <div className="space-y-2" role="group" aria-label="Player actions">
-                    {/* Primary Button */}
-                    {onPrimaryClick ? (
-                        <button
-                            onClick={onPrimaryClick}
-                            aria-label={`${primaryButtonLabel} for ${playerName}`}
-                            className="block w-full min-h-[44px] px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg text-white font-bold text-center hover:shadow-lg hover:from-blue-400 hover:to-blue-500 transition-all touch-manipulation focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white"
-                        >
-                            {primaryButtonLabel}
-                        </button>
-                    ) : (
-                        <Link
-                            href={`/player/${playerId}/profile`}
-                            aria-label={`${primaryButtonLabel} for ${playerName}`}
-                            className="block w-full min-h-[44px] px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg text-white font-bold text-center hover:shadow-lg hover:from-blue-400 hover:to-blue-500 transition-all touch-manipulation focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white"
-                        >
-                            {primaryButtonLabel}
-                        </Link>
-                    )}
-
-                    {/* Watch Video Button (replaces secondary button when video is available) */}
-                    {onWatchVideo ? (
-                        <button
-                            onClick={onWatchVideo}
-                            aria-label={`Watch highlight video for ${playerName}`}
-                            className="w-full min-h-[44px] px-4 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-lg text-slate-900 font-bold text-center hover:shadow-lg hover:from-yellow-300 hover:to-yellow-400 transition-all touch-manipulation focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-white flex items-center justify-center gap-2"
-                        >
-                            <svg
-                                className="w-5 h-5"
-                                fill="currentColor"
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                            >
-                                <path d="M8 5v14l11-7z" />
-                            </svg>
-                            Watch Video
-                        </button>
-                    ) : secondaryButtonLabel && (
-                        <button
-                            onClick={onSecondaryClick}
-                            aria-label={`${secondaryButtonLabel} ${playerName}`}
-                            className="block w-full min-h-[44px] px-4 py-3 bg-gray-100 rounded-lg text-gray-900 font-semibold text-center hover:bg-gray-200 transition-all touch-manipulation focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-white"
-                        >
-                            {secondaryButtonLabel}
-                        </button>
-                    )}
-                </div>
+            {/* Action Buttons */}
+            <div className="px-4 pb-4 sm:px-5 sm:pb-5 flex flex-col gap-2" role="group" aria-label="Player actions">
+                {onPrimaryClick ? (
+                    <button
+                        onClick={onPrimaryClick}
+                        aria-label={`${primaryButtonLabel} for ${playerName}`}
+                        className="block w-full min-h-[44px] px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg text-white font-bold text-center hover:shadow-lg hover:from-blue-400 hover:to-blue-500 transition-all touch-manipulation focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white"
+                    >
+                        {primaryButtonLabel}
+                    </button>
+                ) : (
+                    <Link
+                        href={profileUrl}
+                        aria-label={`${primaryButtonLabel} for ${playerName}`}
+                        className="block w-full min-h-[44px] px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg text-white font-bold text-center hover:shadow-lg hover:from-blue-400 hover:to-blue-500 transition-all touch-manipulation focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white"
+                    >
+                        {primaryButtonLabel}
+                    </Link>
+                )}
+                {secondaryButtonLabel && onSecondaryClick && (
+                    <button
+                        onClick={onSecondaryClick}
+                        aria-label={`${secondaryButtonLabel} ${playerName}`}
+                        className="block w-full min-h-[44px] px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold text-center hover:bg-gray-200 hover:shadow-lg transition-all touch-manipulation focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-white"
+                    >
+                        {secondaryButtonLabel}
+                    </button>
+                )}
             </div>
         </article>
     );

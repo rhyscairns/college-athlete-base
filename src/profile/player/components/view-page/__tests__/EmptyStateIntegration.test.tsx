@@ -390,8 +390,8 @@ describe('Empty State Integration Tests', () => {
 
             // Should show filled fields
             expect(screen.getByText('john@example.com')).toBeInTheDocument();
-            // Twitter handle is in href attribute, not visible text
-            expect(screen.getByRole('link', { name: /𝕏/i })).toBeInTheDocument();
+            // Twitter link is accessible via aria-label
+            expect(screen.getByRole('link', { name: /follow on twitter/i })).toBeInTheDocument();
 
             // Should not show empty phone
             expect(screen.queryByText('Phone')).not.toBeInTheDocument();

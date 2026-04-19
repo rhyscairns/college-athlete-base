@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import type { Hero, HeroSectionProps, ValidationErrors } from '../../types';
 import { HeroSectionEdit } from '../edit/components/sections/HeroSectionEdit';
 import { hasSportPositions, hasSportEvents } from '@/constants/sports';
+import { JSX } from 'react/jsx-runtime';
 
 export function HeroSection({
     player,
@@ -13,7 +14,7 @@ export function HeroSection({
     onEdit,
     onSave,
     onCancel,
-}: HeroSectionProps) {
+}: HeroSectionProps): JSX.Element {
     const sectionRef = useRef<HTMLElement>(null);
     const [formData, setFormData] = useState<Hero>({
         firstName: player.firstName,
@@ -33,8 +34,6 @@ export function HeroSection({
         weightLbs: player.weightLbs,
         desiredDivision: player.desiredDivision,
         affordableAmount: player.affordableAmount,
-        academicStanding: player.academicStanding,
-        recruitmentStatus: player.recruitmentStatus,
         performanceMetrics: player.performanceMetrics,
     });
     const [errors, setErrors] = useState<ValidationErrors>({});
@@ -70,8 +69,6 @@ export function HeroSection({
                 weightLbs: player.weightLbs,
                 desiredDivision: player.desiredDivision,
                 affordableAmount: player.affordableAmount,
-                academicStanding: player.academicStanding,
-                recruitmentStatus: player.recruitmentStatus,
                 performanceMetrics: player.performanceMetrics,
             });
             setErrors({});
@@ -146,8 +143,6 @@ export function HeroSection({
                 weightLbs: formData.weightLbs,
                 desiredDivision: formData.desiredDivision,
                 affordableAmount: formData.affordableAmount,
-                academicStanding: formData.academicStanding,
-                recruitmentStatus: formData.recruitmentStatus,
                 performanceMetrics: formData.performanceMetrics,
             });
         }
@@ -156,7 +151,7 @@ export function HeroSection({
         setErrors({});
     };
 
-    const handleCancel = () => {
+    const handleCancel = (): void => {
         setFormData({
             firstName: player.firstName,
             lastName: player.lastName,
@@ -175,8 +170,6 @@ export function HeroSection({
             weightLbs: player.weightLbs,
             desiredDivision: player.desiredDivision,
             affordableAmount: player.affordableAmount,
-            academicStanding: player.academicStanding,
-            recruitmentStatus: player.recruitmentStatus,
             performanceMetrics: player.performanceMetrics,
         });
         setErrors({});
@@ -217,9 +210,10 @@ export function HeroSection({
                         <button
                             onClick={() => onEdit?.()}
                             disabled={isAnyOtherSectionEditing}
-                            className="absolute top-4 right-4 px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="absolute top-4 right-4 px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
+                            aria-label={isAnyOtherSectionEditing ? 'Edit profile - disabled while another section is being edited' : 'Edit profile information'}
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                             Edit Profile
@@ -230,11 +224,19 @@ export function HeroSection({
                         {/* Profile Photo */}
                         <div className="relative">
                             <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white overflow-hidden bg-white">
-                                <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                                    <span className="text-3xl sm:text-4xl font-bold text-white">
-                                        {initials}
-                                    </span>
-                                </div>
+                                {player.profileImage ? (
+                                    <img
+                                        src={player.profileImage}
+                                        alt={`${fullName} profile photo`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                                        <span className="text-3xl sm:text-4xl font-bold text-white">
+                                            {initials}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                             {/* Online Status Indicator */}
                             <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-white"></div>
@@ -278,7 +280,7 @@ export function HeroSection({
                     <div>
                         <div className="flex items-center gap-2 mb-4">
                             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </div>
@@ -355,7 +357,7 @@ export function HeroSection({
                             )}
 
                             {/* Age */}
-                            {player.age && player.age > 0 && (
+                            {player.age && (
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
@@ -372,7 +374,7 @@ export function HeroSection({
                             )}
 
                             {/* GPA */}
-                            {player.academic?.gpa && player.academic.gpa > 0 && (
+                            {player.academic?.gpa && (
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
@@ -394,7 +396,7 @@ export function HeroSection({
                     <div>
                         <div className="flex items-center gap-2 mb-4">
                             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                                 </svg>

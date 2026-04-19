@@ -113,8 +113,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
                 if (response.ok && data.success && data.data?.sports) {
                     setAvailableSports(['All Sports', ...data.data.sports]);
                 }
-            } catch (err) {
-                console.error('Error fetching available sports:', err);
+            } catch (_err) {
                 // Keep default 'All Sports' if fetch fails
             }
         };
@@ -140,7 +139,11 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
             // Check cache first
             const cachedData = playerFilterCache.get(params);
             if (cachedData) {
-                setPlayers(cachedData.players || []);
+                // Map 'id' from API to 'playerId' for PlayerCard component
+                setPlayers((cachedData.players || []).map((player: any) => ({
+                    ...player,
+                    playerId: player.id,
+                })));
                 if (cachedData.pagination) {
                     setTotalPages(cachedData.pagination.totalPages || 1);
                 }
@@ -176,7 +179,11 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
             playerFilterCache.set(params, data.data);
 
             // Update players state with response
-            setPlayers(data.data.players || []);
+            // Map 'id' from API to 'playerId' for PlayerCard component
+            setPlayers((data.data.players || []).map((player: any) => ({
+                ...player,
+                playerId: player.id,
+            })));
 
             // Handle pagination data from response
             if (data.data.pagination) {
@@ -200,7 +207,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
     }, [fetchPlayers, profileLoaded]);
 
     // Handler for sport filter change
-    const handleSportChange = (sport: string) => {
+    const handleSportChange = (sport: string): void => {
         setSelectedSport(sport);
         // Reset position to default when sport changes
         setSelectedPosition(sport === 'All Sports' ? 'All Positions' : positionLabel);
@@ -208,18 +215,18 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
     };
 
     // Handler for position filter change
-    const handlePositionChange = (position: string) => {
+    const handlePositionChange = (position: string): void => {
         setSelectedPosition(position);
         setCurrentPage(1); // Reset to first page when filter changes
     };
 
     // Handler for search button click
-    const handleSearch = () => {
+    const handleSearch = (): void => {
         fetchPlayers();
     };
 
     // Handler for page change
-    const handlePageChange = (page: number) => {
+    const handlePageChange = (page: number): void => {
         setCurrentPage(page);
         // Update URL with page parameter
         const url = new URL(window.location.href);
@@ -227,32 +234,18 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
         router.push(url.pathname + url.search);
     };
 
-    // Handler for logout
-    const handleLogout = async () => {
-        try {
-            // Call logout API
-            await fetch('/api/auth/logout', { method: 'POST' });
-            // Redirect to login page
-            router.push('/login');
-        } catch (err) {
-            console.error('Logout error:', err);
-            // Still redirect even if logout fails
-            router.push('/login');
-        }
-    };
-
     // Handler for viewing player profile
-    const handleViewProfile = (playerId: string) => {
-        router.push(`/player/${playerId}/profile`);
+    const handleViewProfile = (playerId: string): void => {
+        router.push(`/coach/dashboard/${coachId}/player-profile/${playerId}`);
     };
 
     // Handler for contacting player
-    const handleContact = (playerId: string) => {
+    const handleContact = (_playerId: string): void => {
         // TODO: Implement contact modal/dialog
     };
 
     // Handler for watching video
-    const handleWatchVideo = (playerId: string, videoUrl: string, videoTitle?: string, playerName?: string) => {
+    const handleWatchVideo = (_playerId: string, videoUrl: string, videoTitle?: string, playerName?: string): void => {
         setVideoModalState({
             isOpen: true,
             videoUrl,
@@ -262,7 +255,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
     };
 
     // Handler for closing video modal
-    const handleCloseVideoModal = () => {
+    const handleCloseVideoModal = (): void => {
         setVideoModalState({
             isOpen: false,
             videoUrl: null,
@@ -270,6 +263,16 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
             playerName: null,
         });
     };
+
+    // Memoize player card data to prevent unnecessary re-renders
+    const playerCardData = useMemo(() =>
+        players.map((player) => ({
+            ...player,
+            onPrimaryClick: () => handleViewProfile(player.playerId),
+            onSecondaryClick: () => handleContact(player.playerId),
+        })),
+        [players, coachId]
+    );
 
     return (
         <div className="min-h-screen bg-slate-100">
@@ -333,11 +336,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
 
                 {/* Player Card Grid */}
                 <PlayerCardGrid
-                    players={players.map((player) => ({
-                        ...player,
-                        onPrimaryClick: () => handleViewProfile(player.playerId),
-                        onSecondaryClick: () => handleContact(player.playerId),
-                    }))}
+                    players={playerCardData}
                     currentUserId={coachId}
                     userType="coach"
                     isLoading={isLoading}

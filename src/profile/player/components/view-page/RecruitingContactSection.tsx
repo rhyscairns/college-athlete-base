@@ -7,6 +7,44 @@ import type { Contact } from '../../types';
 import { hasSectionData } from '../../utils/profile-helpers';
 import { EmptySection } from '../EmptySection';
 
+/**
+ * Recruiting Contact Section Component
+ * 
+ * Displays player and coach contact information including email, phone, social media,
+ * and parent/guardian details. Supports edit mode for profile owners.
+ * 
+ * Features:
+ * - Player contact information (email, phone)
+ * - Parent/guardian contact details
+ * - Social media links (Twitter, Instagram, YouTube, TikTok)
+ * - Head coach contact information
+ * - Preferred contact method
+ * - Edit mode with validation
+ * - Empty state for missing data
+ * - Keyboard navigation (Escape to cancel)
+ * 
+ * @param props - Component props
+ * @param props.contact - Contact information object
+ * @param props.isOwner - Whether the current user owns this profile
+ * @param props.isEditing - Whether the section is in edit mode
+ * @param props.isAnyOtherSectionEditing - Whether another section is being edited
+ * @param props.onEdit - Callback when edit button is clicked
+ * @param props.onSave - Callback when save button is clicked
+ * @param props.onCancel - Callback when cancel button is clicked
+ * @returns Contact section with player and coach information or empty state
+ * 
+ * @example
+ * ```tsx
+ * <RecruitingContactSection
+ *   contact={contactData}
+ *   isOwner={true}
+ *   isEditing={false}
+ *   onEdit={() => setEditingSection('contact')}
+ *   onSave={(data) => updateProfile(data)}
+ *   onCancel={() => setEditingSection(null)}
+ * />
+ * ```
+ */
 export function RecruitingContactSection({
     contact,
     isOwner = false,
@@ -136,6 +174,14 @@ export function RecruitingContactSection({
             onCancel();
         }
     };
+
+    // Check if contact section has data
+    const hasContactData = hasSectionData(contact, 'contact');
+
+    // If no contact data and not owner, hide the section
+    if (!hasContactData && !isOwner) {
+        return null;
+    }
 
     return (
         <section
@@ -301,23 +347,47 @@ export function RecruitingContactSection({
                                         {(contact.socialMedia.twitter || contact.socialMedia.instagram || contact.socialMedia.youtube || contact.socialMedia.tiktok) ? (
                                             <div className="flex gap-3">
                                                 {contact.socialMedia.twitter && (
-                                                    <a href={contact.socialMedia.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-100 hover:bg-yellow-100 rounded-lg flex items-center justify-center transition-all hover:scale-110 border border-gray-200">
-                                                        <span className="text-xl">𝕏</span>
+                                                    <a
+                                                        href={contact.socialMedia.twitter}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        aria-label="Follow on Twitter (opens in new tab)"
+                                                        className="w-10 h-10 bg-gray-100 hover:bg-yellow-100 rounded-lg flex items-center justify-center transition-all hover:scale-110 border border-gray-200"
+                                                    >
+                                                        <span className="text-xl" aria-hidden="true">𝕏</span>
                                                     </a>
                                                 )}
                                                 {contact.socialMedia.instagram && (
-                                                    <a href={contact.socialMedia.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-100 hover:bg-yellow-100 rounded-lg flex items-center justify-center transition-all hover:scale-110 border border-gray-200">
-                                                        <span className="text-xl">📷</span>
+                                                    <a
+                                                        href={contact.socialMedia.instagram}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        aria-label="Follow on Instagram (opens in new tab)"
+                                                        className="w-10 h-10 bg-gray-100 hover:bg-yellow-100 rounded-lg flex items-center justify-center transition-all hover:scale-110 border border-gray-200"
+                                                    >
+                                                        <span className="text-xl" aria-hidden="true">📷</span>
                                                     </a>
                                                 )}
                                                 {contact.socialMedia.youtube && (
-                                                    <a href={contact.socialMedia.youtube} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-100 hover:bg-yellow-100 rounded-lg flex items-center justify-center transition-all hover:scale-110 border border-gray-200">
-                                                        <span className="text-xl">🎥</span>
+                                                    <a
+                                                        href={contact.socialMedia.youtube}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        aria-label="Watch on YouTube (opens in new tab)"
+                                                        className="w-10 h-10 bg-gray-100 hover:bg-yellow-100 rounded-lg flex items-center justify-center transition-all hover:scale-110 border border-gray-200"
+                                                    >
+                                                        <span className="text-xl" aria-hidden="true">🎥</span>
                                                     </a>
                                                 )}
                                                 {contact.socialMedia.tiktok && (
-                                                    <a href={contact.socialMedia.tiktok} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-100 hover:bg-yellow-100 rounded-lg flex items-center justify-center transition-all hover:scale-110 border border-gray-200">
-                                                        <span className="text-xl">🎵</span>
+                                                    <a
+                                                        href={contact.socialMedia.tiktok}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        aria-label="Follow on TikTok (opens in new tab)"
+                                                        className="w-10 h-10 bg-gray-100 hover:bg-yellow-100 rounded-lg flex items-center justify-center transition-all hover:scale-110 border border-gray-200"
+                                                    >
+                                                        <span className="text-xl" aria-hidden="true">🎵</span>
                                                     </a>
                                                 )}
                                             </div>

@@ -276,6 +276,7 @@ export interface RecruitingContactSectionProps {
 export interface PlayerProfileViewProps {
     playerId: string;
     currentUserId?: string;
+    userType?: 'coach' | 'player';
     initialData: PlayerProfile;
     onDataUpdate?: (_updatedData: Partial<PlayerProfile>) => void;
 }
