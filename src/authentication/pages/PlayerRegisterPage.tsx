@@ -128,7 +128,7 @@ export function PlayerRegisterPage() {
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
                     <p className="text-gray-600">
-                        Welcome to College Athlete Base — let's build your recruitment profile.
+                        Welcome to College Athlete Base — let&apos;s build your recruitment profile.
                     </p>
                 </div>
 

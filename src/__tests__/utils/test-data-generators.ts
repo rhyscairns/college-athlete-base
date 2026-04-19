@@ -46,6 +46,7 @@ export function generatePlayerRegistration(
         dateOfBirth: generateDateOfBirth(17),
         email: `test.player.${timestamp}.${random}@example.com`,
         password: 'SecurePass123!',
+        gender: 'male',
         sex: 'male',
         sport: 'basketball',
         position: 'Guard',

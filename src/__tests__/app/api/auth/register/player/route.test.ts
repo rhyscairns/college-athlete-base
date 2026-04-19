@@ -102,7 +102,7 @@ describe('Player Registration API Route', () => {
                 dateOfBirth: '2006-05-15',
                 email: 'john.doe@example.com',
                 password: 'SecurePass123!',
-                sex: 'male',
+                gender: 'male',
                 sport: 'basketball',
                 position: 'Guard',
                 gpa: 3.5,

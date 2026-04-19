@@ -40,6 +40,7 @@ export interface PlayerRegistrationData {
     email: string;
     password: string;
     gender: string;
+    sex?: string;
     sport: string;
     position: string;
     gpa: number;
