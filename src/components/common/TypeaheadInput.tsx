@@ -33,7 +33,6 @@ export const TypeaheadInput: React.FC<TypeaheadInputProps> = ({
     const [inputValue, setInputValue] = useState(value);
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const mouseDownOnOption = useRef(false);
 
     // Filter options based on input value
     const filteredOptions = useMemo(() => {
@@ -131,14 +130,6 @@ export const TypeaheadInput: React.FC<TypeaheadInputProps> = ({
         }
     };
 
-    const handleBlur = () => {
-        // Only close if the user isn't clicking on an option
-        if (!mouseDownOnOption.current) {
-            setIsOpen(false);
-        }
-        mouseDownOnOption.current = false;
-    };
-
     return (
         <div className={`relative ${className}`} ref={containerRef}>
             <label
@@ -156,7 +147,6 @@ export const TypeaheadInput: React.FC<TypeaheadInputProps> = ({
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 onFocus={handleFocus}
-                onBlur={handleBlur}
                 disabled={disabled}
                 placeholder={placeholder}
                 aria-autocomplete="list"
@@ -196,9 +186,7 @@ export const TypeaheadInput: React.FC<TypeaheadInputProps> = ({
                                 id={`${name}-option-${index}`}
                                 role="option"
                                 aria-selected={index === highlightedIndex}
-                                onMouseDown={() => { mouseDownOnOption.current = true; }}
-                                onClick={() => handleSelect(option)}
-                                onMouseEnter={() => setHighlightedIndex(index)}
+                                onClick={() => handleSelect(option)} onMouseEnter={() => setHighlightedIndex(index)}
                                 className={`
                                     px-4 py-3 cursor-pointer transition-colors duration-150
                                     min-h-[48px] sm:min-h-[44px] md:min-h-[40px] 
