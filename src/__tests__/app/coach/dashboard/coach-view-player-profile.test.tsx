@@ -1,4 +1,4 @@
-import CoachViewPlayerProfilePage from '@/app/coach/dashboard/[coachId]/[playerId]/player-profile/[profilePlayerId]/page';
+import CoachViewPlayerProfilePage from '@/app/coach/[coachId]/dashboard/[playerId]/player-profile/[profilePlayerId]/page';
 import { logger } from '@/lib/logger';
 
 // Mock dependencies

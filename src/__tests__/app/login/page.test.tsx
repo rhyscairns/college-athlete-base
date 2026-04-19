@@ -69,7 +69,7 @@ describe('Login Route Page', () => {
 
         capturedOnSuccess?.(coachUser);
 
-        expect(mockPush).toHaveBeenCalledWith('/coach/dashboard/test-coach-id');
+        expect(mockPush).toHaveBeenCalledWith('/coach/test-coach-id/dashboard');
     });
 
     it('redirects to home page for unknown role', () => {

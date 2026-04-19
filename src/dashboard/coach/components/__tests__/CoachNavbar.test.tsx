@@ -48,7 +48,7 @@ describe('CoachNavbar', () => {
             render(<CoachNavbar coachId={mockCoachId} />);
 
             const homeLink = screen.getByRole('link', { name: 'Home' });
-            expect(homeLink).toHaveAttribute('href', `/coach/dashboard/${mockCoachId}`);
+            expect(homeLink).toHaveAttribute('href', `/coach/${mockCoachId}/dashboard`);
         });
     });
 
@@ -129,7 +129,7 @@ describe('CoachNavbar', () => {
             render(<CoachNavbar coachId={specialCoachId} />);
 
             const homeLink = screen.getByRole('link', { name: 'Home' });
-            expect(homeLink).toHaveAttribute('href', `/coach/dashboard/${specialCoachId}`);
+            expect(homeLink).toHaveAttribute('href', `/coach/${specialCoachId}/dashboard`);
         });
     });
 

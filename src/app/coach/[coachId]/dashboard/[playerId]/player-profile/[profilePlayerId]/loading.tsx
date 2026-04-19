@@ -1,15 +1,17 @@
 import { JSX } from "react";
 
+/**
+ * Loading skeleton for player profile page
+ * Route: /coach/[coachId]/dashboard/[playerId]/player-profile/[profilePlayerId]
+ */
 export default function Loading(): JSX.Element {
     return (
         <div className="relative bg-slate-100 min-h-screen">
-            {/* Screen reader announcement */}
             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
                 Loading player profile, please wait...
             </div>
 
             <main className="lg:ml-48" aria-hidden="true">
-                {/* Hero Section Skeleton */}
                 <div className="relative h-96 bg-gradient-to-br from-slate-800 to-slate-900 animate-pulse">
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
@@ -20,9 +22,7 @@ export default function Loading(): JSX.Element {
                     </div>
                 </div>
 
-                {/* Content Skeleton */}
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-                    {/* Stats Section Skeleton */}
                     <div className="bg-white rounded-2xl shadow-lg p-6 animate-pulse">
                         <div className="h-6 bg-slate-200 rounded w-48 mb-4" />
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -35,7 +35,6 @@ export default function Loading(): JSX.Element {
                         </div>
                     </div>
 
-                    {/* Additional Sections Skeleton */}
                     {[1, 2, 3].map((i) => (
                         <div key={i} className="bg-white rounded-2xl shadow-lg p-6 animate-pulse">
                             <div className="h-6 bg-slate-200 rounded w-48 mb-4" />
@@ -49,7 +48,6 @@ export default function Loading(): JSX.Element {
                 </div>
             </main>
 
-            {/* Loading indicator */}
             <div
                 className="fixed bottom-8 right-8 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2"
                 role="status"
@@ -62,14 +60,7 @@ export default function Loading(): JSX.Element {
                     viewBox="0 0 24 24"
                     aria-hidden="true"
                 >
-                    <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                    />
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path
                         className="opacity-75"
                         fill="currentColor"

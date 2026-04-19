@@ -10,14 +10,6 @@ describe('extractPlayerId', () => {
             expect(extractPlayerId('/player/player-456/profile')).toBe('player-456');
         });
 
-        it('should extract playerId from /player/dashboard/[playerId]/...', () => {
-            expect(extractPlayerId('/player/dashboard/player-789/some-page')).toBe('player-789');
-        });
-
-        it('should extract playerId from /player/dashboard/[playerId]/player-profile/[otherPlayerId]', () => {
-            expect(extractPlayerId('/player/dashboard/player-123/player-profile/player-456')).toBe('player-123');
-        });
-
         it('should handle paths with trailing slashes', () => {
             expect(extractPlayerId('/player/player-123/dashboard/')).toBe('player-123');
         });
@@ -30,10 +22,6 @@ describe('extractPlayerId', () => {
     describe('Invalid Patterns', () => {
         it('should return empty string for paths not starting with /player', () => {
             expect(extractPlayerId('/other/path')).toBe('');
-        });
-
-        it('should return empty string for /player/dashboard without playerId', () => {
-            expect(extractPlayerId('/player/dashboard')).toBe('');
         });
 
         it('should return empty string for empty pathname', () => {
@@ -69,10 +57,6 @@ describe('extractPlayerId', () => {
         it('should handle UUID-style player IDs', () => {
             const uuid = '550e8400-e29b-41d4-a716-446655440000';
             expect(extractPlayerId(`/player/${uuid}/dashboard`)).toBe(uuid);
-        });
-
-        it('should not extract "dashboard" as playerId', () => {
-            expect(extractPlayerId('/player/dashboard/dashboard')).toBe('dashboard');
         });
     });
 });

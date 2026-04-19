@@ -10,7 +10,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
 
     test('complete search flow from navbar to results', async ({ page }) => {
         // Navigate to coach dashboard
-        await page.goto('/coach/dashboard/coach-123');
+        await page.goto('/coach/coach-123/dashboard');
 
         // Click search button in navbar
         await page.click('[data-testid="search-button"]');
@@ -29,7 +29,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
         await page.click('[data-testid="search-submit-button"]');
 
         // Wait for navigation to search results page
-        await page.waitForURL('**/coach/dashboard/coach-123/search?**');
+        await page.waitForURL('**/coach/coach-123/dashboard/search?**');
 
         // Verify URL contains search parameters
         const url = page.url();
@@ -50,7 +50,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
     });
 
     test('search with all filter types', async ({ page }) => {
-        await page.goto('/coach/dashboard/coach-123');
+        await page.goto('/coach/coach-123/dashboard');
 
         // Open search modal
         await page.click('[data-testid="search-button"]');
@@ -90,7 +90,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
 
     test('modify filters from results page', async ({ page }) => {
         // Start with a search
-        await page.goto('/coach/dashboard/coach-123/search?sport=Basketball&gpaMin=3.0');
+        await page.goto('/coach/coach-123/dashboard/search?sport=Basketball&gpaMin=3.0');
 
         // Wait for results to load
         await expect(page.locator('[data-testid="athlete-search-results"]')).toBeVisible();
@@ -114,7 +114,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
 
     test('pagination navigation', async ({ page }) => {
         // Navigate to search results with many results
-        await page.goto('/coach/dashboard/coach-123/search?sport=Basketball');
+        await page.goto('/coach/coach-123/dashboard/search?sport=Basketball');
 
         // Wait for results
         await expect(page.locator('[data-testid="athlete-search-results"]')).toBeVisible();
@@ -137,11 +137,11 @@ test.describe('Coach Athlete Search E2E Flow', () => {
 
     test('browser back button support', async ({ page }) => {
         // First search
-        await page.goto('/coach/dashboard/coach-123/search?sport=Basketball');
+        await page.goto('/coach/coach-123/dashboard/search?sport=Basketball');
         await expect(page.locator('[data-testid="athlete-search-results"]')).toBeVisible();
 
         // Second search
-        await page.goto('/coach/dashboard/coach-123/search?sport=Football');
+        await page.goto('/coach/coach-123/dashboard/search?sport=Football');
         await expect(page.locator('[data-testid="athlete-search-results"]')).toBeVisible();
 
         // Go back
@@ -155,7 +155,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
 
     test('bookmark and share URL', async ({ page, context }) => {
         // Navigate to search results
-        await page.goto('/coach/dashboard/coach-123/search?sport=Basketball&gpaMin=3.5');
+        await page.goto('/coach/coach-123/dashboard/search?sport=Basketball&gpaMin=3.5');
         await expect(page.locator('[data-testid="athlete-search-results"]')).toBeVisible();
 
         // Get the URL
@@ -175,7 +175,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
 
     test('click athlete card to view profile', async ({ page }) => {
         // Navigate to search results
-        await page.goto('/coach/dashboard/coach-123/search?sport=Basketball');
+        await page.goto('/coach/coach-123/dashboard/search?sport=Basketball');
         await expect(page.locator('[data-testid="athlete-search-results"]')).toBeVisible();
 
         // Wait for athlete cards to load
@@ -192,7 +192,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
 
     test('no results message', async ({ page }) => {
         // Search with criteria that returns no results
-        await page.goto('/coach/dashboard/coach-123/search?sport=Basketball&gpaMin=4.5');
+        await page.goto('/coach/coach-123/dashboard/search?sport=Basketball&gpaMin=4.5');
 
         // Wait for results to load
         await expect(page.locator('[data-testid="athlete-search-results"]')).toBeVisible();
@@ -214,7 +214,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
         });
 
         // Navigate to search results
-        await page.goto('/coach/dashboard/coach-123/search?sport=Basketball');
+        await page.goto('/coach/coach-123/dashboard/search?sport=Basketball');
 
         // Verify error message displayed
         await expect(page.locator('text=Error loading search results')).toBeVisible();
@@ -229,7 +229,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
         });
 
         // Navigate to search results
-        await page.goto('/coach/dashboard/coach-123/search?sport=Basketball');
+        await page.goto('/coach/coach-123/dashboard/search?sport=Basketball');
 
         // Verify loading state
         await expect(page.locator('text=Searching for athletes...')).toBeVisible();
@@ -240,7 +240,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
 
     test('refine search button reopens modal', async ({ page }) => {
         // Navigate to search results
-        await page.goto('/coach/dashboard/coach-123/search?sport=Basketball');
+        await page.goto('/coach/coach-123/dashboard/search?sport=Basketball');
         await expect(page.locator('[data-testid="athlete-search-results"]')).toBeVisible();
 
         // Click refine search button
@@ -259,7 +259,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
         await page.setViewportSize({ width: 375, height: 667 });
 
         // Navigate to search results
-        await page.goto('/coach/dashboard/coach-123/search?sport=Basketball');
+        await page.goto('/coach/coach-123/dashboard/search?sport=Basketball');
 
         // Verify page is responsive
         await expect(page.locator('[data-testid="athlete-search-results"]')).toBeVisible();
@@ -275,7 +275,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
     });
 
     test('keyboard navigation support', async ({ page }) => {
-        await page.goto('/coach/dashboard/coach-123/search?sport=Basketball');
+        await page.goto('/coach/coach-123/dashboard/search?sport=Basketball');
         await expect(page.locator('[data-testid="athlete-search-results"]')).toBeVisible();
 
         // Tab through interactive elements

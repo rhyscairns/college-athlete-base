@@ -246,7 +246,7 @@ describe('AthleteSearchModal', () => {
             await waitFor(() => {
                 expect(buildSearchQueryString).toHaveBeenCalled();
                 expect(mockPush).toHaveBeenCalledWith(
-                    `/coach/dashboard/${mockCoachId}/search?sport=Basketball&gpaMin=3.0`
+                    `/coach/${mockCoachId}/dashboard/search?sport=Basketball&gpaMin=3.0`
                 );
                 expect(mockOnClose).toHaveBeenCalled();
             });

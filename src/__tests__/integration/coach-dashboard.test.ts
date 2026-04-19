@@ -171,10 +171,10 @@ skipIfNoDb('Coach Dashboard - Layout and Navigation Integration', () => {
             expect(payload?.playerId).toBe(coachId);
 
             // Simulate URL path parsing (as done in layout.tsx)
-            const mockPath = `/coach/dashboard/${coachId}`;
+            const mockPath = `/coach/${coachId}/dashboard`;
             const pathSegments = mockPath.split('/').filter(Boolean);
-            const coachIdIndex = pathSegments.indexOf('dashboard') + 1;
-            const extractedCoachId = pathSegments[coachIdIndex];
+            const coachIndex = pathSegments.indexOf('coach');
+            const extractedCoachId = pathSegments[coachIndex + 1];
 
             expect(extractedCoachId).toBe(coachId);
         });
@@ -214,13 +214,14 @@ skipIfNoDb('Coach Dashboard - Layout and Navigation Integration', () => {
             expect(payload?.playerId).toBe(coachId);
 
             // Simulate different coach pages with same coachId
-            const dashboardPath = `/coach/dashboard/${coachId}`;
-            const profilePath = `/coach/profile/${coachId}`;
+            const dashboardPath = `/coach/${coachId}/dashboard`;
+            const profilePath = `/coach/${coachId}/profile`;
 
             // Extract coachId from both paths
             const extractCoachId = (path: string) => {
                 const segments = path.split('/').filter(Boolean);
-                return segments[segments.length - 1];
+                // coachId is always at index 1 (after 'coach')
+                return segments[1];
             };
 
             expect(extractCoachId(dashboardPath)).toBe(coachId);
@@ -244,9 +245,9 @@ skipIfNoDb('Coach Dashboard - Layout and Navigation Integration', () => {
 
             // Simulate accessing different coach pages
             const coachPages = [
-                `/coach/dashboard/${coachId}`,
-                `/coach/profile/${coachId}`,
-                `/coach/settings/${coachId}`,
+                `/coach/${coachId}/dashboard`,
+                `/coach/${coachId}/profile`,
+                `/coach/${coachId}/settings`,
             ];
 
             // All pages should use the same layout (verified by token)
@@ -254,8 +255,8 @@ skipIfNoDb('Coach Dashboard - Layout and Navigation Integration', () => {
                 const segments = page.split('/').filter(Boolean);
                 expect(segments[0]).toBe('coach'); // All under /coach route
 
-                // Layout should extract coachId from any coach page
-                const extractedId = segments[segments.length - 1];
+                // Layout should extract coachId from any coach page (always at index 1)
+                const extractedId = segments[1];
                 expect(extractedId).toBe(coachId);
             }
         });
@@ -417,9 +418,9 @@ skipIfNoDb('Coach Dashboard - Layout and Navigation Integration', () => {
 
             // Simulate navigation between different coach pages
             const pages = [
-                `/coach/dashboard/${coachId}`,
-                `/coach/profile/${coachId}`,
-                `/coach/search/${coachId}`,
+                `/coach/${coachId}/dashboard`,
+                `/coach/${coachId}/profile`,
+                `/coach/${coachId}/search`,
             ];
 
             // All pages should:
@@ -429,7 +430,7 @@ skipIfNoDb('Coach Dashboard - Layout and Navigation Integration', () => {
             for (const page of pages) {
                 const segments = page.split('/').filter(Boolean);
                 expect(segments[0]).toBe('coach');
-                expect(segments[segments.length - 1]).toBe(coachId);
+                expect(segments[1]).toBe(coachId);
 
                 // Token remains valid across all pages
                 const pagePayload = await verifyToken(token);
@@ -450,10 +451,10 @@ skipIfNoDb('Coach Dashboard - Layout and Navigation Integration', () => {
             expect(payload?.playerId).toBe(coachId);
 
             // Simulate navbar link generation
-            const homeLink = `/coach/dashboard/${coachId}`;
+            const homeLink = `/coach/${coachId}/dashboard`;
 
             // Verify home link format
-            expect(homeLink).toMatch(/^\/coach\/dashboard\/[a-f0-9-]+$/);
+            expect(homeLink).toMatch(/^\/coach\/[a-f0-9-]+\/dashboard$/);
             expect(homeLink).toContain(coachId);
 
             // Search and Profile are placeholders (no href)
@@ -489,10 +490,10 @@ skipIfNoDb('Coach Dashboard - Layout and Navigation Integration', () => {
             expect(coach?.lastName).toBe('Coach');
 
             // Step 5: Verify layout can extract coachId from URL
-            const dashboardPath = `/coach/dashboard/${coachId}`;
+            const dashboardPath = `/coach/${coachId}/dashboard`;
             const pathSegments = dashboardPath.split('/').filter(Boolean);
-            const coachIdIndex = pathSegments.indexOf('dashboard') + 1;
-            const extractedCoachId = pathSegments[coachIdIndex];
+            const coachIndex = pathSegments.indexOf('coach');
+            const extractedCoachId = pathSegments[coachIndex + 1];
             expect(extractedCoachId).toBe(coachId);
 
             // Step 6: Verify navbar receives correct coachId

@@ -77,12 +77,12 @@ export default function CoachSearchPage({ params }: SearchPageProps) {
 
         // Build new URL with updated criteria
         const queryString = buildSearchQueryString(newCriteria);
-        router.push(`/coach/dashboard/${params.coachId}/search?${queryString}`);
+        router.push(`/coach/${params.coachId}/dashboard/search?${queryString}`);
     };
 
     const handleClearAll = () => {
         setCurrentPage(1);
-        router.push(`/coach/dashboard/${params.coachId}/search`);
+        router.push(`/coach/${params.coachId}/dashboard/search`);
     };
 
     const handlePageChange = (page: number) => {

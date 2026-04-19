@@ -12,7 +12,7 @@ import type { ReactElement } from 'react';
  * @example
  * ```tsx
  * // Automatically shown by Next.js during page loading
- * // Route: /player/dashboard/[playerId]/player-profile/[otherPlayerId]
+ * // Route: /player/[playerId]/dashboard/player-profile/[otherPlayerId]
  * ```
  */
 export default function Loading(): ReactElement {

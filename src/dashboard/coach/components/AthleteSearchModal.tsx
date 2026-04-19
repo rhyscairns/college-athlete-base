@@ -120,7 +120,7 @@ export function AthleteSearchModal({ isOpen, onClose, coachId }: AthleteSearchMo
             const queryString = buildSearchQueryString(criteria);
 
             // Navigate to search results page
-            router.push(`/coach/dashboard/${coachId}/search?${queryString}`);
+            router.push(`/coach/${coachId}/dashboard/search?${queryString}`);
 
             // Close modal after successful navigation
             onClose();

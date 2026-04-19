@@ -12,7 +12,7 @@ export default function Login() {
         if (user.role === 'player') {
             router.push(`/player/${user.id}/dashboard`);
         } else if (user.role === 'coach') {
-            router.push(`/coach/dashboard/${user.id}`);
+            router.push(`/coach/${user.id}/dashboard`);
         } else {
             router.push('/');
         }
