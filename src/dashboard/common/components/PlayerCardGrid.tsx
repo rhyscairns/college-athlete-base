@@ -1,9 +1,82 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, type JSX } from 'react';
 import { PlayerCard } from './PlayerCard';
-import type { PlayerCardData, PlayerCardGridProps } from '../types';
+import type { PlayerCardGridProps } from '../types';
 
+/**
+ * Loading skeleton component for player cards
+ * Displays an animated placeholder while player data is loading
+ * 
+ * @returns Loading skeleton with accessibility support
+ */
+const LoadingSkeleton = (): JSX.Element => (
+    <div
+        className="bg-slate-800/50 rounded-2xl shadow-lg border border-white/10 overflow-hidden animate-pulse"
+        role="status"
+        aria-label="Loading player card"
+    >
+        {/* Image skeleton */}
+        <div className="aspect-video bg-slate-700" />
+        {/* Content skeleton */}
+        <div className="p-4 sm:p-5 space-y-3">
+            <div className="h-6 bg-slate-700 rounded w-3/4" />
+            <div className="h-4 bg-slate-700 rounded w-1/2" />
+            <div className="h-4 bg-slate-700 rounded w-2/3" />
+            <div className="space-y-2 pt-2">
+                <div className="h-11 bg-slate-700 rounded" />
+                <div className="h-11 bg-slate-700 rounded" />
+            </div>
+        </div>
+        <span className="sr-only">Loading player information...</span>
+    </div>
+);
+
+/**
+ * PlayerCardGrid Component
+ * 
+ * Displays a responsive grid of player cards with loading and empty states.
+ * Automatically filters out the current user's card and adapts button labels
+ * based on user type (coach vs player).
+ * 
+ * Features:
+ * - Responsive grid layout (1/2/3 columns)
+ * - Loading skeleton states
+ * - Empty state with custom message
+ * - Current user filtering
+ * - Video modal integration
+ * - Performance optimized with memoization
+ * - Full accessibility support
+ * 
+ * @param props - Component props
+ * @param props.players - Array of player data to display
+ * @param props.currentUserId - ID of the currently logged-in user (filtered out)
+ * @param props.userType - Type of current user ('coach' or 'player') for button labels
+ * @param props.isLoading - Whether data is currently loading (shows skeletons)
+ * @param props.emptyMessage - Custom message to show when no players found
+ * @param props.onWatchVideo - Callback when video play button is clicked
+ * @returns Grid of player cards with responsive layout
+ * 
+ * @example
+ * ```tsx
+ * // Coach viewing players
+ * <PlayerCardGrid
+ *   players={playerData}
+ *   currentUserId="coach-123"
+ *   userType="coach"
+ *   isLoading={false}
+ *   onWatchVideo={(playerId, url, title, name) => openVideoModal(url)}
+ * />
+ * 
+ * // Player viewing other players
+ * <PlayerCardGrid
+ *   players={playerData}
+ *   currentUserId="player-456"
+ *   userType="player"
+ *   emptyMessage="No players match your search"
+ * />
+ * ```
+ */
 export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
     players,
     currentUserId,
@@ -13,12 +86,13 @@ export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
     onWatchVideo,
 }) => {
     // Filter out current user's card
-    const filteredPlayers = players.filter(
-        (player) => player.playerId !== currentUserId
+    const filteredPlayers = useMemo(
+        () => players.filter((player) => player.playerId !== currentUserId),
+        [players, currentUserId]
     );
 
     // Determine button labels based on userType
-    const getButtonLabels = () => {
+    const buttonLabels = useMemo((): { primary: string; secondary: string } => {
         if (userType === 'coach') {
             return {
                 primary: 'View Profile',
@@ -29,32 +103,7 @@ export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
             primary: 'View Profile',
             secondary: 'Connect',
         };
-    };
-
-    const buttonLabels = getButtonLabels();
-
-    // Loading skeleton component
-    const LoadingSkeleton = () => (
-        <div
-            className="bg-slate-800/50 rounded-2xl shadow-lg border border-white/10 overflow-hidden animate-pulse"
-            role="status"
-            aria-label="Loading player card"
-        >
-            {/* Image skeleton */}
-            <div className="aspect-video bg-slate-700" />
-            {/* Content skeleton */}
-            <div className="p-4 sm:p-5 space-y-3">
-                <div className="h-6 bg-slate-700 rounded w-3/4" />
-                <div className="h-4 bg-slate-700 rounded w-1/2" />
-                <div className="h-4 bg-slate-700 rounded w-2/3" />
-                <div className="space-y-2 pt-2">
-                    <div className="h-11 bg-slate-700 rounded" />
-                    <div className="h-11 bg-slate-700 rounded" />
-                </div>
-            </div>
-            <span className="sr-only">Loading player information...</span>
-        </div>
-    );
+    }, [userType]);
 
     // Show loading skeletons
     if (isLoading) {
@@ -109,9 +158,9 @@ export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
                     height={player.height}
                     weight={player.weight}
                     primaryButtonLabel={buttonLabels.primary}
-                    secondaryButtonLabel={buttonLabels.secondary}
+                    currentUserId={currentUserId}
+                    userType={userType}
                     onPrimaryClick={player.onPrimaryClick}
-                    onSecondaryClick={player.onSecondaryClick}
                     onWatchVideo={
                         player.videoUrl && onWatchVideo
                             ? () => onWatchVideo(

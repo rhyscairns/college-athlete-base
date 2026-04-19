@@ -19,6 +19,7 @@ describe('PlayerCard - Accessibility Tests', () => {
         height: '6\'2"',
         weight: '210 lbs',
         profileImage: '/images/profile.jpg',
+        videoThumbnail: '/images/video-thumb.jpg',
         status: 'available',
     };
 
@@ -347,21 +348,21 @@ describe('PlayerCard - Accessibility Tests', () => {
                 />
             );
 
-            // Tab to first button
-            await user.tab();
-
-            const primaryButton = screen.getByRole('button', {
-                name: /view profile for john doe/i,
-            });
-            expect(primaryButton).toHaveFocus();
-
-            // Tab to second button
+            // Tab to first button (Watch Video comes first in DOM)
             await user.tab();
 
             const watchVideoButton = screen.getByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             expect(watchVideoButton).toHaveFocus();
+
+            // Tab to second button
+            await user.tab();
+
+            const primaryButton = screen.getByRole('button', {
+                name: /view profile for john doe/i,
+            });
+            expect(primaryButton).toHaveFocus();
         });
 
         it('should be able to shift+tab backward through buttons', async () => {
@@ -376,21 +377,21 @@ describe('PlayerCard - Accessibility Tests', () => {
                 />
             );
 
-            const watchVideoButton = screen.getByRole('button', {
-                name: /watch highlight video for john doe/i,
-            });
-
-            // Focus the watch video button
-            watchVideoButton.focus();
-            expect(watchVideoButton).toHaveFocus();
-
-            // Shift+Tab backward
-            await user.tab({ shift: true });
-
             const primaryButton = screen.getByRole('button', {
                 name: /view profile for john doe/i,
             });
+
+            // Focus the primary button
+            primaryButton.focus();
             expect(primaryButton).toHaveFocus();
+
+            // Shift+Tab backward to Watch Video button
+            await user.tab({ shift: true });
+
+            const watchVideoButton = screen.getByRole('button', {
+                name: /watch highlight video for john doe/i,
+            });
+            expect(watchVideoButton).toHaveFocus();
         });
     });
 
@@ -542,7 +543,8 @@ describe('PlayerCard - Accessibility Tests', () => {
         });
 
         it('should have descriptive alt text on profile image', () => {
-            render(<PlayerCard {...defaultProps} />);
+            const { videoThumbnail: _, ...propsWithoutVideo } = defaultProps;
+            render(<PlayerCard {...propsWithoutVideo} />);
 
             const image = screen.getByAltText(/john doe profile photo/i);
             expect(image).toBeInTheDocument();

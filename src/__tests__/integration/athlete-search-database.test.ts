@@ -58,7 +58,7 @@ describe('Athlete Search Database Integration', () => {
                     player.dateOfBirth,
                     player.email,
                     hashedPassword,
-                    player.sex,
+                    player.gender,
                     player.sport,
                     player.position,
                     player.gpa,

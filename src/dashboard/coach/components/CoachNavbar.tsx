@@ -1,10 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import type { CoachNavbarProps } from '../types';
 import { AthleteSearchModal } from './AthleteSearchModal';
+import { JSX } from 'react/jsx-runtime';
 
-// Constants
+/**
+ * Color constants for the coach navigation bar
+ * Provides consistent theming across all navigation elements
+ */
 const COLORS = {
     LIGHT_GRAY: '#d1d5db',
     DARK_GRAY: '#1f2937',
@@ -13,13 +18,28 @@ const COLORS = {
     DARK_RED: '#b91c1c',
 } as const;
 
-// Shared hover handlers
-const createHoverHandlers = (activeColor: string, inactiveColor: string) => ({
-    onMouseEnter: (_e: React.MouseEvent<HTMLElement>) => {
+/**
+ * Creates reusable hover event handlers for navigation items
+ * 
+ * @param activeColor - Background color when hovering
+ * @param inactiveColor - Text color when not hovering
+ * @returns Object with onMouseEnter and onMouseLeave handlers
+ * 
+ * @example
+ * ```tsx
+ * const handlers = createHoverHandlers('#1f2937', '#d1d5db');
+ * <button {...handlers}>Click me</button>
+ * ```
+ */
+const createHoverHandlers = (activeColor: string, inactiveColor: string): {
+    onMouseEnter: (_e: React.MouseEvent<HTMLElement>) => void;
+    onMouseLeave: (_e: React.MouseEvent<HTMLElement>) => void;
+} => ({
+    onMouseEnter: (_e: React.MouseEvent<HTMLElement>): void => {
         _e.currentTarget.style.backgroundColor = activeColor;
         _e.currentTarget.style.color = 'white';
     },
-    onMouseLeave: (_e: React.MouseEvent<HTMLElement>) => {
+    onMouseLeave: (_e: React.MouseEvent<HTMLElement>): void => {
         _e.currentTarget.style.backgroundColor = 'transparent';
         _e.currentTarget.style.color = inactiveColor;
     },
@@ -28,41 +48,64 @@ const createHoverHandlers = (activeColor: string, inactiveColor: string) => ({
 const navItemHoverHandlers = createHoverHandlers(COLORS.DARK_GRAY, COLORS.LIGHT_GRAY);
 const mobileItemHoverHandlers = createHoverHandlers(COLORS.DARKER_GRAY, COLORS.LIGHT_GRAY);
 
+/**
+ * Coach Navigation Bar Component
+ * 
+ * Provides navigation for coaches with responsive design:
+ * - Desktop: Horizontal navigation with Home, Search, Profile, and Logout
+ * - Mobile: Hamburger menu with dropdown navigation
+ * 
+ * Features:
+ * - Athlete search modal integration
+ * - Responsive breakpoint at 768px
+ * - Accessible keyboard navigation
+ * - ARIA labels for screen readers
+ * 
+ * @param props - Component props
+ * @param props.coachId - Unique identifier for the coach
+ * @returns Navigation bar with responsive menu and search functionality
+ * 
+ * @example
+ * ```tsx
+ * <CoachNavbar coachId="coach-123" />
+ * ```
+ */
 export function CoachNavbar({ coachId }: CoachNavbarProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [searchModalOpen, setSearchModalOpen] = useState(false);
 
-    const handleLogout = async () => {
+    const handleLogout = async (): Promise<void> => {
         try {
             document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
             window.location.href = '/login';
         } catch (error) {
-            console.error('Logout error:', error);
+            // Log error silently - user will be redirected regardless
+            // In production, this should be sent to error tracking service
         }
     };
 
-    const handleSearchClick = (e: React.MouseEvent) => {
+    const handleSearchClick = (e: React.MouseEvent): void => {
         e.preventDefault();
         setMobileMenuOpen(false);
         setSearchModalOpen(true);
     };
 
-    const handleCloseSearchModal = () => {
+    const handleCloseSearchModal = (): void => {
         setSearchModalOpen(false);
     };
 
-    const handleProfileClick = (e: React.MouseEvent) => {
+    const handleProfileClick = (e: React.MouseEvent): void => {
         e.preventDefault();
         setMobileMenuOpen(false);
         window.location.href = `/coach/${coachId}/profile`;
     };
 
-    const toggleMobileMenu = () => {
+    const toggleMobileMenu = (): void => {
         setMobileMenuOpen(!mobileMenuOpen);
     };
 
     return (
-        <nav style={{ width: '100%', backgroundColor: '#111827', borderBottom: '1px solid #1f2937' }}>
+        <nav style={{ width: '100%', backgroundColor: '#111827', borderBottom: '1px solid #1f2937', position: 'relative', zIndex: 50 }}>
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -101,22 +144,26 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
     );
 }
 
-function CABBranding() {
+function CABBranding(): JSX.Element {
     return (
-        <div>
-            <span style={{
+        <Link
+            href="/coach/dashboard"
+            style={{
                 fontSize: '28px',
                 fontWeight: 'bold',
                 color: 'white',
-                letterSpacing: '-0.5px'
-            }}>
-                CAB
-            </span>
-        </div>
+                letterSpacing: '-0.5px',
+                textDecoration: 'none',
+                display: 'inline-block'
+            }}
+            aria-label="College Athlete Base - Return to home"
+        >
+            CAB
+        </Link>
     );
 }
 
-function HamburgerButton({ isOpen, onClick }: { isOpen: boolean; onClick: () => void }) {
+function HamburgerButton({ isOpen, onClick }: { isOpen: boolean; onClick: () => void }): JSX.Element {
     return (
         <button
             onClick={onClick}
@@ -136,29 +183,38 @@ function HamburgerButton({ isOpen, onClick }: { isOpen: boolean; onClick: () => 
             }}
             className="mobile-menu-button"
         >
-            <span style={{
-                width: '24px',
-                height: '2px',
-                backgroundColor: 'white',
-                marginBottom: '5px',
-                transition: 'all 0.3s',
-                transform: isOpen ? 'rotate(45deg) translateY(7px)' : 'none'
-            }} />
-            <span style={{
-                width: '24px',
-                height: '2px',
-                backgroundColor: 'white',
-                marginBottom: '5px',
-                transition: 'all 0.3s',
-                opacity: isOpen ? 0 : 1
-            }} />
-            <span style={{
-                width: '24px',
-                height: '2px',
-                backgroundColor: 'white',
-                transition: 'all 0.3s',
-                transform: isOpen ? 'rotate(-45deg) translateY(-7px)' : 'none'
-            }} />
+            <span
+                aria-hidden="true"
+                style={{
+                    width: '24px',
+                    height: '2px',
+                    backgroundColor: 'white',
+                    marginBottom: '5px',
+                    transition: 'all 0.3s',
+                    transform: isOpen ? 'rotate(45deg) translateY(7px)' : 'none'
+                }}
+            />
+            <span
+                aria-hidden="true"
+                style={{
+                    width: '24px',
+                    height: '2px',
+                    backgroundColor: 'white',
+                    marginBottom: '5px',
+                    transition: 'all 0.3s',
+                    opacity: isOpen ? 0 : 1
+                }}
+            />
+            <span
+                aria-hidden="true"
+                style={{
+                    width: '24px',
+                    height: '2px',
+                    backgroundColor: 'white',
+                    transition: 'all 0.3s',
+                    transform: isOpen ? 'rotate(-45deg) translateY(-7px)' : 'none'
+                }}
+            />
         </button>
     );
 }
@@ -170,7 +226,7 @@ interface NavProps {
     onLogout: () => void;
 }
 
-function DesktopNav({ coachId, onSearchClick, onProfileClick, onLogout }: NavProps) {
+function DesktopNav({ coachId, onSearchClick, onProfileClick, onLogout }: NavProps): JSX.Element {
     const baseStyle = {
         padding: '12px 24px',
         fontSize: '14px',
@@ -214,7 +270,7 @@ function DesktopNav({ coachId, onSearchClick, onProfileClick, onLogout }: NavPro
     );
 }
 
-function MobileDropdown({ coachId, onSearchClick, onProfileClick, onLogout }: NavProps) {
+function MobileDropdown({ coachId, onSearchClick, onProfileClick, onLogout }: NavProps): JSX.Element {
     const baseStyle = {
         padding: '16px 24px',
         fontSize: '16px',
@@ -228,6 +284,8 @@ function MobileDropdown({ coachId, onSearchClick, onProfileClick, onLogout }: Na
     return (
         <div
             className="mobile-dropdown"
+            role="menu"
+            aria-label="Mobile navigation menu"
             style={{
                 display: 'none',
                 flexDirection: 'column',
@@ -239,6 +297,7 @@ function MobileDropdown({ coachId, onSearchClick, onProfileClick, onLogout }: Na
         >
             <a
                 href={`/coach/dashboard/${coachId}`}
+                role="menuitem"
                 style={{
                     ...baseStyle,
                     textDecoration: 'none',
@@ -250,6 +309,7 @@ function MobileDropdown({ coachId, onSearchClick, onProfileClick, onLogout }: Na
             </a>
             <button
                 onClick={onSearchClick}
+                role="menuitem"
                 style={{
                     ...baseStyle,
                     border: 'none',
@@ -263,6 +323,7 @@ function MobileDropdown({ coachId, onSearchClick, onProfileClick, onLogout }: Na
             </button>
             <button
                 onClick={onProfileClick}
+                role="menuitem"
                 style={{
                     ...baseStyle,
                     border: 'none',
@@ -276,6 +337,7 @@ function MobileDropdown({ coachId, onSearchClick, onProfileClick, onLogout }: Na
             </button>
             <button
                 onClick={onLogout}
+                role="menuitem"
                 style={{
                     ...baseStyle,
                     color: 'white',
@@ -294,7 +356,7 @@ function MobileDropdown({ coachId, onSearchClick, onProfileClick, onLogout }: Na
     );
 }
 
-function ResponsiveStyles() {
+function ResponsiveStyles(): JSX.Element {
     return (
         <style dangerouslySetInnerHTML={{
             __html: `

@@ -219,7 +219,7 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     }, [fetchPlayers, profileLoaded]);
 
     // Handler for sport filter change
-    const handleSportChange = (sport: string) => {
+    const handleSportChange = (sport: string): void => {
         setSelectedSport(sport);
         // Reset position to default when sport changes
         setSelectedPosition(sport === 'All Sports' ? 'All Positions' : positionLabel);
@@ -227,42 +227,28 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     };
 
     // Handler for position filter change
-    const handlePositionChange = (position: string) => {
+    const handlePositionChange = (position: string): void => {
         setSelectedPosition(position);
         setCurrentPage(1); // Reset to first page when filter changes
     };
 
     // Handler for search button click
-    const handleSearch = () => {
+    const handleSearch = (): void => {
         fetchPlayers();
     };
 
-    // Handler for logout
-    const handleLogout = async () => {
-        try {
-            // Call logout API
-            await fetch('/api/auth/logout', { method: 'POST' });
-            // Redirect to login page
-            router.push('/login');
-        } catch (err) {
-            console.error('Logout error:', err);
-            // Still redirect even if logout fails
-            router.push('/login');
-        }
-    };
-
     // Handler for viewing player profile
-    const handleViewProfile = (targetPlayerId: string) => {
-        router.push(`/player/${targetPlayerId}/profile`);
+    const handleViewProfile = (targetPlayerId: string): void => {
+        router.push(`/player/dashboard/${playerId}/player-profile/${targetPlayerId}`);
     };
 
     // Handler for connecting with player
-    const handleConnect = (targetPlayerId: string) => {
+    const handleConnect = (_targetPlayerId: string): void => {
         // TODO: Implement connect modal/dialog
     };
 
     // Handler for watching video
-    const handleWatchVideo = (playerId: string, videoUrl: string, videoTitle?: string, playerName?: string) => {
+    const handleWatchVideo = (_playerId: string, videoUrl: string, videoTitle?: string, playerName?: string): void => {
         setVideoModalState({
             isOpen: true,
             videoUrl,
@@ -282,7 +268,7 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     };
 
     // Handler for page change
-    const handlePageChange = (page: number) => {
+    const handlePageChange = (page: number): void => {
         setCurrentPage(page);
         // Update URL with page parameter
         const url = new URL(window.location.href);
@@ -291,7 +277,7 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     };
 
     // Handler for clearing filters
-    const handleClearFilters = () => {
+    const handleClearFilters = (): void => {
         setSelectedSport('All Sports');
         setSelectedPosition('All Positions');
         setCurrentPage(1);

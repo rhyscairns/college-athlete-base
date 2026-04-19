@@ -1,4 +1,5 @@
 export { PlayerCard } from './PlayerCard';
+export { PlayerStatusBadge } from './PlayerStatusBadge';
 export { DashboardHeader } from './DashboardHeader';
 export { FilterBar } from './FilterBar';
 export { PlayerCardGrid } from './PlayerCardGrid';

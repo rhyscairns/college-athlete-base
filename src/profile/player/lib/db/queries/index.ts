@@ -27,7 +27,10 @@ interface PlayerProfileRow {
     date_of_birth: string | null;
     age: number | null;
     profile_image_url: string | null;
-    academic_standing: string | null;
+    highlight_video_url: string | null;
+    video_title: string | null;
+    video_description: string | null;
+    video_thumbnail_url: string | null;
     recruitment_status: string | null;
     created_at: Date;
     updated_at: Date;
@@ -50,12 +53,9 @@ export async function getPlayerProfileById(playerId: string): Promise<PlayerProf
                 id, first_name, last_name, email, sex, sport, position,
                 gpa, country, state, region, scholarship_amount, test_scores,
                 date_of_birth,
-                CASE 
-                    WHEN date_of_birth IS NOT NULL 
-                    THEN EXTRACT(YEAR FROM AGE(date_of_birth))::INTEGER
-                    ELSE age
-                END as age,
-                profile_image_url, academic_standing, recruitment_status,
+                EXTRACT(YEAR FROM AGE(date_of_birth))::INTEGER as age,
+                profile_image_url,
+                highlight_video_url, video_title, video_description, video_thumbnail_url,
                 created_at, updated_at
             FROM players 
             WHERE id = $1`,
@@ -146,7 +146,15 @@ function transformPlayerData(player: PlayerProfileRow): PlayerProfile {
             coursework: [],
         },
 
-        videos: [],
+        videos: player.highlight_video_url ? [{
+            id: '1',
+            url: player.highlight_video_url,
+            title: player.video_title || 'Highlight Video',
+            description: player.video_description || '',
+            thumbnail: player.video_thumbnail_url || '',
+            duration: '',
+            isFeatured: true,
+        }] : [],
         coachTestimonials: [],
         achievements: [],
 
@@ -178,9 +186,9 @@ function transformPlayerData(player: PlayerProfileRow): PlayerProfile {
             'Longest Reception': '',
         },
 
-        recruitmentStatus: player.recruitment_status || 'open',
+        recruitmentStatus: player.recruitment_status ?? 'open',
         commitmentStatus: null,
-    } as PlayerProfile;
+    };
 }
 
 /**
@@ -200,7 +208,7 @@ export async function updatePlayerProfile(
 
         // Build dynamic UPDATE query based on provided fields
         const updateFields: string[] = [];
-        const values: any[] = [];
+        const values: unknown[] = [];
         let paramIndex = 1;
 
         // Map PlayerProfile fields to database columns

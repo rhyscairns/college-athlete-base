@@ -130,13 +130,6 @@ export const TypeaheadInput: React.FC<TypeaheadInputProps> = ({
         }
     };
 
-    const handleBlur = () => {
-        // Delay to allow click on option to register
-        setTimeout(() => {
-            setIsOpen(false);
-        }, 200);
-    };
-
     return (
         <div className={`relative ${className}`} ref={containerRef}>
             <label
@@ -154,7 +147,6 @@ export const TypeaheadInput: React.FC<TypeaheadInputProps> = ({
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 onFocus={handleFocus}
-                onBlur={handleBlur}
                 disabled={disabled}
                 placeholder={placeholder}
                 aria-autocomplete="list"
@@ -194,8 +186,7 @@ export const TypeaheadInput: React.FC<TypeaheadInputProps> = ({
                                 id={`${name}-option-${index}`}
                                 role="option"
                                 aria-selected={index === highlightedIndex}
-                                onClick={() => handleSelect(option)}
-                                onMouseEnter={() => setHighlightedIndex(index)}
+                                onClick={() => handleSelect(option)} onMouseEnter={() => setHighlightedIndex(index)}
                                 className={`
                                     px-4 py-3 cursor-pointer transition-colors duration-150
                                     min-h-[48px] sm:min-h-[44px] md:min-h-[40px] 

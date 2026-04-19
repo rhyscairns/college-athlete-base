@@ -53,6 +53,7 @@ describe('/api/auth/login/player', () => {
         id: 'player-uuid-123',
         firstName: 'John',
         lastName: 'Doe',
+        dateOfBirth: '1998-05-15',
         email: 'john.doe@example.com',
         passwordHash: '$2b$10$hashedpassword',
         sex: 'male',

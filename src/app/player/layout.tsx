@@ -2,6 +2,7 @@
 
 import { PlayerNavbar } from '@/dashboard/player/components/PlayerNavbar';
 import { usePathname } from 'next/navigation';
+import { extractPlayerId } from './utils/extractPlayerId';
 
 interface PlayerLayoutProps {
     children: React.ReactNode;
@@ -9,17 +10,22 @@ interface PlayerLayoutProps {
 
 /**
  * Player Layout Component
- * Wraps all player pages with consistent navigation and background styling
- * Applies background image and renders PlayerNavbar at the top
+ * 
+ * Wraps all player pages with consistent navigation and background styling.
+ * Extracts playerId from URL patterns and provides it to the PlayerNavbar.
+ * 
+ * Supported URL patterns:
+ * - /player/[playerId]/dashboard
+ * - /player/[playerId]/profile
+ * - /player/dashboard/[playerId]/...
+ * 
+ * @param props - Component props
+ * @param props.children - Child components to render within the layout
+ * @returns Layout wrapper with navigation and gradient background
  */
 export default function PlayerLayout({ children }: PlayerLayoutProps) {
-    // Extract playerId from the URL path using client-side hook
     const pathname = usePathname();
-
-    // Extract playerId from path like /player/[playerId]/dashboard or /player/[playerId]/profile
-    const pathSegments = pathname.split('/').filter(Boolean);
-    // Path structure: ['player', playerId, 'dashboard'] or ['player', playerId, 'profile']
-    const playerId = pathSegments[1] || '';
+    const playerId = extractPlayerId(pathname);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#0A1628] via-[#1a2942] to-[#0A1628]">
@@ -27,7 +33,7 @@ export default function PlayerLayout({ children }: PlayerLayoutProps) {
             <PlayerNavbar playerId={playerId} />
 
             {/* Content Area */}
-            <main className="pt-20">
+            <main className="pt-20" role="main" aria-label="Player content">
                 {children}
             </main>
         </div>

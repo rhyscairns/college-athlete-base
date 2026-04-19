@@ -14,7 +14,7 @@ const fillValidForm = () => {
     fireEvent.change(screen.getByLabelText(/date of birth/i), { target: { value: testData.dateOfBirth } });
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: testData.email } });
     fireEvent.change(getPasswordInput(), { target: { value: testData.password } });
-    fireEvent.change(screen.getByLabelText(/sex/i), { target: { value: testData.sex } });
+    fireEvent.change(screen.getByLabelText(/sex/i), { target: { value: testData.gender } });
     fireEvent.change(screen.getByLabelText(/sport/i), { target: { value: testData.sport } });
     fireEvent.change(screen.getByLabelText(/position/i), { target: { value: testData.position } });
     fireEvent.change(screen.getByLabelText(/gpa/i), { target: { value: testData.gpa.toString() } });
@@ -258,7 +258,7 @@ describe('PlayerRegistrationForm', () => {
                         dateOfBirth: testData.dateOfBirth,
                         email: testData.email,
                         password: testData.password,
-                        gender: testData.sex,
+                        gender: testData.gender,
                         sport: testData.sport,
                         position: testData.position,
                         gpa: testData.gpa,
