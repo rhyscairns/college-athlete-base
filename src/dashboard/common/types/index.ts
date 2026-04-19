@@ -200,7 +200,7 @@ export interface PlayerCardGridProps {
     /** Custom message to show when no players found */
     emptyMessage?: string;
     /** Callback when video play button is clicked */
-    onWatchVideo?: (playerId: string, videoUrl: string, videoTitle?: string, playerName?: string) => void;
+    onWatchVideo?: (_playerId: string, _videoUrl: string, _videoTitle?: string, _playerName?: string) => void;
 }
 
 /**

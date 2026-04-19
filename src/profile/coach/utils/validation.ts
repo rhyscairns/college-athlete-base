@@ -112,8 +112,16 @@ export const validateCoachProfile = (data: {
     university?: string;
     position?: string;
     sport?: string;
+    yearsExperience?: number;
     profileImage?: string;
     teamWebsiteUrl?: string;
+    universityLogoUrl?: string;
+    conference?: string;
+    division?: string;
+    teamName?: string;
+    officeLocation?: string;
+    officeHours?: string;
+    achievements?: string[];
 }): Record<string, string> => {
     const errors: Record<string, string> = {};
 

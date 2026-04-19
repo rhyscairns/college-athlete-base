@@ -374,7 +374,7 @@ export function HeroSection({
                             )}
 
                             {/* GPA */}
-                            {player.academic?.gpa && (
+                            {!!player.academic?.gpa && (
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
                                         <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
@@ -425,7 +425,7 @@ export function HeroSection({
                                     <span className="text-sm font-semibold text-gray-900">{player.classYear}</span>
                                 </div>
                             )}
-                            {player.academic?.gpa && (
+                            {!!player.academic?.gpa && (
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm text-gray-600">Academic Standing:</span>
                                     <span className="text-sm font-semibold text-gray-900">

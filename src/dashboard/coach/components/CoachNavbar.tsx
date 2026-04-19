@@ -1,12 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import type { CoachNavbarProps } from '../types';
 import { AthleteSearchModal } from './AthleteSearchModal';
-import { JSX } from 'react/jsx-runtime';
-import { JSX } from 'react/jsx-runtime';
-import { JSX } from 'react/jsx-runtime';
-import { JSX } from 'react/jsx-runtime';
 import { JSX } from 'react/jsx-runtime';
 
 /**
@@ -149,7 +146,7 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
 
 function CABBranding(): JSX.Element {
     return (
-        <a
+        <Link
             href="/coach/dashboard"
             style={{
                 fontSize: '28px',
@@ -162,7 +159,7 @@ function CABBranding(): JSX.Element {
             aria-label="College Athlete Base - Return to home"
         >
             CAB
-        </a>
+        </Link>
     );
 }
 

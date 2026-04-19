@@ -155,7 +155,7 @@ describe('Player Registration - Complete Integration Flow', () => {
 
             // Get the password hash that was passed to the database
             const insertCall = mockQuery.mock.calls[1];
-            const passwordHash = insertCall[1][4]; // 5th parameter is password_hash
+            const passwordHash = insertCall?.[1]?.[4] as string; // 5th parameter is password_hash
 
             // Verify password was hashed (not stored as plain text)
             expect(passwordHash).not.toBe('MySecurePassword123!');

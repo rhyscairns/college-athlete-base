@@ -37,8 +37,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=college-athlete-base
-            -Dsonar.organization=your-organization-key
             -Dsonar.verbose=true
       
       - name: SonarCloud Quality Gate Check

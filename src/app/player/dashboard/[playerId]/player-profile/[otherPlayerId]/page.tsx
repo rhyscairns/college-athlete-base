@@ -108,7 +108,7 @@ export default async function PlayerViewPlayerProfilePage({ params }: PageProps)
                     </div>
                     <h1 className="text-2xl font-bold text-gray-900 mb-4">Profile Not Available</h1>
                     <p className="text-gray-600 mb-4">
-                        This player hasn't completed their profile yet.
+                        This player hasn&apos;t completed their profile yet.
                     </p>
                     <a
                         href={`/player/dashboard/${playerId}`}

@@ -17,12 +17,8 @@ export function PlayerRegisterPage() {
 
         try {
             // Map gender to sex for API compatibility
-            const apiData = {
-                ...data,
-                sex: data.gender,
-            };
-            // Remove gender field as API expects sex
-            delete (apiData as any).gender;
+            const { gender, ...rest } = data;
+            const apiData = { ...rest, sex: gender };
 
             const response = await fetch('/api/auth/register/player', {
                 method: 'POST',

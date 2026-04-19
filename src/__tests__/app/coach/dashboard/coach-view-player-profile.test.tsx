@@ -115,7 +115,7 @@ describe('CoachViewPlayerProfilePage', () => {
 
             // Verify error UI is returned
             expect(result).toBeDefined();
-            expect(result.type).toBe('main');
+            expect((result as any).type).toBe('main');
         });
 
         it('should return error UI if API returns unsuccessful response', async () => {
@@ -218,7 +218,7 @@ describe('CoachViewPlayerProfilePage', () => {
 
             // Verify component is rendered
             expect(result).toBeDefined();
-            expect(result.type).toBeDefined();
+            expect((result as any).type).toBeDefined();
         });
 
         it('should pass correct playerId to PlayerProfileView', async () => {
@@ -254,8 +254,8 @@ describe('CoachViewPlayerProfilePage', () => {
 
             // Verify error UI structure
             expect(result).toBeDefined();
-            expect(result.type).toBe('main');
-            expect(result.props.className).toContain('min-h-screen');
+            expect((result as any).type).toBe('main');
+            expect((result as any).props.className).toContain('min-h-screen');
         });
     });
 
@@ -301,7 +301,7 @@ describe('CoachViewPlayerProfilePage', () => {
 
             // Verify error UI is returned
             expect(result).toBeDefined();
-            expect(result.type).toBe('main');
+            expect((result as any).type).toBe('main');
         });
     });
 });
