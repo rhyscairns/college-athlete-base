@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import CoachDashboardPage from '@/app/coach/dashboard/[coachId]/page';
+import CoachDashboardPage from '@/app/coach/[coachId]/dashboard/page';
 import { verifyToken } from '@/authentication/utils/jwt';
 import { getCoachById } from '@/authentication/db/coaches';
 import { CoachDatabaseRecord } from '@/authentication/db/coaches';

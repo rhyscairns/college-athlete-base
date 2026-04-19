@@ -239,7 +239,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
 
     // Handler for viewing player profile
     const handleViewProfile = (playerId: string): void => {
-        router.push(`/coach/dashboard/${coachId}/player-profile/${playerId}`);
+        router.push(`/coach/${coachId}/dashboard/player-profile/${playerId}`);
     };
 
     // Handler for contacting player

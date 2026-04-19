@@ -241,7 +241,7 @@ function DesktopNav({ coachId, onSearchClick, onProfileClick, onLogout }: NavPro
     return (
         <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
             <a
-                href={`/coach/dashboard/${coachId}`}
+                href={`/coach/${coachId}/dashboard`}
                 style={{ ...baseStyle, textDecoration: 'none' }}
                 {...navItemHoverHandlers}
             >
@@ -296,7 +296,7 @@ function MobileDropdown({ coachId, onSearchClick, onProfileClick, onLogout }: Na
             }}
         >
             <a
-                href={`/coach/dashboard/${coachId}`}
+                href={`/coach/${coachId}/dashboard`}
                 role="menuitem"
                 style={{
                     ...baseStyle,

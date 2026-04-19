@@ -20,7 +20,7 @@ const { usePathname } = require('next/navigation');
 
 describe('CoachLayout', () => {
     it('extracts coachId from dashboard path', () => {
-        usePathname.mockReturnValue('/coach/dashboard/coach-123');
+        usePathname.mockReturnValue('/coach/coach-123/dashboard');
 
         render(
             <CoachLayout>
@@ -59,7 +59,7 @@ describe('CoachLayout', () => {
     });
 
     it('renders children content', () => {
-        usePathname.mockReturnValue('/coach/dashboard/coach-123');
+        usePathname.mockReturnValue('/coach/coach-123/dashboard');
 
         render(
             <CoachLayout>

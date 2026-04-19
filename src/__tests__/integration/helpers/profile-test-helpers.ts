@@ -91,6 +91,13 @@ export async function selectSport(sportName: string, searchText: string) {
  */
 export async function selectPosition(positionName: string, searchText: string) {
     const user = userEvent.setup();
+
+    // Wait for position input to become enabled after sport selection
+    await waitFor(() => {
+        const input = screen.getByLabelText(/position/i);
+        expect(input).not.toBeDisabled();
+    });
+
     const positionInput = screen.getByLabelText(/position/i);
 
     await user.clear(positionInput);

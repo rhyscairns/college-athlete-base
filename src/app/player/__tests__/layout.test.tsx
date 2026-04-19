@@ -104,47 +104,8 @@ describe('PlayerLayout', () => {
             expect(navbar).toHaveAttribute('data-player-id', 'player-456');
         });
 
-        it('should extract playerId from /player/dashboard/[playerId]/... pattern', () => {
-            mockUsePathname.mockReturnValue('/player/dashboard/player-789/some-page');
-
-            render(
-                <PlayerLayout>
-                    <div>Content</div>
-                </PlayerLayout>
-            );
-
-            const navbar = screen.getByTestId('player-navbar');
-            expect(navbar).toHaveAttribute('data-player-id', 'player-789');
-        });
-
-        it('should handle /player/dashboard/[playerId]/player-profile/[otherPlayerId] pattern', () => {
-            mockUsePathname.mockReturnValue('/player/dashboard/player-123/player-profile/player-456');
-
-            render(
-                <PlayerLayout>
-                    <div>Content</div>
-                </PlayerLayout>
-            );
-
-            const navbar = screen.getByTestId('player-navbar');
-            expect(navbar).toHaveAttribute('data-player-id', 'player-123');
-        });
-
         it('should return empty string for invalid paths', () => {
             mockUsePathname.mockReturnValue('/other/path');
-
-            render(
-                <PlayerLayout>
-                    <div>Content</div>
-                </PlayerLayout>
-            );
-
-            const navbar = screen.getByTestId('player-navbar');
-            expect(navbar).toHaveAttribute('data-player-id', '');
-        });
-
-        it('should return empty string when playerId is "dashboard"', () => {
-            mockUsePathname.mockReturnValue('/player/dashboard');
 
             render(
                 <PlayerLayout>

@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import CoachSearchPage from '../../app/coach/dashboard/[coachId]/search/page';
+import CoachSearchPage from '../../app/coach/[coachId]/dashboard/search/page';
 
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
@@ -259,7 +259,7 @@ describe('CoachSearchPage Integration Tests', () => {
 
             await waitFor(() => {
                 expect(mockPush).toHaveBeenCalledWith(
-                    expect.stringContaining('/coach/dashboard/coach-123/search?sport=Basketball')
+                    expect.stringContaining('/coach/coach-123/dashboard/search?sport=Basketball')
                 );
             });
         });
@@ -286,7 +286,7 @@ describe('CoachSearchPage Integration Tests', () => {
             clearAllButton.click();
 
             await waitFor(() => {
-                expect(mockPush).toHaveBeenCalledWith('/coach/dashboard/coach-123/search');
+                expect(mockPush).toHaveBeenCalledWith('/coach/coach-123/dashboard/search');
             });
         });
 

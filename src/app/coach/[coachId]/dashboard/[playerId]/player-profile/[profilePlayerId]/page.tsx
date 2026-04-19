@@ -6,9 +6,6 @@ import type { ReactElement } from 'react';
 
 /**
  * Generates dynamic metadata for the player profile page
- * 
- * @param params - Route parameters
- * @returns Metadata object for the page
  */
 export async function generateMetadata({ params }: { params: Promise<{ profilePlayerId: string }> }): Promise<Metadata> {
     const { profilePlayerId } = await params;
@@ -33,20 +30,6 @@ interface PageProps {
     }>;
 }
 
-/**
- * Fetches player profile data from the API
- * 
- * @param playerId - The unique identifier of the player
- * @returns Promise resolving to PlayerProfile data or null if fetch fails
- * 
- * @example
- * ```ts
- * const profile = await fetchPlayerProfile('player-123');
- * if (profile) {
- *   console.log(profile.firstName, profile.lastName);
- * }
- * ```
- */
 async function fetchPlayerProfile(playerId: string): Promise<PlayerProfile | null> {
     try {
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
@@ -101,26 +84,13 @@ async function fetchPlayerProfile(playerId: string): Promise<PlayerProfile | nul
 /**
  * Coach viewing player profile page
  * 
- * This page allows coaches to view full player profiles from their dashboard.
- * It fetches player data server-side and renders the PlayerProfileView component.
- * 
- * Authentication is handled by the dashboard layout.
- * 
- * @param params - Route parameters containing coachId, playerId, and profilePlayerId
- * @returns JSX element displaying the player profile or error state
- * 
- * @example
- * Route: /coach/dashboard/[coachId]/[playerId]/player-profile/[profilePlayerId]
- * URL: /coach/dashboard/coach-123/player-456/player-profile/player-789
+ * Route: /coach/[coachId]/dashboard/[playerId]/player-profile/[profilePlayerId]
  */
 export default async function CoachViewPlayerProfilePage({ params }: PageProps): Promise<ReactElement> {
     const { coachId, profilePlayerId } = await params;
-    // Note: playerId param exists in route but profilePlayerId is the actual player being viewed
 
-    // Fetch player data from API
     const playerData = await fetchPlayerProfile(profilePlayerId);
 
-    // If API fetch fails, show error
     if (!playerData) {
         logger.error('Failed to load player profile', { playerId: profilePlayerId });
         return (
@@ -133,7 +103,7 @@ export default async function CoachViewPlayerProfilePage({ params }: PageProps):
                     <h1 className="text-2xl font-bold text-gray-900 mb-4">Failed to Load Profile</h1>
                     <p className="text-gray-600 mb-6">Unable to load player profile. Please try again later.</p>
                     <a
-                        href={`/coach/dashboard/${coachId}`}
+                        href={`/coach/${coachId}/dashboard`}
                         className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
                         Return to Dashboard

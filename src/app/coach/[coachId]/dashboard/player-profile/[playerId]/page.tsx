@@ -3,10 +3,20 @@ import { logger } from '@/lib/logger';
 import { PlayerProfile } from '@/profile/player/types';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-    title: 'Player Profile',
-    description: 'View player profile',
-};
+/**
+ * Generates dynamic metadata for the player profile page
+ * 
+ * @param params - Route parameters
+ * @returns Metadata object for the page
+ */
+export async function generateMetadata({ params }: { params: Promise<{ playerId: string }> }): Promise<Metadata> {
+    const { playerId } = await params;
+
+    return {
+        title: `Player Profile - ${playerId}`,
+        description: 'View player profile and recruitment information',
+    };
+}
 
 interface PlayerProfileApiResponse {
     success: boolean;
@@ -16,8 +26,8 @@ interface PlayerProfileApiResponse {
 
 interface PageProps {
     params: Promise<{
+        coachId: string;
         playerId: string;
-        otherPlayerId: string;
     }>;
 }
 
@@ -43,10 +53,12 @@ async function fetchPlayerProfile(playerId: string): Promise<PlayerProfile | nul
         clearTimeout(timeoutId);
 
         if (!response.ok) {
+            const errorText = await response.text();
             logger.warn('API request failed', {
                 playerId,
                 status: response.status,
                 statusText: response.statusText,
+                errorBody: errorText,
             });
             return null;
         }
@@ -57,6 +69,7 @@ async function fetchPlayerProfile(playerId: string): Promise<PlayerProfile | nul
             logger.warn('API returned unsuccessful response', {
                 playerId,
                 error: data.error,
+                fullResponse: data,
             });
             return null;
         }
@@ -67,31 +80,34 @@ async function fetchPlayerProfile(playerId: string): Promise<PlayerProfile | nul
         logger.error('Error fetching player profile from API', {
             playerId,
             error: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined,
         });
         return null;
     }
 }
 
 /**
- * Player viewing another player's profile page
- * Shows limited view (hero + videos only)
- * Authentication is handled by the dashboard layout
+ * Coach viewing player profile page
+ * 
+ * Route: /coach/[coachId]/dashboard/player-profile/[playerId]
  */
-export default async function PlayerViewPlayerProfilePage({ params }: PageProps) {
-    const { playerId, otherPlayerId } = await params;
+export default async function CoachViewPlayerProfilePage({ params }: PageProps) {
+    const { coachId, playerId } = await params;
 
-    logger.info('Player viewing another player profile', { playerId, otherPlayerId });
+    logger.info('Coach viewing player profile', { coachId, playerId });
 
-    // Fetch player data from API
-    const playerData = await fetchPlayerProfile(otherPlayerId);
+    const playerData = await fetchPlayerProfile(playerId);
 
-    // If API fetch fails, show error
     if (!playerData) {
-        logger.error('Failed to load player profile', { playerId: otherPlayerId });
+        logger.error('Failed to load player profile', { playerId });
         return (
-            <div className="flex items-center justify-center min-h-screen bg-slate-100">
-                <div className="text-center max-w-md mx-auto p-8">
-                    <div className="mb-6">
+            <main className="flex items-center justify-center min-h-screen bg-slate-100">
+                <div
+                    className="text-center max-w-md mx-auto p-8"
+                    role="alert"
+                    aria-live="assertive"
+                >
+                    <div className="mb-6" aria-hidden="true">
                         <svg
                             className="w-24 h-24 mx-auto text-gray-400"
                             fill="none"
@@ -111,21 +127,22 @@ export default async function PlayerViewPlayerProfilePage({ params }: PageProps)
                         This player hasn&apos;t completed their profile yet.
                     </p>
                     <a
-                        href={`/player/dashboard/${playerId}`}
-                        className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        href={`/coach/${coachId}/dashboard`}
+                        className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        aria-label="Return to coach dashboard"
                     >
                         Back to Dashboard
                     </a>
                 </div>
-            </div>
+            </main>
         );
     }
 
     return (
         <PlayerProfileView
-            playerId={otherPlayerId}
-            currentUserId={playerId}
-            userType="player"
+            playerId={playerId}
+            currentUserId={coachId}
+            userType="coach"
             initialData={playerData}
         />
     );

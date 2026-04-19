@@ -95,7 +95,7 @@ export const PlayerCard = React.memo(function PlayerCard({
     // Build the profile URL based on user type
     const getProfileUrl = (): string => {
         if (userType === 'coach' && currentUserId) {
-            return `/coach/dashboard/${currentUserId}/player-profile/${playerId}`;
+            return `/coach/${currentUserId}/dashboard/player-profile/${playerId}`;
         }
         if (userType === 'player' && currentUserId) {
             return `/player/dashboard/${currentUserId}/player-profile/${playerId}`;
