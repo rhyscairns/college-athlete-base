@@ -20,13 +20,21 @@ export const PlayerInfoSection: React.FC<PlayerInfoSectionProps> = ({
     sport,
     height,
     weight,
+    action,
 }): React.ReactElement => {
     return (
         <div className="p-4 sm:p-5 bg-white">
-            {/* Player Name */}
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 truncate">
-                {playerName}
-            </h3>
+            {/* Name row with optional action (e.g. heart button) */}
+            <div className="flex items-start justify-between gap-2 mb-2">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
+                    {playerName}
+                </h3>
+                {action && (
+                    <div className="flex-shrink-0 mt-0.5">
+                        {action}
+                    </div>
+                )}
+            </div>
 
             {/* Position & Sport */}
             <div className="space-y-1 mb-4">

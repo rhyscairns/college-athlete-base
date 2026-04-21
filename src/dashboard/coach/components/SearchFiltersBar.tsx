@@ -1,15 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { SearchCriteria } from '../types';
-import { inchesToHeight } from '../utils/search';
-
-export interface SearchFiltersBarProps {
-    criteria: SearchCriteria;
-    onFilterChange: (criteria: SearchCriteria) => void;
-    onClearAll: () => void;
-    onRefineSearch?: () => void;
-}
+import { SearchFiltersBarProps } from '../types';
 
 interface FilterChip {
     key: string;

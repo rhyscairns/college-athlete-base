@@ -84,6 +84,8 @@ export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
     isLoading = false,
     emptyMessage = 'No players found',
     onWatchVideo,
+    favoritedPlayerIds,
+    onFavoriteToggle,
 }) => {
     // Filter out current user's card
     const filteredPlayers = useMemo(
@@ -171,6 +173,8 @@ export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
                             )
                             : undefined
                     }
+                    isFavorited={favoritedPlayerIds?.has(player.playerId)}
+                    onFavoriteToggle={onFavoriteToggle}
                     priority={index < 3}
                 />
             ))}

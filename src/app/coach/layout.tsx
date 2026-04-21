@@ -24,15 +24,7 @@ export default function CoachLayout({ children }: CoachLayoutProps) {
     const coachId = (coachIndex !== -1 && pathSegments[coachIndex + 1]) ? pathSegments[coachIndex + 1] : '';
 
     return (
-        <div
-            className="min-h-screen bg-gray-900"
-            style={{
-                backgroundImage: `url('https://images.unsplash.com/photo-1459865264687-595d652de67e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundAttachment: 'fixed',
-            }}
-        >
+        <div className="min-h-screen white" >
             {/* Semi-transparent overlay for content readability */}
             <div className="min-h-screen bg-black/20">
                 {/* Navigation Bar */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { PlayerCard } from '../PlayerCard';
 import type { PlayerCardProps } from '../../types';
 
@@ -199,7 +199,7 @@ describe('PlayerCard', () => {
         it('should have hover effects', () => {
             render(<PlayerCard {...mockPlayerData} />);
 
-            const card = screen.getByText('John Smith').closest('div')?.parentElement;
+            const card = screen.getByRole('article');
             expect(card).toHaveClass('hover:shadow-2xl');
             expect(card).toHaveClass('hover:-translate-y-1');
         });
@@ -207,7 +207,8 @@ describe('PlayerCard', () => {
         it('should have responsive padding', () => {
             render(<PlayerCard {...mockPlayerData} />);
 
-            const infoSection = screen.getByText('John Smith').parentElement;
+            // PlayerInfoSection wraps content in a div with p-4 sm:p-5
+            const infoSection = screen.getByText('John Smith').closest('div.p-4');
             expect(infoSection).toHaveClass('p-4', 'sm:p-5');
         });
 
@@ -471,6 +472,158 @@ describe('PlayerCard', () => {
             render(<PlayerCard {...data} />);
 
             expect(screen.getByText('Defensive Midfielder / Central Midfielder')).toBeInTheDocument();
+        });
+    });
+
+    describe('Heart Icon / Favorite Toggle', () => {
+        it('should not render heart icon when onFavoriteToggle is not provided', () => {
+            render(<PlayerCard {...mockPlayerData} />);
+
+            expect(screen.queryByRole('button', { name: /prospects/i })).not.toBeInTheDocument();
+        });
+
+        it('should render heart icon button when onFavoriteToggle is provided', () => {
+            const handleToggle = jest.fn();
+            render(<PlayerCard {...mockPlayerData} onFavoriteToggle={handleToggle} />);
+
+            const heartBtn = screen.getByRole('button', { name: /add john smith to prospects/i });
+            expect(heartBtn).toBeInTheDocument();
+        });
+
+        it('should render outlined heart when isFavorited is false', () => {
+            const handleToggle = jest.fn();
+            render(<PlayerCard {...mockPlayerData} isFavorited={false} onFavoriteToggle={handleToggle} />);
+
+            const heartBtn = screen.getByRole('button', { name: /add john smith to prospects/i });
+            expect(heartBtn).toBeInTheDocument();
+            // outlined heart uses stroke, not fill
+            const svg = heartBtn.querySelector('svg');
+            expect(svg).toHaveAttribute('fill', 'none');
+            expect(svg).toHaveAttribute('stroke', 'currentColor');
+        });
+
+        it('should render filled heart when isFavorited is true', () => {
+            const handleToggle = jest.fn();
+            render(<PlayerCard {...mockPlayerData} isFavorited={true} onFavoriteToggle={handleToggle} />);
+
+            const heartBtn = screen.getByRole('button', { name: /remove john smith from prospects/i });
+            expect(heartBtn).toBeInTheDocument();
+            // filled heart uses fill="currentColor"
+            const svg = heartBtn.querySelector('svg');
+            expect(svg).toHaveAttribute('fill', 'currentColor');
+        });
+
+        it('should have correct aria-pressed when favorited', () => {
+            const handleToggle = jest.fn();
+            render(<PlayerCard {...mockPlayerData} isFavorited={true} onFavoriteToggle={handleToggle} />);
+
+            const heartBtn = screen.getByRole('button', { name: /remove john smith from prospects/i });
+            expect(heartBtn).toHaveAttribute('aria-pressed', 'true');
+        });
+
+        it('should have correct aria-pressed when not favorited', () => {
+            const handleToggle = jest.fn();
+            render(<PlayerCard {...mockPlayerData} isFavorited={false} onFavoriteToggle={handleToggle} />);
+
+            const heartBtn = screen.getByRole('button', { name: /add john smith to prospects/i });
+            expect(heartBtn).toHaveAttribute('aria-pressed', 'false');
+        });
+
+        it('should call onFavoriteToggle with playerId and current state when clicked', async () => {
+            const handleToggle = jest.fn().mockResolvedValue(undefined);
+            render(<PlayerCard {...mockPlayerData} isFavorited={false} onFavoriteToggle={handleToggle} />);
+
+            const heartBtn = screen.getByRole('button', { name: /add john smith to prospects/i });
+            await act(async () => {
+                fireEvent.click(heartBtn);
+            });
+
+            expect(handleToggle).toHaveBeenCalledTimes(1);
+            expect(handleToggle).toHaveBeenCalledWith('player-123', false);
+        });
+
+        it('should call onFavoriteToggle with current favorited state true when unfavoriting', async () => {
+            const handleToggle = jest.fn().mockResolvedValue(undefined);
+            render(<PlayerCard {...mockPlayerData} isFavorited={true} onFavoriteToggle={handleToggle} />);
+
+            const heartBtn = screen.getByRole('button', { name: /remove john smith from prospects/i });
+            await act(async () => {
+                fireEvent.click(heartBtn);
+            });
+
+            expect(handleToggle).toHaveBeenCalledWith('player-123', true);
+        });
+
+        it('should optimistically flip icon state on click before API resolves', async () => {
+            let resolveToggle!: () => void;
+            const handleToggle = jest.fn().mockReturnValue(
+                new Promise<void>((res) => { resolveToggle = res; })
+            );
+
+            render(<PlayerCard {...mockPlayerData} isFavorited={false} onFavoriteToggle={handleToggle} />);
+
+            const heartBtn = screen.getByRole('button', { name: /add john smith to prospects/i });
+            fireEvent.click(heartBtn);
+
+            // After click, optimistic state should flip to favorited before promise resolves
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /remove john smith from prospects/i })).toBeInTheDocument();
+            });
+
+            // Resolve the promise
+            await act(async () => { resolveToggle(); });
+        });
+
+        it('should revert icon state when onFavoriteToggle throws an error', async () => {
+            const handleToggle = jest.fn().mockRejectedValue(new Error('API error'));
+            render(<PlayerCard {...mockPlayerData} isFavorited={false} onFavoriteToggle={handleToggle} />);
+
+            const heartBtn = screen.getByRole('button', { name: /add john smith to prospects/i });
+            await act(async () => {
+                fireEvent.click(heartBtn);
+            });
+
+            // Should revert back to outlined (not favorited)
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /add john smith to prospects/i })).toBeInTheDocument();
+            });
+        });
+
+        it('should disable the heart button while toggle is in-flight', async () => {
+            let resolveToggle!: () => void;
+            const handleToggle = jest.fn().mockReturnValue(
+                new Promise<void>((res) => { resolveToggle = res; })
+            );
+
+            render(<PlayerCard {...mockPlayerData} isFavorited={false} onFavoriteToggle={handleToggle} />);
+
+            const heartBtn = screen.getByRole('button', { name: /add john smith to prospects/i });
+            fireEvent.click(heartBtn);
+
+            // Button should be disabled while in-flight
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /remove john smith from prospects/i })).toBeDisabled();
+            });
+
+            await act(async () => { resolveToggle(); });
+
+            // Button should be re-enabled after resolution
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /remove john smith from prospects/i })).not.toBeDisabled();
+            });
+        });
+
+        it('should sync local state when isFavorited prop changes', () => {
+            const handleToggle = jest.fn();
+            const { rerender } = render(
+                <PlayerCard {...mockPlayerData} isFavorited={false} onFavoriteToggle={handleToggle} />
+            );
+
+            expect(screen.getByRole('button', { name: /add john smith to prospects/i })).toBeInTheDocument();
+
+            rerender(<PlayerCard {...mockPlayerData} isFavorited={true} onFavoriteToggle={handleToggle} />);
+
+            expect(screen.getByRole('button', { name: /remove john smith from prospects/i })).toBeInTheDocument();
         });
     });
 

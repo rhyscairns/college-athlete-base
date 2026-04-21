@@ -54,6 +54,10 @@ export interface PlayerCardProps {
     currentUserId?: string;
     /** Type of current user for routing and button labels */
     userType?: 'coach' | 'player';
+    /** Whether this player is currently favorited by the coach */
+    isFavorited?: boolean;
+    /** Callback when the favorite heart icon is toggled */
+    onFavoriteToggle?: (playerId: string, currentState: boolean) => void | Promise<void>;
 }
 
 /**
@@ -201,6 +205,10 @@ export interface PlayerCardGridProps {
     emptyMessage?: string;
     /** Callback when video play button is clicked */
     onWatchVideo?: (_playerId: string, _videoUrl: string, _videoTitle?: string, _playerName?: string) => void;
+    /** Set of player IDs that the coach has favorited */
+    favoritedPlayerIds?: Set<string>;
+    /** Callback when a player card's favorite heart icon is toggled */
+    onFavoriteToggle?: (playerId: string, currentState: boolean) => void | Promise<void>;
 }
 
 /**
@@ -220,6 +228,8 @@ export interface PlayerInfoSectionProps {
     height?: string;
     /** Optional weight display (e.g., "210 lbs") */
     weight?: string;
+    /** Optional action element (e.g. favorite heart button) rendered top-right of the info block */
+    action?: React.ReactNode;
 }
 
 /**
