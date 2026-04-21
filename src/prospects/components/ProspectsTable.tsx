@@ -109,7 +109,7 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
                                         {prospect.highSchool ?? '—'}
                                     </td>
                                     <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
-                                        {prospect.scholarshipAmount != null
+                                        {prospect.scholarshipAmount !== null
                                             ? `$${prospect.scholarshipAmount.toLocaleString()}`
                                             : '—'}
                                     </td>
