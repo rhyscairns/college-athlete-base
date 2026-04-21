@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { CoachDashboardProps } from '../types';
+import { CoachDashboardProps, DashboardPlayerApiResponse } from '../types';
 import type { PlayerCardData, VideoModalState } from '../../common/types';
 import { DashboardHeader } from '../../common/components/DashboardHeader';
 import { FilterBar } from '../../common/components/FilterBar';
@@ -13,16 +13,19 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { playerFilterCache } from '@/lib/cache/filterCache';
 import { getPositionsForSport, getEventsForSport, hasSportPositions, hasSportEvents } from '@/constants';
 
+const ALL_SPORTS = 'All Sports';
+const ALL_POSITIONS = 'All Positions';
+
 export default function CoachDashboard({ coachId }: CoachDashboardProps) {
     const router = useRouter();
-
-    const ALL_SPORTS = 'All Sports';
-    const ALL_POSITIONS = 'All Positions';
 
     // Filter state
     const [selectedSport, setSelectedSport] = useState<string>(ALL_SPORTS);
     const [selectedPosition, setSelectedPosition] = useState<string>(ALL_POSITIONS);
     const [profileLoaded, setProfileLoaded] = useState<boolean>(false);
+
+    // Prospects / favorites state
+    const [favoritedIds, setFavoritedIds] = useState<Set<string>>(new Set());
 
     // Debounce filter changes to reduce API calls
     const debouncedSport = useDebounce(selectedSport, 300);
@@ -36,7 +39,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
     // Pagination state
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
-    const pageSize = 6;
+    const PAGE_SIZE = 6;
 
     // Video modal state
     const [videoModalState, setVideoModalState] = useState<VideoModalState>({
@@ -133,7 +136,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
             // Build query parameters
             const params = {
                 page: currentPage,
-                pageSize: pageSize,
+                pageSize: PAGE_SIZE,
                 excludeUserId: coachId,
                 sport: debouncedSport !== ALL_SPORTS ? debouncedSport : undefined,
                 position: debouncedPosition !== ALL_POSITIONS ? debouncedPosition : undefined,
@@ -143,7 +146,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
             const cachedData = playerFilterCache.get(params);
             if (cachedData) {
                 // Map 'id' from API to 'playerId' for PlayerCard component
-                setPlayers((cachedData.players || []).map((player: any) => ({
+                setPlayers((cachedData.players || []).map((player: DashboardPlayerApiResponse) => ({
                     ...player,
                     playerId: player.id,
                 })));
@@ -157,7 +160,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
             // Build URL query parameters
             const urlParams = new URLSearchParams({
                 page: currentPage.toString(),
-                pageSize: pageSize.toString(),
+                pageSize: PAGE_SIZE.toString(),
                 excludeUserId: coachId,
             });
 
@@ -181,9 +184,8 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
             // Cache the results
             playerFilterCache.set(params, data.data);
 
-            // Update players state with response
             // Map 'id' from API to 'playerId' for PlayerCard component
-            setPlayers((data.data.players || []).map((player: any) => ({
+            setPlayers((data.data.players || []).map((player: DashboardPlayerApiResponse) => ({
                 ...player,
                 playerId: player.id,
             })));
@@ -199,7 +201,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
         } finally {
             setIsLoading(false);
         }
-    }, [coachId, debouncedSport, debouncedPosition, currentPage, pageSize]);
+    }, [coachId, debouncedSport, debouncedPosition, currentPage]);
 
     // Fetch players when debounced filters or page changes
     useEffect(() => {
@@ -209,63 +211,134 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
         }
     }, [fetchPlayers, profileLoaded]);
 
+    // Fetch coach's current prospects on mount (requirement 8.3)
+    useEffect(() => {
+        const fetchProspects = async () => {
+            try {
+                const response = await fetch(`/api/coach/${coachId}/prospects`);
+                const data = await response.json();
+                if (response.ok && data.success && Array.isArray(data.data)) {
+                    setFavoritedIds(new Set(data.data.map((p: { playerId: string }) => p.playerId)));
+                }
+            } catch (_err) {
+                // Non-critical — silently ignore; heart icons will default to unfavorited
+            }
+        };
+
+        fetchProspects();
+    }, [coachId]);
+
+    // Optimistic favorite toggle — calls POST or DELETE and reverts on failure (requirements 4.3, 4.4, 4.5)
+    const handleFavoriteToggle = useCallback(async (playerId: string, currentState: boolean) => {
+        // Optimistically update state
+        setFavoritedIds((prev) => {
+            const next = new Set(prev);
+            if (currentState) {
+                next.delete(playerId);
+            } else {
+                next.add(playerId);
+            }
+            return next;
+        });
+
+        try {
+            let response: Response;
+            if (currentState) {
+                // Currently favorited → DELETE
+                response = await fetch(`/api/coach/${coachId}/prospects/${playerId}`, {
+                    method: 'DELETE',
+                });
+            } else {
+                // Currently unfavorited → POST
+                response = await fetch(`/api/coach/${coachId}/prospects`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playerId }),
+                });
+            }
+
+            if (!response.ok && response.status !== 409) {
+                // Revert on failure (409 = already favorited, treat as success)
+                setFavoritedIds((prev) => {
+                    const next = new Set(prev);
+                    if (currentState) {
+                        next.add(playerId);
+                    } else {
+                        next.delete(playerId);
+                    }
+                    return next;
+                });
+                setError('Failed to update prospect. Please try again.');
+            }
+        } catch (_err) {
+            // Revert on network error
+            setFavoritedIds((prev) => {
+                const next = new Set(prev);
+                if (currentState) {
+                    next.add(playerId);
+                } else {
+                    next.delete(playerId);
+                }
+                return next;
+            });
+            setError('Failed to update prospect. Please try again.');
+        }
+    }, [coachId]);
+
     // Handler for sport filter change
-    const handleSportChange = (sport: string): void => {
+    const handleSportChange = useCallback((sport: string): void => {
         setSelectedSport(sport);
         // Reset position to default when sport changes
         setSelectedPosition(sport === ALL_SPORTS ? ALL_POSITIONS : positionLabel);
-        setCurrentPage(1); // Reset to first page when filter changes
-    };
+        setCurrentPage(1);
+    }, [positionLabel]);
 
     // Handler for position filter change
-    const handlePositionChange = (position: string): void => {
+    const handlePositionChange = useCallback((position: string): void => {
         setSelectedPosition(position);
-        setCurrentPage(1); // Reset to first page when filter changes
-    };
+        setCurrentPage(1);
+    }, []);
 
     // Handler for search button click
-    const handleSearch = (): void => {
+    const handleSearch = useCallback((): void => {
         fetchPlayers();
-    };
+    }, [fetchPlayers]);
 
     // Handler for page change
-    const handlePageChange = (page: number): void => {
+    const handlePageChange = useCallback((page: number): void => {
         setCurrentPage(page);
-        // Update URL with page parameter
         const url = new URL(window.location.href);
         url.searchParams.set('page', page.toString());
         router.push(url.pathname + url.search);
-    };
+    }, [router]);
 
     // Handler for viewing player profile
-    const handleViewProfile = (playerId: string): void => {
+    const handleViewProfile = useCallback((playerId: string): void => {
         router.push(`/coach/${coachId}/dashboard/player-profile/${playerId}`);
-    };
+    }, [router, coachId]);
 
-    // Handler for contacting player
-    const handleContact = (_playerId: string): void => {
-        // TODO: Implement contact modal/dialog
-    };
+    // Handler for contacting player (TODO: Implement contact modal/dialog)
+    const handleContact = useCallback((_playerId: string): void => { }, []);
 
     // Handler for watching video
-    const handleWatchVideo = (_playerId: string, videoUrl: string, videoTitle?: string, playerName?: string): void => {
+    const handleWatchVideo = useCallback((_playerId: string, videoUrl: string, videoTitle?: string, playerName?: string): void => {
         setVideoModalState({
             isOpen: true,
             videoUrl,
-            videoTitle: videoTitle || null,
-            playerName: playerName || null,
+            videoTitle: videoTitle ?? null,
+            playerName: playerName ?? null,
         });
-    };
+    }, []);
 
     // Handler for closing video modal
-    const handleCloseVideoModal = (): void => {
+    const handleCloseVideoModal = useCallback((): void => {
         setVideoModalState({
             isOpen: false,
             videoUrl: null,
             videoTitle: null,
             playerName: null,
         });
-    };
+    }, []);
 
     // Memoize player card data to prevent unnecessary re-renders
     const playerCardData = useMemo(() =>
@@ -274,7 +347,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
             onPrimaryClick: () => handleViewProfile(player.playerId),
             onSecondaryClick: () => handleContact(player.playerId),
         })),
-        [players, handleViewProfile]
+        [players, handleViewProfile, handleContact]
     );
 
     return (
@@ -303,7 +376,6 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
             <main
                 id="main-content"
                 className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
-                role="main"
             >
                 {/* Filter Bar */}
                 <div id="filter-controls">
@@ -345,6 +417,8 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
                     isLoading={isLoading}
                     emptyMessage="No players found matching your filters"
                     onWatchVideo={handleWatchVideo}
+                    favoritedPlayerIds={favoritedIds}
+                    onFavoriteToggle={handleFavoriteToggle}
                 />
 
                 {/* Pagination */}

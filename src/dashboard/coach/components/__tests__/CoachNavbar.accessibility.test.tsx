@@ -3,69 +3,92 @@
  */
 
 import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { CoachNavbar } from '../CoachNavbar';
+
+jest.mock('../AthleteSearchModal', () => ({
+    AthleteSearchModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
+        isOpen ? (
+            <div data-testid="athlete-search-modal">
+                <button onClick={onClose}>Close Modal</button>
+            </div>
+        ) : null,
+}));
+
+jest.mock('next/navigation', () => ({
+    useRouter: () => ({ push: jest.fn() }),
+}));
 
 describe('CoachNavbar Accessibility', () => {
-    describe('ARIA attributes', () => {
-        it('should have navigation role', () => {
-            const role = 'navigation';
-            expect(role).toBe('navigation');
+    const coachId = 'coach-123';
+
+    describe('Semantic HTML', () => {
+        it('renders a <nav> element with aria-label', () => {
+            render(<CoachNavbar coachId={coachId} />);
+            const nav = screen.getByRole('navigation', { name: /main navigation/i });
+            expect(nav).toBeInTheDocument();
         });
 
-        it('should have aria-label', () => {
-            const ariaLabel = 'Main navigation';
-            expect(ariaLabel).toBeDefined();
-            expect(ariaLabel.length).toBeGreaterThan(0);
-        });
-
-        it('should have aria-current for active link', () => {
-            const ariaCurrent = 'page';
-            expect(ariaCurrent).toBe('page');
+        it('branding link has descriptive aria-label', () => {
+            render(<CoachNavbar coachId={coachId} />);
+            expect(screen.getByRole('link', { name: /college athlete base/i })).toBeInTheDocument();
         });
     });
 
-    describe('keyboard navigation', () => {
-        it('should support tab navigation', () => {
-            const tabIndex = 0;
-            expect(tabIndex).toBeGreaterThanOrEqual(0);
+    describe('Hamburger button', () => {
+        it('has aria-expanded=false when closed', () => {
+            render(<CoachNavbar coachId={coachId} />);
+            expect(screen.getByLabelText('Toggle menu')).toHaveAttribute('aria-expanded', 'false');
         });
 
-        it('should support enter key', () => {
-            const enterKey = 'Enter';
-            expect(enterKey).toBe('Enter');
+        it('has aria-expanded=true when open', () => {
+            render(<CoachNavbar coachId={coachId} />);
+            fireEvent.click(screen.getByLabelText('Toggle menu'));
+            expect(screen.getByLabelText('Toggle menu')).toHaveAttribute('aria-expanded', 'true');
         });
 
-        it('should support space key', () => {
-            const spaceKey = ' ';
-            expect(spaceKey).toBe(' ');
-        });
-    });
-
-    describe('semantic HTML', () => {
-        it('should use nav element', () => {
-            const element = 'nav';
-            expect(element).toBe('nav');
+        it('has aria-controls pointing to mobile menu id', () => {
+            render(<CoachNavbar coachId={coachId} />);
+            expect(screen.getByLabelText('Toggle menu')).toHaveAttribute('aria-controls', 'mobile-nav-menu');
         });
 
-        it('should use ul for menu items', () => {
-            const element = 'ul';
-            expect(element).toBe('ul');
-        });
-
-        it('should use button for actions', () => {
-            const element = 'button';
-            expect(element).toBe('button');
+        it('meets 44x44px minimum touch target', () => {
+            render(<CoachNavbar coachId={coachId} />);
+            const btn = screen.getByLabelText('Toggle menu');
+            expect(btn).toHaveClass('w-11', 'h-11');
         });
     });
 
-    describe('focus management', () => {
-        it('should have visible focus indicators', () => {
-            const hasFocusStyle = true;
-            expect(hasFocusStyle).toBe(true);
+    describe('Mobile menu', () => {
+        it('mobile dropdown has role=menu and aria-label', () => {
+            render(<CoachNavbar coachId={coachId} />);
+            fireEvent.click(screen.getByLabelText('Toggle menu'));
+            expect(screen.getByRole('menu', { name: /mobile navigation menu/i })).toBeInTheDocument();
         });
 
-        it('should maintain focus order', () => {
-            const focusOrder = [1, 2, 3, 4];
-            expect(focusOrder[0]).toBeLessThan(focusOrder[1]);
+        it('mobile menu items have role=menuitem', () => {
+            render(<CoachNavbar coachId={coachId} />);
+            fireEvent.click(screen.getByLabelText('Toggle menu'));
+            const menuItems = screen.getAllByRole('menuitem');
+            expect(menuItems.length).toBeGreaterThanOrEqual(5); // Home, Search, Prospects, Profile, Log Out
+        });
+    });
+
+    describe('Keyboard navigation', () => {
+        it('all interactive elements are focusable', () => {
+            render(<CoachNavbar coachId={coachId} />);
+            const buttons = screen.getAllByRole('button');
+            buttons.forEach((btn) => {
+                expect(btn).not.toHaveAttribute('tabindex', '-1');
+            });
+        });
+
+        it('search button opens modal on click (keyboard activation)', () => {
+            render(<CoachNavbar coachId={coachId} />);
+            const searchBtn = screen.getAllByRole('button', { name: 'Search' })[0];
+            searchBtn.focus();
+            fireEvent.click(searchBtn);
+            expect(screen.getByTestId('athlete-search-modal')).toBeInTheDocument();
         });
     });
 });

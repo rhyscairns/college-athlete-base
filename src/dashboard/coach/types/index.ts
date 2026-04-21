@@ -1,4 +1,6 @@
-// Navigation item structure
+import type { MouseEvent } from 'react';
+
+/** Navigation item structure for coach nav menus */
 export interface NavItem {
     label: string;
     href?: string;
@@ -6,17 +8,29 @@ export interface NavItem {
     active?: boolean;
 }
 
-// Coach navbar props
+/** Props for the CoachNavbar component */
 export interface CoachNavbarProps {
     coachId: string;
 }
 
-// Coach dashboard props
+/** Internal nav sub-component props (shared between DesktopNav and MobileDropdown) */
+export interface NavProps {
+    coachId: string;
+    onSearchClick: (e: MouseEvent) => void;
+    onProspectsClick: (e: MouseEvent) => void;
+    onProfileClick: (e: MouseEvent) => void;
+    onLogout: () => void;
+}
+
+/** Props for the CoachDashboard component */
 export interface CoachDashboardProps {
     coachId: string;
 }
 
-// Search criteria for athlete search
+/**
+ * Search criteria for athlete search modal.
+ * All fields are optional — omitted fields are not applied as filters.
+ */
 export interface SearchCriteria {
     sport?: string;
     position?: string;
@@ -24,13 +38,15 @@ export interface SearchCriteria {
     gpaMin?: number;
     gpaMax?: number;
     affordableAmount?: number;
-    heightMin?: string; // Format: "5'10"" or "70" (inches)
+    /** Format: "5'10\"" or "70" (inches) */
+    heightMin?: string;
     heightMax?: string;
-    weightMin?: number; // pounds
+    /** pounds */
+    weightMin?: number;
     weightMax?: number;
 }
 
-// Search response from API
+/** Paginated response from the athlete search API */
 export interface SearchResponse {
     athletes: PlayerProfile[];
     totalCount: number;
@@ -39,7 +55,10 @@ export interface SearchResponse {
     filters: SearchCriteria;
 }
 
-// Player profile structure (for search results)
+/**
+ * Player profile shape returned by the athlete search API.
+ * Note: consider renaming to `AthleteSearchResult` to avoid confusion with profile-domain types.
+ */
 export interface PlayerProfile {
     id: string;
     firstName: string;
@@ -56,21 +75,21 @@ export interface PlayerProfile {
     videoUrl?: string;
 }
 
-// Athlete search modal props
+/** Props for the AthleteSearchModal component */
 export interface AthleteSearchModalProps {
     isOpen: boolean;
     onClose: () => void;
     coachId: string;
 }
 
-// Athlete search form props
+/** Props for the AthleteSearchForm component */
 export interface AthleteSearchFormProps {
     onSubmit: (criteria: SearchCriteria) => Promise<void>;
     onCancel: () => void;
     isSubmitting: boolean;
 }
 
-// Form validation errors
+/** Field-level validation errors for the athlete search form */
 export interface FormErrors {
     gpa?: string;
     height?: string;
@@ -79,14 +98,15 @@ export interface FormErrors {
     general?: string;
 }
 
-// Search filters bar props
+/** Props for the SearchFiltersBar component */
 export interface SearchFiltersBarProps {
     criteria: SearchCriteria;
     onFilterChange: (criteria: SearchCriteria) => void;
     onClearAll: () => void;
+    onRefineSearch?: () => void;
 }
 
-// Athlete search results props
+/** Props for the AthleteSearchResults component */
 export interface AthleteSearchResultsProps {
     athletes: PlayerProfile[];
     isLoading: boolean;
@@ -94,4 +114,17 @@ export interface AthleteSearchResultsProps {
     currentPage: number;
     pageSize: number;
     onPageChange: (page: number) => void;
+}
+
+/** Shape returned by GET /api/dashboard/players */
+export interface DashboardPlayerApiResponse {
+    id: string;
+    firstName: string;
+    lastName: string;
+    sport: string;
+    position: string;
+    profileImage?: string;
+    videoThumbnail?: string;
+    videoUrl?: string;
+    videoTitle?: string;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import type { PlayerCardProps } from '../types';
 import { PlayerMediaDisplay } from './PlayerMediaDisplay';
@@ -88,9 +88,38 @@ export const PlayerCard = React.memo(function PlayerCard({
     priority = false,
     currentUserId,
     userType,
+    isFavorited = false,
+    onFavoriteToggle,
 }: PlayerCardProps) {
     const playerName = `${firstName} ${lastName}`;
     const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`;
+
+    // Optimistic favorite state — local copy that flips immediately on click
+    const [optimisticFavorited, setOptimisticFavorited] = useState(isFavorited);
+    const [isToggling, setIsToggling] = useState(false);
+
+    // Keep local state in sync when the parent prop changes (e.g. after a page reload)
+    React.useEffect(() => {
+        setOptimisticFavorited(isFavorited);
+    }, [isFavorited]);
+
+    const handleFavoriteClick = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!onFavoriteToggle || isToggling) return;
+
+        const previousState = optimisticFavorited;
+        setOptimisticFavorited(!previousState); // optimistic flip
+        setIsToggling(true);
+
+        try {
+            await onFavoriteToggle(playerId, previousState);
+        } catch {
+            setOptimisticFavorited(previousState); // revert on error
+        } finally {
+            setIsToggling(false);
+        }
+    };
 
     // Build the profile URL based on user type
     const getProfileUrl = (): string => {
@@ -122,6 +151,26 @@ export const PlayerCard = React.memo(function PlayerCard({
                     onWatchVideo={onWatchVideo}
                 />
                 {status && <PlayerStatusBadge status={status} />}
+                {/* Heart / favorite icon — only rendered when onFavoriteToggle is provided */}
+                {onFavoriteToggle && (
+                    <button
+                        onClick={handleFavoriteClick}
+                        disabled={isToggling}
+                        aria-label={optimisticFavorited ? `Remove ${playerName} from prospects` : `Add ${playerName} to prospects`}
+                        aria-pressed={optimisticFavorited}
+                        className="absolute top-2 right-2 z-10 flex items-center justify-center w-14 h-14 rounded-full bg-black/40 hover:bg-black/60 transition-colors focus:outline-none focus:ring-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                    >
+                        {optimisticFavorited ? (
+                            <svg className="w-12 h-12 text-red-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                            </svg>
+                        ) : (
+                            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                        )}
+                    </button>
+                )}
             </div>
 
             {/* Player Info */}

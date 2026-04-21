@@ -12,6 +12,10 @@ jest.mock('../AthleteSearchModal', () => ({
     ),
 }));
 
+jest.mock('next/navigation', () => ({
+    useRouter: () => ({ push: jest.fn() }),
+}));
+
 describe('CoachNavbar', () => {
     const mockCoachId = 'coach-123';
 
@@ -32,7 +36,7 @@ describe('CoachNavbar', () => {
 
             const brandingLink = screen.getByRole('link', { name: /College Athlete Base/i });
             expect(brandingLink).toBeInTheDocument();
-            expect(brandingLink).toHaveAttribute('href', '/coach/dashboard');
+            expect(brandingLink).toHaveAttribute('href', `/coach/${mockCoachId}/dashboard`);
         });
 
         it('should render desktop navigation items', () => {
@@ -40,6 +44,7 @@ describe('CoachNavbar', () => {
 
             expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
             expect(screen.getAllByRole('button', { name: 'Search' })[0]).toBeInTheDocument();
+            expect(screen.getAllByRole('button', { name: 'Prospects' })[0]).toBeInTheDocument();
             expect(screen.getAllByRole('button', { name: 'Profile' })[0]).toBeInTheDocument();
             expect(screen.getAllByRole('button', { name: 'Log Out' })[0]).toBeInTheDocument();
         });
@@ -49,6 +54,13 @@ describe('CoachNavbar', () => {
 
             const homeLink = screen.getByRole('link', { name: 'Home' });
             expect(homeLink).toHaveAttribute('href', `/coach/${mockCoachId}/dashboard`);
+        });
+
+        it('should have correct CAB branding href using coachId', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+
+            const brandingLink = screen.getByRole('link', { name: /College Athlete Base/i });
+            expect(brandingLink).toHaveAttribute('href', `/coach/${mockCoachId}/dashboard`);
         });
     });
 
@@ -91,6 +103,36 @@ describe('CoachNavbar', () => {
             // Click should not throw
             expect(() => fireEvent.click(profileButton)).not.toThrow();
             expect(() => fireEvent.click(logoutButton)).not.toThrow();
+        });
+    });
+
+    describe('Prospects Navigation', () => {
+        it('should render Prospects button in desktop nav', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+            expect(screen.getAllByRole('button', { name: 'Prospects' })[0]).toBeInTheDocument();
+        });
+
+        it('should render Prospects button in mobile menu', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+            fireEvent.click(screen.getByLabelText('Toggle menu'));
+            // Desktop nav + mobile dropdown both render Prospects when menu is open
+            const prospectsButtons = screen.getAllByRole('button', { name: 'Prospects' });
+            expect(prospectsButtons.length).toBeGreaterThanOrEqual(1);
+            // The mobile menu role=menu should contain a Prospects menuitem
+            const mobileMenu = screen.getByRole('menu', { name: /mobile navigation menu/i });
+            expect(mobileMenu).toBeInTheDocument();
+        });
+
+        it('should close mobile menu when Prospects is clicked', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+            const hamburger = screen.getByLabelText('Toggle menu');
+            fireEvent.click(hamburger);
+            expect(hamburger).toHaveAttribute('aria-expanded', 'true');
+
+            const prospectsButtons = screen.getAllByRole('button', { name: 'Prospects' });
+            fireEvent.click(prospectsButtons[prospectsButtons.length - 1]);
+
+            expect(hamburger).toHaveAttribute('aria-expanded', 'false');
         });
     });
 
