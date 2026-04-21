@@ -7,8 +7,61 @@ import { isValidUUID, generateRequestId, formatExecutionTime } from '@/lib/api/u
 const invalidCoachId = 'Invalid coach ID format';
 
 /**
+ * Validates coachId format and session authorization.
+ * Returns an error response if invalid, or null if all checks pass.
+ */
+async function authorizeCoach(
+    request: NextRequest,
+    coachId: string,
+    method: string,
+    path: string,
+    startTime: number,
+    requestId: string,
+): Promise<NextResponse | null> {
+    if (!coachId || !isValidUUID(coachId)) {
+        logger.validationError(invalidCoachId, [
+            { field: 'coachId', message: 'Coach ID must be a valid UUID' }
+        ], { requestId, coachId });
+        logger.apiResponse(method, path, 400, Date.now() - startTime, { requestId });
+        return NextResponse.json({ success: false, error: invalidCoachId }, { status: 400 });
+    }
+
+    const session = await validateSession(request);
+
+    if (!session.isValid) {
+        logger.info('Unauthenticated request', { requestId, coachId, error: session.error });
+        logger.apiResponse(method, path, 401, Date.now() - startTime, { requestId });
+        return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
+    }
+
+    if (session.playerId !== coachId || session.type !== 'coach') {
+        logger.info('Unauthorized prospects access attempt', {
+            requestId,
+            coachId,
+            userId: session.playerId,
+            userType: session.type,
+        });
+        logger.apiResponse(method, path, 403, Date.now() - startTime, { requestId });
+        return NextResponse.json(
+            { success: false, error: method === 'GET' ? 'You can only view your own prospects' : 'You can only modify your own prospects' },
+            { status: 403 }
+        );
+    }
+
+    return null;
+}
+
+/**
  * GET /api/coach/[coachId]/prospects
+ *
  * Returns all favorited players for the coach with their profile data.
+ *
+ * @auth Required — coach session matching coachId
+ * @response 200 { success: true, data: ProspectPlayerData[] }
+ * @response 400 Invalid coachId format
+ * @response 401 No valid session
+ * @response 403 Session does not match coachId or is not a coach
+ * @response 500 Database or unexpected error
  */
 export async function GET(
     request: NextRequest,
@@ -22,32 +75,8 @@ export async function GET(
     logger.apiRequest('GET', path, { requestId, coachId });
 
     try {
-        if (!coachId || !isValidUUID(coachId)) {
-            logger.validationError(invalidCoachId, [
-                { field: 'coachId', message: 'Coach ID must be a valid UUID' }
-            ], { requestId, coachId });
-            logger.apiResponse('GET', path, 400, Date.now() - startTime, { requestId });
-            return NextResponse.json({ success: false, error: invalidCoachId }, { status: 400 });
-        }
-
-        const session = await validateSession(request);
-
-        if (!session.isValid) {
-            logger.info('Unauthenticated request', { requestId, coachId, error: session.error });
-            logger.apiResponse('GET', path, 401, Date.now() - startTime, { requestId });
-            return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
-        }
-
-        if (session.playerId !== coachId || session.type !== 'coach') {
-            logger.info('Unauthorized prospects access attempt', {
-                requestId,
-                coachId,
-                userId: session.playerId,
-                userType: session.type,
-            });
-            logger.apiResponse('GET', path, 403, Date.now() - startTime, { requestId });
-            return NextResponse.json({ success: false, error: 'You can only view your own prospects' }, { status: 403 });
-        }
+        const authError = await authorizeCoach(request, coachId, 'GET', path, startTime, requestId);
+        if (authError) return authError;
 
         let prospects;
         try {
@@ -83,8 +112,17 @@ export async function GET(
 
 /**
  * POST /api/coach/[coachId]/prospects
+ *
  * Adds a player to the coach's prospects list.
- * Body: { playerId: string }
+ *
+ * @auth Required — coach session matching coachId
+ * @body { playerId: string } — UUID of the player to add
+ * @response 201 { success: true, data: ProspectRow }
+ * @response 400 Invalid coachId/playerId format or malformed body
+ * @response 401 No valid session
+ * @response 403 Session does not match coachId or is not a coach
+ * @response 409 Player is already in prospects
+ * @response 500 Database or unexpected error
  */
 export async function POST(
     request: NextRequest,
@@ -98,32 +136,8 @@ export async function POST(
     logger.apiRequest('POST', path, { requestId, coachId });
 
     try {
-        if (!coachId || !isValidUUID(coachId)) {
-            logger.validationError(invalidCoachId, [
-                { field: 'coachId', message: 'Coach ID must be a valid UUID' }
-            ], { requestId, coachId });
-            logger.apiResponse('POST', path, 400, Date.now() - startTime, { requestId });
-            return NextResponse.json({ success: false, error: invalidCoachId }, { status: 400 });
-        }
-
-        const session = await validateSession(request);
-
-        if (!session.isValid) {
-            logger.info('Unauthenticated request', { requestId, coachId, error: session.error });
-            logger.apiResponse('POST', path, 401, Date.now() - startTime, { requestId });
-            return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 });
-        }
-
-        if (session.playerId !== coachId || session.type !== 'coach') {
-            logger.info('Unauthorized prospects modification attempt', {
-                requestId,
-                coachId,
-                userId: session.playerId,
-                userType: session.type,
-            });
-            logger.apiResponse('POST', path, 403, Date.now() - startTime, { requestId });
-            return NextResponse.json({ success: false, error: 'You can only modify your own prospects' }, { status: 403 });
-        }
+        const authError = await authorizeCoach(request, coachId, 'POST', path, startTime, requestId);
+        if (authError) return authError;
 
         let body: { playerId?: string };
         try {
@@ -157,7 +171,6 @@ export async function POST(
             logger.apiResponse('POST', path, 201, Date.now() - startTime, { requestId, coachId });
             return NextResponse.json({ success: true, data: prospect }, { status: 201 });
         } catch (error) {
-            // Postgres unique violation code
             const isConflict =
                 error instanceof Error &&
                 'code' in (error as NodeJS.ErrnoException) &&

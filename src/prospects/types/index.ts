@@ -22,3 +22,13 @@ export interface ProspectsTableProps {
     prospects: ProspectPlayerData[];
     coachId: string;
 }
+
+/**
+ * Local state shape for the video modal within ProspectsTable
+ */
+export interface VideoModalState {
+    isOpen: boolean;
+    videoUrl: string | null;
+    videoTitle: string | null;
+    playerName: string | null;
+}

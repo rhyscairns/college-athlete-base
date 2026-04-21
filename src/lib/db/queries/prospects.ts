@@ -115,7 +115,7 @@ export async function getProspectsWithPlayerData(coachId: string): Promise<Prosp
         lastName: row.last_name,
         sport: row.sport ?? null,
         position: row.position ?? null,
-        gpa: row.gpa != null ? parseFloat(row.gpa) : null,
+        gpa: row.gpa !== null ? parseFloat(row.gpa) : null,
         highSchool: row.high_school ?? null,
         scholarshipAmount: row.scholarship_amount != null ? parseFloat(row.scholarship_amount) : null,
         videoUrl: row.highlight_video_url ?? null,

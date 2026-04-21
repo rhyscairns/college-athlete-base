@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { SearchCriteria, SearchFiltersBarProps } from '../types';
-import { inchesToHeight } from '../utils/search';
+import { SearchFiltersBarProps } from '../types';
 
 interface FilterChip {
     key: string;

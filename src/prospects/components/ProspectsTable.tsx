@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { VideoModal } from '@/dashboard/common/components/VideoModal';
-import type { ProspectPlayerData, ProspectsTableProps } from '../types';
+import type { ProspectPlayerData, ProspectsTableProps, VideoModalState } from '../types';
 
 export function ProspectsTable({ prospects: initialProspects, coachId }: ProspectsTableProps) {
     const router = useRouter();
@@ -11,14 +11,11 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
     const [error, setError] = useState<string | null>(null);
     const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
 
-    const [videoModal, setVideoModal] = useState<{
-        isOpen: boolean;
-        videoUrl: string | null;
-        videoTitle: string | null;
-        playerName: string | null;
-    }>({ isOpen: false, videoUrl: null, videoTitle: null, playerName: null });
+    const [videoModal, setVideoModal] = useState<VideoModalState>(
+        { isOpen: false, videoUrl: null, videoTitle: null, playerName: null }
+    );
 
-    const handleWatchVideo = useCallback((prospect: ProspectPlayerData) => {
+    const handleWatchVideo = useCallback((prospect: ProspectPlayerData): void => {
         setVideoModal({
             isOpen: true,
             videoUrl: prospect.videoUrl,
@@ -27,15 +24,11 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
         });
     }, []);
 
-    const handleCloseVideo = useCallback(() => {
+    const handleCloseVideo = useCallback((): void => {
         setVideoModal({ isOpen: false, videoUrl: null, videoTitle: null, playerName: null });
     }, []);
 
-    const handleViewProfile = useCallback((playerId: string) => {
-        router.push(`/coach/${coachId}/dashboard/player-profile/${playerId}`);
-    }, [router, coachId]);
-
-    const handleUnfavorite = useCallback(async (playerId: string) => {
+    const handleUnfavorite = useCallback(async (playerId: string): Promise<void> => {
         setRemovingIds((prev) => new Set(prev).add(playerId));
         setError(null);
 
@@ -110,7 +103,7 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
                                         {prospect.position ?? '—'}
                                     </td>
                                     <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
-                                        {prospect.gpa != null ? prospect.gpa : '—'}
+                                        {prospect.gpa !== null ? prospect.gpa : '—'}
                                     </td>
                                     <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
                                         {prospect.highSchool ?? '—'}
@@ -132,7 +125,7 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
                                                 </button>
                                             )}
                                             <button
-                                                onClick={() => handleViewProfile(prospect.playerId)}
+                                                onClick={() => router.push(`/coach/${coachId}/dashboard/player-profile/${prospect.playerId}`)}
                                                 aria-label={`View profile for ${fullName}`}
                                                 className="px-3 py-1.5 text-xs font-semibold bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1"
                                             >
