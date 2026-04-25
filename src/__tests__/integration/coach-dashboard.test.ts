@@ -48,6 +48,10 @@ function createMockRequest(
 /**
  * Helper function to register a test coach
  */
+function uniqueEmail(prefix: string): string {
+    return `${prefix}.${Date.now()}.${Math.random().toString(36).slice(2, 7)}@coach-dashboard-test.com`;
+}
+
 async function registerTestCoach(email: string, password: string = 'TestPassword123!') {
     const registrationData = {
         firstName: 'Test',
