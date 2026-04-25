@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { CoachNavbarProps, NavProps } from '../types';
 import { AthleteSearchModal } from './AthleteSearchModal';
+import { NotificationBell } from '../../../messages/components/NotificationBell';
 
 
 /**
@@ -56,6 +57,12 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
         router.push(`/coach/${coachId}/prospects`);
     }, [router, coachId]);
 
+    const handleMessagesClick = useCallback((e: React.MouseEvent): void => {
+        e.preventDefault();
+        setMobileMenuOpen(false);
+        router.push(`/coach/${coachId}/messages`);
+    }, [router, coachId]);
+
     const handleProfileClick = useCallback((e: React.MouseEvent): void => {
         e.preventDefault();
         setMobileMenuOpen(false);
@@ -78,6 +85,7 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
                     coachId={coachId}
                     onSearchClick={handleSearchClick}
                     onProspectsClick={handleProspectsClick}
+                    onMessagesClick={handleMessagesClick}
                     onProfileClick={handleProfileClick}
                     onLogout={handleLogout}
                 />
@@ -88,6 +96,7 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
                     coachId={coachId}
                     onSearchClick={handleSearchClick}
                     onProspectsClick={handleProspectsClick}
+                    onMessagesClick={handleMessagesClick}
                     onProfileClick={handleProfileClick}
                     onLogout={handleLogout}
                 />
@@ -145,7 +154,7 @@ function HamburgerButton({ isOpen, onClick }: { isOpen: boolean; onClick: () => 
 }
 
 
-function DesktopNav({ coachId, onSearchClick, onProspectsClick, onProfileClick, onLogout }: NavProps): React.ReactElement {
+function DesktopNav({ coachId, onSearchClick, onProspectsClick, onMessagesClick, onProfileClick, onLogout }: NavProps): React.ReactElement {
     const baseCls = 'px-6 py-3 text-sm font-medium text-gray-300 bg-transparent rounded-lg transition-all duration-200 cursor-pointer hover:bg-gray-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-white';
 
     return (
@@ -159,9 +168,13 @@ function DesktopNav({ coachId, onSearchClick, onProspectsClick, onProfileClick, 
             <button onClick={onProspectsClick} className={`${baseCls} border-none`}>
                 Prospects
             </button>
+            <button onClick={onMessagesClick} className={`${baseCls} border-none`}>
+                Messages
+            </button>
             <button onClick={onProfileClick} className={`${baseCls} border-none`}>
                 Profile
             </button>
+            <NotificationBell userId={coachId} userType="coach" />
             <button
                 onClick={onLogout}
                 className="px-6 py-3 text-sm font-medium text-white bg-red-600 rounded-lg border-none transition-all duration-200 cursor-pointer hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
@@ -172,7 +185,7 @@ function DesktopNav({ coachId, onSearchClick, onProspectsClick, onProfileClick, 
     );
 }
 
-function MobileDropdown({ coachId, onSearchClick, onProspectsClick, onProfileClick, onLogout }: NavProps): React.ReactElement {
+function MobileDropdown({ coachId, onSearchClick, onProspectsClick, onMessagesClick, onProfileClick, onLogout }: NavProps): React.ReactElement {
     const baseCls = 'px-6 py-4 text-base font-medium text-gray-300 bg-transparent border-none border-b border-gray-700 text-left w-full transition-all duration-200 cursor-pointer hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white';
 
     return (
@@ -194,6 +207,9 @@ function MobileDropdown({ coachId, onSearchClick, onProspectsClick, onProfileCli
             </button>
             <button onClick={onProspectsClick} role="menuitem" className={baseCls}>
                 Prospects
+            </button>
+            <button onClick={onMessagesClick} role="menuitem" className={baseCls}>
+                Messages
             </button>
             <button onClick={onProfileClick} role="menuitem" className={baseCls}>
                 Profile

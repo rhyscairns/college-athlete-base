@@ -90,6 +90,7 @@ export const PlayerCard = React.memo(function PlayerCard({
     userType,
     isFavorited = false,
     onFavoriteToggle,
+    onMessageClick,
 }: PlayerCardProps) {
     const playerName = `${firstName} ${lastName}`;
     const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`;
@@ -208,6 +209,15 @@ export const PlayerCard = React.memo(function PlayerCard({
                         className="block w-full min-h-[44px] px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold text-center hover:bg-gray-200 hover:shadow-lg transition-all touch-manipulation focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-white"
                     >
                         {secondaryButtonLabel}
+                    </button>
+                )}
+                {userType === 'coach' && onMessageClick && (
+                    <button
+                        onClick={onMessageClick}
+                        aria-label={`Message ${playerName}`}
+                        className="block w-full min-h-[44px] px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold text-center hover:bg-gray-200 hover:shadow-lg transition-all touch-manipulation focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-white"
+                    >
+                        Message
                     </button>
                 )}
             </div>

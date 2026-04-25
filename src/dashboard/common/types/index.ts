@@ -58,6 +58,8 @@ export interface PlayerCardProps {
     isFavorited?: boolean;
     /** Callback when the favorite heart icon is toggled */
     onFavoriteToggle?: (playerId: string, currentState: boolean) => void | Promise<void>;
+    /** Optional callback for message button click (coach view only) */
+    onMessageClick?: () => void;
 }
 
 /**
