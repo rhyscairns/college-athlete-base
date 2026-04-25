@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SearchFiltersBar } from '@/dashboard/coach/components/SearchFiltersBar';
 import { AthleteSearchResults } from '@/dashboard/coach/components/AthleteSearchResults';
@@ -8,10 +8,11 @@ import { SearchCriteria, SearchResponse } from '@/dashboard/coach/types';
 import { parseSearchParams, buildSearchQueryString } from '@/dashboard/coach/utils/search';
 
 interface SearchPageProps {
-    params: { coachId: string };
+    params: Promise<{ coachId: string }>;
 }
 
 export default function CoachSearchPage({ params }: SearchPageProps) {
+    const { coachId } = use(params);
     const router = useRouter();
     const searchParams = useSearchParams();
     const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
@@ -77,12 +78,12 @@ export default function CoachSearchPage({ params }: SearchPageProps) {
 
         // Build new URL with updated criteria
         const queryString = buildSearchQueryString(newCriteria);
-        router.push(`/coach/${params.coachId}/dashboard/search?${queryString}`);
+        router.push(`/coach/${coachId}/dashboard/search?${queryString}`);
     };
 
     const handleClearAll = () => {
         setCurrentPage(1);
-        router.push(`/coach/${params.coachId}/dashboard/search`);
+        router.push(`/coach/${coachId}/dashboard/search`);
     };
 
     const handlePageChange = (page: number) => {

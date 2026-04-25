@@ -15,7 +15,7 @@
     "destroy:prod": "cdk destroy ProdStack"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/node": "^24.0.0",
     "aws-cdk": "^2.120.0",
     "typescript": "^5.0.0"
   },

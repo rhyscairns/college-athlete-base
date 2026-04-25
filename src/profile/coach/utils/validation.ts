@@ -8,6 +8,7 @@ import {
     getRequiredFieldError,
     getEmailError,
 } from '@/authentication/utils/validation';
+import { Achievement } from '@/profile/coach/types';
 
 /**
  * Validates if a phone number is properly formatted
@@ -121,7 +122,7 @@ export const validateCoachProfile = (data: {
     teamName?: string;
     officeLocation?: string;
     officeHours?: string;
-    achievements?: string[];
+    achievements?: Achievement[];
 }): Record<string, string> => {
     const errors: Record<string, string> = {};
 

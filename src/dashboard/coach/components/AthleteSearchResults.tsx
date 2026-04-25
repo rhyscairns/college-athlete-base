@@ -145,7 +145,7 @@ export const AthleteSearchResults: React.FC<AthleteSearchResultsProps> = ({
             >
                 {athletes.map((athlete, index) => {
                     // Convert height from inches to display format
-                    const heightDisplay = inchesToHeight(athlete.heightInches);
+                    const heightDisplay = inchesToHeight(athlete.heightInches) ?? undefined;
                     const weightDisplay = `${athlete.weightLbs} lbs`;
 
                     // First 3 cards get priority loading (above the fold on desktop)

@@ -9,7 +9,7 @@ import { TextEncoder, TextDecoder } from 'util'
 // Load .env.test file for integration tests
 config({ path: resolve(process.cwd(), '.env.test') })
 
-// Polyfills for Node.js environment
+// jsdom doesn't expose Node.js globals — re-expose them explicitly
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder
 
