@@ -627,6 +627,39 @@ describe('PlayerCard', () => {
         });
     });
 
+    describe('Message Button (Coach View)', () => {
+        it('should not render Message button when onMessageClick is not provided', () => {
+            render(<PlayerCard {...mockPlayerData} userType="coach" />);
+            expect(screen.queryByRole('button', { name: /message john smith/i })).not.toBeInTheDocument();
+        });
+
+        it('should not render Message button for player userType even when onMessageClick is provided', () => {
+            const handleMessage = jest.fn();
+            render(<PlayerCard {...mockPlayerData} userType="player" onMessageClick={handleMessage} />);
+            expect(screen.queryByRole('button', { name: /message john smith/i })).not.toBeInTheDocument();
+        });
+
+        it('should render Message button when userType is coach and onMessageClick is provided', () => {
+            const handleMessage = jest.fn();
+            render(<PlayerCard {...mockPlayerData} userType="coach" onMessageClick={handleMessage} />);
+            expect(screen.getByRole('button', { name: /message john smith/i })).toBeInTheDocument();
+        });
+
+        it('should call onMessageClick when Message button is clicked', () => {
+            const handleMessage = jest.fn();
+            render(<PlayerCard {...mockPlayerData} userType="coach" onMessageClick={handleMessage} />);
+            fireEvent.click(screen.getByRole('button', { name: /message john smith/i }));
+            expect(handleMessage).toHaveBeenCalledTimes(1);
+        });
+
+        it('should style Message button consistently with secondary button', () => {
+            const handleMessage = jest.fn();
+            render(<PlayerCard {...mockPlayerData} userType="coach" onMessageClick={handleMessage} />);
+            const btn = screen.getByRole('button', { name: /message john smith/i });
+            expect(btn).toHaveClass('bg-gray-100', 'text-gray-700', 'min-h-[44px]');
+        });
+    });
+
     describe('Play Button Overlay', () => {
         it('should render clickable play button when video thumbnail and onWatchVideo are provided', () => {
             const handleWatchVideo = jest.fn();

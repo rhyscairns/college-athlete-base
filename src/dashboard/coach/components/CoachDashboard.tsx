@@ -320,6 +320,11 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
     // Handler for contacting player (TODO: Implement contact modal/dialog)
     const handleContact = useCallback((_playerId: string): void => { }, []);
 
+    // Handler for messaging player — navigates to the coach-player thread
+    const handleMessage = useCallback((playerId: string): void => {
+        router.push(`/coach/${coachId}/messages/${playerId}`);
+    }, [router, coachId]);
+
     // Handler for watching video
     const handleWatchVideo = useCallback((_playerId: string, videoUrl: string, videoTitle?: string, playerName?: string): void => {
         setVideoModalState({
@@ -346,8 +351,9 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
             ...player,
             onPrimaryClick: () => handleViewProfile(player.playerId),
             onSecondaryClick: () => handleContact(player.playerId),
+            onMessageClick: () => handleMessage(player.playerId),
         })),
-        [players, handleViewProfile, handleContact]
+        [players, handleViewProfile, handleContact, handleMessage]
     );
 
     return (

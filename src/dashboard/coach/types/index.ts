@@ -18,6 +18,7 @@ export interface NavProps {
     coachId: string;
     onSearchClick: (e: MouseEvent) => void;
     onProspectsClick: (e: MouseEvent) => void;
+    onMessagesClick: (e: MouseEvent) => void;
     onProfileClick: (e: MouseEvent) => void;
     onLogout: () => void;
 }

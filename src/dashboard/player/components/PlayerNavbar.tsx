@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { PlayerNavbarProps } from '../types';
+import { NotificationBell } from '../../../messages/components/NotificationBell';
 
 // Constants
 const COLORS = {
@@ -45,6 +46,12 @@ export function PlayerNavbar({ playerId }: PlayerNavbarProps) {
         setMobileMenuOpen(false);
     };
 
+    const handleMessagesClick = (_e: React.MouseEvent) => {
+        _e.preventDefault();
+        window.location.href = `/player/${playerId}/messages`;
+        setMobileMenuOpen(false);
+    };
+
     const toggleMobileMenu = () => {
         setMobileMenuOpen(!mobileMenuOpen);
     };
@@ -73,6 +80,7 @@ export function PlayerNavbar({ playerId }: PlayerNavbarProps) {
                 <DesktopNav
                     playerId={playerId}
                     onProfileClick={handleProfileClick}
+                    onMessagesClick={handleMessagesClick}
                     onLogout={handleLogout}
                 />
             </div>
@@ -82,6 +90,7 @@ export function PlayerNavbar({ playerId }: PlayerNavbarProps) {
                     <MobileDropdown
                         playerId={playerId}
                         onProfileClick={handleProfileClick}
+                        onMessagesClick={handleMessagesClick}
                         onLogout={handleLogout}
                     />
                 )
@@ -157,10 +166,11 @@ function HamburgerButton({ isOpen, onClick }: { isOpen: boolean; onClick: () => 
 interface NavProps {
     playerId: string;
     onProfileClick: (_e: React.MouseEvent) => void;
+    onMessagesClick: (_e: React.MouseEvent) => void;
     onLogout: () => void;
 }
 
-function DesktopNav({ playerId, onProfileClick, onLogout }: NavProps) {
+function DesktopNav({ playerId, onProfileClick, onMessagesClick, onLogout }: NavProps) {
     const baseStyle = {
         padding: '12px 24px',
         fontSize: '14px',
@@ -184,6 +194,10 @@ function DesktopNav({ playerId, onProfileClick, onLogout }: NavProps) {
             <button onClick={onProfileClick} style={{ ...baseStyle, border: 'none' }} {...navItemHoverHandlers}>
                 Profile
             </button>
+            <button onClick={onMessagesClick} style={{ ...baseStyle, border: 'none' }} {...navItemHoverHandlers}>
+                Messages
+            </button>
+            <NotificationBell userId={playerId} userType="player" />
             <button
                 onClick={onLogout}
                 style={{
@@ -201,7 +215,7 @@ function DesktopNav({ playerId, onProfileClick, onLogout }: NavProps) {
     );
 }
 
-function MobileDropdown({ playerId, onProfileClick, onLogout }: NavProps) {
+function MobileDropdown({ playerId, onProfileClick, onMessagesClick, onLogout }: NavProps) {
     const baseStyle = {
         padding: '16px 24px',
         fontSize: '16px',
@@ -247,6 +261,19 @@ function MobileDropdown({ playerId, onProfileClick, onLogout }: NavProps) {
                 {...mobileItemHoverHandlers}
             >
                 Profile
+            </button>
+            <button
+                onClick={onMessagesClick}
+                style={{
+                    ...baseStyle,
+                    border: 'none',
+                    borderBottom: `1px solid ${COLORS.DARKER_GRAY}`,
+                    textAlign: 'left',
+                    width: '100%'
+                }}
+                {...mobileItemHoverHandlers}
+            >
+                Messages
             </button>
             <button
                 onClick={onLogout}

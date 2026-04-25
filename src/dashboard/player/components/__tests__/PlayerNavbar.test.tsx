@@ -1,6 +1,12 @@
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { PlayerNavbar } from '../PlayerNavbar';
 
+jest.mock('../../../../messages/components/NotificationBell', () => ({
+    NotificationBell: ({ userId, userType }: { userId: string; userType: string }) => (
+        <div data-testid="notification-bell" data-user-id={userId} data-user-type={userType} />
+    ),
+}));
+
 describe('PlayerNavbar', () => {
     const mockPlayerId = 'player-123';
 
@@ -40,6 +46,7 @@ describe('PlayerNavbar', () => {
 
             expect(screen.getByText('Home')).toBeInTheDocument();
             expect(screen.getByText('Profile')).toBeInTheDocument();
+            expect(screen.getAllByText('Messages').length).toBeGreaterThan(0);
             expect(screen.getByText('Log Out')).toBeInTheDocument();
         });
 
@@ -63,6 +70,15 @@ describe('PlayerNavbar', () => {
             const profileButton = screen.getByText('Profile').closest('button');
             expect(profileButton).toBeInTheDocument();
             expect(profileButton?.tagName).toBe('BUTTON');
+        });
+
+        it('renders Messages as a button', () => {
+            render(<PlayerNavbar playerId={mockPlayerId} />);
+
+            const messagesButtons = screen.getAllByText('Messages');
+            const desktopMessagesButton = messagesButtons[0].closest('button');
+            expect(desktopMessagesButton).toBeInTheDocument();
+            expect(desktopMessagesButton?.tagName).toBe('BUTTON');
         });
 
         it('renders Log Out as a button', () => {
@@ -96,6 +112,22 @@ describe('PlayerNavbar', () => {
         });
     });
 
+    describe('Messages Navigation', () => {
+        it('Messages button is clickable and does not throw errors', () => {
+            render(<PlayerNavbar playerId={mockPlayerId} />);
+
+            const messagesButtons = screen.getAllByText('Messages');
+            expect(() => fireEvent.click(messagesButtons[0])).not.toThrow();
+        });
+
+        it('Messages button has onClick handler and does not throw', () => {
+            render(<PlayerNavbar playerId={mockPlayerId} />);
+
+            const messagesButtons = screen.getAllByText('Messages');
+            expect(() => fireEvent.click(messagesButtons[0])).not.toThrow();
+        });
+    });
+
     describe('Profile Link', () => {
         it('Profile button is clickable and does not throw errors', () => {
             render(<PlayerNavbar playerId={mockPlayerId} />);
@@ -123,6 +155,17 @@ describe('PlayerNavbar', () => {
 
             expect(logoutButton).toBeInTheDocument();
             expect(logoutButton?.tagName).toBe('BUTTON');
+        });
+    });
+
+    describe('NotificationBell', () => {
+        it('renders NotificationBell with correct userId and userType', () => {
+            render(<PlayerNavbar playerId={mockPlayerId} />);
+
+            const bell = screen.getByTestId('notification-bell');
+            expect(bell).toBeInTheDocument();
+            expect(bell).toHaveAttribute('data-user-id', mockPlayerId);
+            expect(bell).toHaveAttribute('data-user-type', 'player');
         });
     });
 
@@ -155,6 +198,19 @@ describe('PlayerNavbar', () => {
 
             const profileButton = screen.getByText('Profile').closest('button');
             expect(profileButton).toHaveStyle({
+                padding: '12px 24px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#d1d5db',
+            });
+        });
+
+        it('applies correct styling to Messages button', () => {
+            render(<PlayerNavbar playerId={mockPlayerId} />);
+
+            const messagesButtons = screen.getAllByText('Messages');
+            const desktopBtn = messagesButtons[0].closest('button');
+            expect(desktopBtn).toHaveStyle({
                 padding: '12px 24px',
                 fontSize: '14px',
                 fontWeight: '500',
@@ -207,6 +263,23 @@ describe('PlayerNavbar', () => {
             fireEvent.mouseLeave(profileButton);
             expect(profileButton.style.backgroundColor).toBe('transparent');
             expect(profileButton.style.color).toBe('rgb(209, 213, 219)');
+        });
+
+        it('changes Messages button style on hover', () => {
+            render(<PlayerNavbar playerId={mockPlayerId} />);
+
+            const messagesButtons = screen.getAllByText('Messages');
+            const desktopBtn = messagesButtons[0].closest('button') as HTMLElement;
+
+            expect(desktopBtn.style.color).toBe('rgb(209, 213, 219)');
+
+            fireEvent.mouseEnter(desktopBtn);
+            expect(desktopBtn.style.backgroundColor).toBe('rgb(31, 41, 55)');
+            expect(desktopBtn.style.color).toBe('white');
+
+            fireEvent.mouseLeave(desktopBtn);
+            expect(desktopBtn.style.backgroundColor).toBe('transparent');
+            expect(desktopBtn.style.color).toBe('rgb(209, 213, 219)');
         });
 
         it('changes Log Out button style on hover', () => {
@@ -279,7 +352,7 @@ describe('PlayerNavbar', () => {
             expect(mobileButton).toHaveAttribute('aria-expanded', 'false');
         });
 
-        it('mobile dropdown contains all navigation items', () => {
+        it('mobile dropdown contains all navigation items including Messages', () => {
             const { container } = render(<PlayerNavbar playerId={mockPlayerId} />);
 
             const mobileButton = container.querySelector('.mobile-menu-button') as HTMLElement;
@@ -289,7 +362,20 @@ describe('PlayerNavbar', () => {
             expect(mobileDropdown).toBeInTheDocument();
 
             const dropdownLinks = mobileDropdown?.querySelectorAll('a, button');
-            expect(dropdownLinks?.length).toBe(3); // Home, Profile, Log Out
+            expect(dropdownLinks?.length).toBe(4); // Home, Profile, Messages, Log Out
+        });
+
+        it('mobile dropdown contains Messages button', () => {
+            const { container } = render(<PlayerNavbar playerId={mockPlayerId} />);
+
+            const mobileButton = container.querySelector('.mobile-menu-button') as HTMLElement;
+            fireEvent.click(mobileButton);
+
+            const mobileDropdown = container.querySelector('.mobile-dropdown');
+            const messagesBtn = Array.from(mobileDropdown?.querySelectorAll('button') ?? []).find(
+                (btn) => btn.textContent === 'Messages'
+            );
+            expect(messagesBtn).toBeInTheDocument();
         });
 
         it('closes mobile menu when a navigation item is clicked', () => {
@@ -333,9 +419,12 @@ describe('PlayerNavbar', () => {
 
             const profileButton = screen.getByText('Profile').closest('button');
             const logoutButton = screen.getByText('Log Out').closest('button');
+            const messagesButtons = screen.getAllByText('Messages');
+            const messagesButton = messagesButtons[0].closest('button');
 
             expect(profileButton?.tagName).toBe('BUTTON');
             expect(logoutButton?.tagName).toBe('BUTTON');
+            expect(messagesButton?.tagName).toBe('BUTTON');
         });
 
         it('buttons have appropriate cursor styling', () => {
@@ -343,9 +432,12 @@ describe('PlayerNavbar', () => {
 
             const profileButton = screen.getByText('Profile').closest('button');
             const logoutButton = screen.getByText('Log Out').closest('button');
+            const messagesButtons = screen.getAllByText('Messages');
+            const messagesButton = messagesButtons[0].closest('button');
 
             expect(profileButton).toHaveStyle({ cursor: 'pointer' });
             expect(logoutButton).toHaveStyle({ cursor: 'pointer' });
+            expect(messagesButton).toHaveStyle({ cursor: 'pointer' });
         });
     });
 

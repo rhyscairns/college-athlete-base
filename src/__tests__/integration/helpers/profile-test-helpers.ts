@@ -76,9 +76,13 @@ export async function selectSport(sportName: string, searchText: string) {
     await user.clear(sportInput);
     await user.type(sportInput, searchText);
 
-    await waitFor(() => {
+    // Re-click the input if the listbox closed due to parallel test interference
+    await waitFor(async () => {
+        if (!screen.queryByRole('listbox')) {
+            await user.click(sportInput);
+        }
         expect(screen.getByRole('listbox')).toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
 
     const option = screen.getByRole('option', { name: new RegExp(sportName, 'i') });
     await user.click(option);

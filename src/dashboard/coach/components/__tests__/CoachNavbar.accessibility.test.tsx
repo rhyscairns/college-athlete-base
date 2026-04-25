@@ -15,6 +15,12 @@ jest.mock('../AthleteSearchModal', () => ({
         ) : null,
 }));
 
+jest.mock('../../../../messages/components/NotificationBell', () => ({
+    NotificationBell: ({ userId, userType }: { userId: string; userType: string }) => (
+        <div data-testid="notification-bell" data-user-id={userId} data-user-type={userType} />
+    ),
+}));
+
 jest.mock('next/navigation', () => ({
     useRouter: () => ({ push: jest.fn() }),
 }));
@@ -70,7 +76,7 @@ describe('CoachNavbar Accessibility', () => {
             render(<CoachNavbar coachId={coachId} />);
             fireEvent.click(screen.getByLabelText('Toggle menu'));
             const menuItems = screen.getAllByRole('menuitem');
-            expect(menuItems.length).toBeGreaterThanOrEqual(5); // Home, Search, Prospects, Profile, Log Out
+            expect(menuItems.length).toBeGreaterThanOrEqual(6); // Home, Search, Prospects, Messages, Profile, Log Out
         });
     });
 
@@ -89,6 +95,13 @@ describe('CoachNavbar Accessibility', () => {
             searchBtn.focus();
             fireEvent.click(searchBtn);
             expect(screen.getByTestId('athlete-search-modal')).toBeInTheDocument();
+        });
+
+        it('Messages button is focusable and clickable', () => {
+            render(<CoachNavbar coachId={coachId} />);
+            const messagesBtn = screen.getAllByRole('button', { name: 'Messages' })[0];
+            expect(messagesBtn).not.toHaveAttribute('tabindex', '-1');
+            expect(() => fireEvent.click(messagesBtn)).not.toThrow();
         });
     });
 });
