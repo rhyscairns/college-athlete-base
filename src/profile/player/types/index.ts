@@ -162,8 +162,8 @@ export interface TextInputProps {
     required?: boolean;
     placeholder?: string;
     disabled?: boolean;
-    min?: number;
-    max?: number;
+    min?: number | string;
+    max?: number | string;
     step?: number;
 }
 

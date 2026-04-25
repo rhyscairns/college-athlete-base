@@ -29,8 +29,8 @@ const customJestConfig = {
         },
     },
     testMatch: [
-        '**/__tests__/**/*.(test|spec).[jt]s?(x)',
-        '**/?(*.)+(spec|test).[jt]s?(x)',
+        '<rootDir>/src/**/__tests__/**/*.(test|spec).[jt]s?(x)',
+        '<rootDir>/src/**/?(*.)+(spec|test).[jt]s?(x)',
     ],
     testPathIgnorePatterns: [
         '/node_modules/',

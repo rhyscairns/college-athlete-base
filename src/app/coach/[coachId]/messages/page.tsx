@@ -5,6 +5,7 @@ import { getConversationsForCoach } from '@/lib/db/queries/messages';
 import { MessagesTable } from '@/messages/components/MessagesTable';
 import { logger } from '@/lib/logger';
 import type { Metadata } from 'next';
+import type { Conversation } from '@/messages/types';
 
 // Always fetch fresh — messages change frequently
 export const dynamic = 'force-dynamic';
@@ -48,7 +49,7 @@ export default async function CoachMessagesPage({ params }: MessagesPageProps) {
     }
 
     // ── Data ──────────────────────────────────────────────────────────────────
-    let conversations;
+    let conversations: Conversation[];
 
     try {
         conversations = await getConversationsForCoach(coachId);

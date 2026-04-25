@@ -38,6 +38,15 @@ jest.mock('@/dashboard/coach/components/AthleteSearchResults', () => ({
     },
 }));
 
+// React.use() checks promise.status internally before suspending.
+// Pre-marking the promise as fulfilled lets use() return synchronously in tests.
+function resolvedParams(coachId: string): Promise<{ coachId: string }> {
+    const p = Promise.resolve({ coachId }) as any;
+    p.status = 'fulfilled';
+    p.value = { coachId };
+    return p as Promise<{ coachId: string }>;
+}
+
 describe('CoachSearchPage Integration Tests', () => {
     const mockPush = jest.fn();
     const mockRouter = {
@@ -63,6 +72,9 @@ describe('CoachSearchPage Integration Tests', () => {
             filters: {},
         },
     });
+
+    const renderPage = () =>
+        render(<CoachSearchPage params={resolvedParams('coach-123')} />);
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -93,7 +105,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 ),
             });
 
-            render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            renderPage();
 
             await waitFor(() => {
                 expect(global.fetch).toHaveBeenCalledWith(
@@ -117,7 +129,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 json: async () => createApiResponse([], 0),
             });
 
-            render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            renderPage();
 
             await waitFor(() => {
                 expect(global.fetch).toHaveBeenCalled();
@@ -147,7 +159,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 json: async () => createApiResponse([], 0),
             });
 
-            render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            renderPage();
 
             await waitFor(() => {
                 const fetchCall = (global.fetch as jest.Mock).mock.calls[0][0];
@@ -179,7 +191,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 ),
             });
 
-            render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            renderPage();
 
             expect(screen.getByTestId('loading')).toBeInTheDocument();
 
@@ -203,7 +215,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 status: 500,
             });
 
-            render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            renderPage();
 
             await waitFor(() => {
                 expect(screen.getByText('Error loading search results')).toBeInTheDocument();
@@ -217,7 +229,7 @@ describe('CoachSearchPage Integration Tests', () => {
 
             (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
-            render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            renderPage();
 
             await waitFor(() => {
                 expect(screen.getByText('Try again')).toBeInTheDocument();
@@ -230,7 +242,7 @@ describe('CoachSearchPage Integration Tests', () => {
 
             (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
-            render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            renderPage();
 
             await waitFor(() => {
                 expect(screen.getByText('Network error')).toBeInTheDocument();
@@ -248,7 +260,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 json: async () => createApiResponse([], 0),
             });
 
-            const { getByText } = render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            const { getByText } = renderPage();
 
             await waitFor(() => {
                 expect(screen.getByTestId('search-filters-bar')).toBeInTheDocument();
@@ -276,7 +288,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 json: async () => createApiResponse([], 0),
             });
 
-            const { getByText } = render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            const { getByText } = renderPage();
 
             await waitFor(() => {
                 expect(screen.getByTestId('search-filters-bar')).toBeInTheDocument();
@@ -299,7 +311,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 json: async () => createApiResponse([], 0),
             });
 
-            const { getByText } = render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            const { getByText } = renderPage();
 
             await waitFor(() => {
                 expect(screen.getByTestId('search-filters-bar')).toBeInTheDocument();
@@ -327,7 +339,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 ),
             });
 
-            const { getByText } = render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            const { getByText } = renderPage();
 
             await waitFor(() => {
                 expect(screen.getByTestId('athlete-search-results')).toBeInTheDocument();
@@ -353,7 +365,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 json: async () => createApiResponse([], 0),
             });
 
-            render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            renderPage();
 
             await waitFor(() => {
                 const fetchCall = (global.fetch as jest.Mock).mock.calls[0][0];
@@ -372,7 +384,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 json: async () => createApiResponse([], 0),
             });
 
-            const { rerender } = render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            const { rerender } = renderPage();
 
             await waitFor(() => {
                 expect(global.fetch).toHaveBeenCalledTimes(1);
@@ -381,7 +393,7 @@ describe('CoachSearchPage Integration Tests', () => {
             const mockSearchParams2 = new URLSearchParams({ sport: 'Football' });
             (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams2);
 
-            rerender(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            rerender(<CoachSearchPage params={resolvedParams('coach-123')} />);
 
             await waitFor(() => {
                 expect(global.fetch).toHaveBeenCalledTimes(2);
@@ -398,7 +410,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 () => new Promise(() => { }) // Never resolves
             );
 
-            render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            renderPage();
 
             expect(screen.getByTestId('loading')).toBeInTheDocument();
             expect(screen.getByText('Searching for athletes...')).toBeInTheDocument();
@@ -413,7 +425,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 json: async () => createApiResponse([], 0),
             });
 
-            render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            renderPage();
 
             await waitFor(() => {
                 expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
@@ -437,7 +449,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 ),
             });
 
-            render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            renderPage();
 
             await waitFor(() => {
                 expect(screen.getByText('Found 2 athletes')).toBeInTheDocument();
@@ -456,7 +468,7 @@ describe('CoachSearchPage Integration Tests', () => {
                 ),
             });
 
-            render(<CoachSearchPage params={{ coachId: 'coach-123' }} />);
+            renderPage();
 
             await waitFor(() => {
                 expect(screen.getByText('Found 1 athlete')).toBeInTheDocument();
