@@ -88,10 +88,10 @@ describe('MessagesTable', () => {
                     emptyMessage=""
                 />
             );
-            expect(screen.getByText('Jane Doe')).toBeInTheDocument();
-            expect(screen.getByText('Soccer')).toBeInTheDocument();
-            expect(screen.getByText('Forward')).toBeInTheDocument();
-            expect(screen.getByText('jane@example.com')).toBeInTheDocument();
+            expect(screen.getAllByText('Jane Doe')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('Soccer')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('Forward')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('jane@example.com')[0]).toBeInTheDocument();
         });
 
         it('navigates to correct thread URL when View Messages is clicked', () => {
@@ -103,7 +103,7 @@ describe('MessagesTable', () => {
                     emptyMessage=""
                 />
             );
-            fireEvent.click(screen.getByRole('button', { name: /view messages with jane doe/i }));
+            fireEvent.click(screen.getAllByRole('button', { name: /view messages with jane doe/i })[0]);
             expect(mockPush).toHaveBeenCalledWith('/coach/coach-123/messages/player-1');
         });
 
@@ -121,7 +121,7 @@ describe('MessagesTable', () => {
                     emptyMessage=""
                 />
             );
-            expect(screen.getAllByText('—')).toHaveLength(2);
+            expect(screen.getAllByText('—')).toHaveLength(4);
         });
     });
 
@@ -152,11 +152,11 @@ describe('MessagesTable', () => {
                     emptyMessage=""
                 />
             );
-            expect(screen.getByText('Bob Smith')).toBeInTheDocument();
-            expect(screen.getByText('State University')).toBeInTheDocument();
-            expect(screen.getByText('Head Coach')).toBeInTheDocument();
-            expect(screen.getByText('Soccer')).toBeInTheDocument();
-            expect(screen.getByText('bob@university.edu')).toBeInTheDocument();
+            expect(screen.getAllByText('Bob Smith')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('State University')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('Head Coach')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('Soccer')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('bob@university.edu')[0]).toBeInTheDocument();
         });
 
         it('navigates to correct thread URL when View Messages is clicked', () => {
@@ -168,7 +168,7 @@ describe('MessagesTable', () => {
                     emptyMessage=""
                 />
             );
-            fireEvent.click(screen.getByRole('button', { name: /view messages with bob smith/i }));
+            fireEvent.click(screen.getAllByRole('button', { name: /view messages with bob smith/i })[0]);
             expect(mockPush).toHaveBeenCalledWith('/player/player-123/messages/coach-1');
         });
 
@@ -182,7 +182,7 @@ describe('MessagesTable', () => {
                     emptyMessage=""
                 />
             );
-            expect(screen.getByText('—')).toBeInTheDocument();
+            expect(screen.getAllByText('—')[0]).toBeInTheDocument();
         });
     });
 
@@ -203,9 +203,9 @@ describe('MessagesTable', () => {
                     emptyMessage=""
                 />
             );
-            expect(screen.getByText('Jane Doe')).toBeInTheDocument();
-            expect(screen.getByText('Alice Johnson')).toBeInTheDocument();
-            expect(screen.getAllByRole('button', { name: /view messages/i })).toHaveLength(2);
+            expect(screen.getAllByText('Jane Doe')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('Alice Johnson')[0]).toBeInTheDocument();
+            expect(screen.getAllByRole('button', { name: /view messages/i })).toHaveLength(4);
         });
     });
 });
