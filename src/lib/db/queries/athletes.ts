@@ -139,6 +139,7 @@ export async function searchAthletes(
                 p.weight_lbs,
                 p.affordable_amount,
                 p.profile_image_url,
+                p.video_thumbnail_url,
                 p.highlight_video_url as video_url
             FROM players p
             ${whereClause}
@@ -200,6 +201,7 @@ export async function searchAthletes(
                 weightLbs: row.weight_lbs || 0,
                 affordableAmount: row.affordable_amount ? parseFloat(row.affordable_amount) : undefined,
                 profileImageUrl: row.profile_image_url,
+                videoThumbnailUrl: row.video_thumbnail_url || undefined,
                 videoUrl: row.video_url,
             }));
 

@@ -357,17 +357,19 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
     );
 
     return (
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen">
             {/* Skip Links for Accessibility */}
             <a
                 href="#main-content"
-                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-500 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:outline-none focus:ring-2"
+                style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
             >
                 Skip to main content
             </a>
             <a
                 href="#filter-controls"
-                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-40 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-500 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-40 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:outline-none focus:ring-2"
+                style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
             >
                 Skip to filters
             </a>
@@ -400,14 +402,19 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
                 {/* Error Display */}
                 {error && (
                     <div
-                        className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg"
+                        className="mb-6 p-4 rounded-lg"
                         role="alert"
                         aria-live="assertive"
+                        style={{
+                            background: 'oklch(65% 0.24 25 / 0.12)',
+                            border: '1px solid oklch(65% 0.24 25 / 0.4)',
+                        }}
                     >
-                        <p className="text-red-400">{error}</p>
+                        <p style={{ color: 'var(--status-danger)' }}>{error}</p>
                         <button
                             onClick={fetchPlayers}
-                            className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+                            className="mt-2 px-4 py-2 rounded-lg font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-offset-1"
+                            style={{ background: 'var(--status-danger)', color: 'var(--text-hi)' }}
                             aria-label="Retry loading players"
                         >
                             Retry

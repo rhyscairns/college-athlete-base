@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 850" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g fill="none" stroke="#4ade80" stroke-width="2.5" filter="url(#glow)" opacity="0.22">
+
+    <!-- Outer boundary -->
+    <rect x="12" y="12" width="1376" height="826"/>
+
+    <!-- Center line -->
+    <line x1="700" y1="12" x2="700" y2="838"/>
+
+    <!-- Center circle (r=122 ≈ 9.15m) -->
+    <circle cx="700" cy="425" r="122"/>
+
+    <!-- Center spot -->
+    <circle cx="700" cy="425" r="5" fill="#4ade80" stroke="none"/>
+
+    <!-- Left penalty box (16.5m deep × 40.32m wide) -->
+    <rect x="12" y="173" width="220" height="504"/>
+
+    <!-- Left goal box (5.5m deep × 18.32m wide) -->
+    <rect x="12" y="311" width="73" height="228"/>
+
+    <!-- Left penalty spot -->
+    <circle cx="157" cy="425" r="5" fill="#4ade80" stroke="none"/>
+
+    <!-- Left penalty arc (outside box only) -->
+    <path d="M 232 327 A 122 122 0 0 1 232 523"/>
+
+    <!-- Right penalty box -->
+    <rect x="1168" y="173" width="220" height="504"/>
+
+    <!-- Right goal box -->
+    <rect x="1315" y="311" width="73" height="228"/>
+
+    <!-- Right penalty spot -->
+    <circle cx="1243" cy="425" r="5" fill="#4ade80" stroke="none"/>
+
+    <!-- Right penalty arc (outside box only) -->
+    <path d="M 1168 523 A 122 122 0 0 1 1168 327"/>
+
+    <!-- Corner arcs (r=14 ≈ 1m) -->
+    <path d="M 26 12 A 14 14 0 0 0 12 26"/>
+    <path d="M 1374 12 A 14 14 0 0 1 1388 26"/>
+    <path d="M 1388 824 A 14 14 0 0 1 1374 838"/>
+    <path d="M 12 824 A 14 14 0 0 0 26 838"/>
+
+  </g>
+</svg>

@@ -227,7 +227,7 @@ describe('GameHighlightsSection - Empty State', () => {
 
     describe('Section visibility', () => {
         it('should render empty state card for owners with empty videos', () => {
-            const { container } = render(
+            render(
                 <GameHighlightsSection
                     videos={[]}
                     isOwner={true}
@@ -237,10 +237,6 @@ describe('GameHighlightsSection - Empty State', () => {
                     onCancel={mockOnCancel}
                 />
             );
-
-            // Should render the white card container
-            const card = container.querySelector('.bg-white.rounded-2xl.shadow-lg');
-            expect(card).toBeInTheDocument();
 
             // Should show empty state content
             expect(screen.getByText('No Videos Yet')).toBeInTheDocument();

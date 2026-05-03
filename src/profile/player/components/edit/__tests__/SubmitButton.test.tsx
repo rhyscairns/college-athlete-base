@@ -44,7 +44,7 @@ describe('SubmitButton', () => {
     it('applies correct CSS classes', () => {
         render(<SubmitButton>Save Profile</SubmitButton>);
         const button = screen.getByRole('button');
-        expect(button).toHaveClass('w-full', 'h-12', 'bg-blue-600', 'text-white', 'rounded-lg');
+        expect(button).toHaveClass('w-full', 'h-12', 'rounded-lg');
     });
 
     it('renders as button type by default', () => {

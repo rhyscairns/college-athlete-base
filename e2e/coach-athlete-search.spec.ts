@@ -40,7 +40,7 @@ test.describe('Coach Athlete Search E2E Flow', () => {
         expect(url).toContain('gpaMax=4');
 
         // Verify search results page is displayed
-        await expect(page.locator('h1')).toContainText('Athlete Search Results');
+        await expect(page.getByRole('heading', { level: 1 })).toContainText('Athlete Search Results');
 
         // Verify filters bar is displayed
         await expect(page.locator('[data-testid="search-filters-bar"]')).toBeVisible();

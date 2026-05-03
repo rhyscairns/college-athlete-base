@@ -151,7 +151,7 @@ export function AcademicProfileSection({
     if (!hasSectionData(academic, 'academic')) {
         return (
             <section id="academics" ref={sectionRef} className="max-w-6xl mx-auto px-4 py-8">
-                <div className="bg-white rounded-2xl shadow-lg p-8">
+                <div className="rounded-2xl p-8" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
                     <EmptySection
                         title="No Academic Information Yet"
                         description="Add your GPA, test scores, class rank, and coursework to showcase your academic achievements to recruiters."
@@ -167,14 +167,23 @@ export function AcademicProfileSection({
 
     return (
         <section id="academics" ref={sectionRef} className="max-w-6xl mx-auto px-4 py-8">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-6 sm:px-8 relative">
+                <div
+                    className="px-6 py-6 sm:px-8 relative"
+                    style={{
+                        background: `radial-gradient(ellipse 80% 120% at 0% 50%, oklch(68% 0.22 150 / 0.15) 0%, transparent 60%), var(--ink-2)`,
+                        borderBottom: '1px solid var(--ink-3)',
+                    }}
+                >
                     {isOwner && (
                         <button
                             onClick={() => onEdit?.()}
                             disabled={isAnyOtherSectionEditing}
-                            className="absolute top-4 right-4 px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="absolute top-4 right-4 px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            style={{ background: 'var(--ink-3)', color: 'var(--text-hi)' }}
+                            onMouseEnter={e => !isAnyOtherSectionEditing && (e.currentTarget.style.background = 'var(--ink-0)')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'var(--ink-3)')}
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -183,12 +192,12 @@ export function AcademicProfileSection({
                         </button>
                     )}
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--ink-3)' }}>
                             <span className="text-2xl">📚</span>
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-white">Academic Profile</h2>
-                            <p className="text-blue-100">Excellence in the classroom</p>
+                            <h2 className="text-2xl font-bold" style={{ color: 'var(--text-hi)' }}>Academic Profile</h2>
+                            <p style={{ color: 'var(--text-lo)' }}>Excellence in the classroom</p>
                         </div>
                     </div>
                 </div>
@@ -200,40 +209,40 @@ export function AcademicProfileSection({
                         <div className="space-y-4">
                             {/* GPA Card */}
                             {(academic.gpa > 0 || isOwner) && (
-                                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
-                                    <p className="text-xs text-gray-600 uppercase tracking-wider mb-2 font-semibold">GPA</p>
+                                <div className="rounded-xl p-6" style={{ background: 'var(--ink-2)', border: '1px solid var(--ink-3)' }}>
+                                    <p className="text-xs uppercase tracking-wider mb-2 font-semibold" style={{ color: 'var(--text-lo)' }}>GPA</p>
                                     {academic.gpa > 0 ? (
                                         <>
-                                            <p className="text-4xl md:text-5xl font-black text-blue-600 mb-2">{academic.gpa}</p>
-                                            <p className="text-gray-700 font-medium">{academic.gpaScale}</p>
+                                            <p className="text-4xl md:text-5xl font-black mb-2" style={{ color: 'var(--brand-500)' }}>{academic.gpa}</p>
+                                            <p className="font-medium" style={{ color: 'var(--text-mid)' }}>{academic.gpaScale}</p>
                                         </>
                                     ) : (
-                                        <p className="text-gray-500 italic">Not provided</p>
+                                        <p className="italic" style={{ color: 'var(--text-lo)' }}>Not provided</p>
                                     )}
                                 </div>
                             )}
 
                             {/* Test Scores */}
                             {((academic.satScore && academic.satScore > 0) || (academic.actScore && academic.actScore > 0) || isOwner) && (
-                                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
-                                    <p className="text-xs text-gray-600 uppercase tracking-wider mb-3 font-semibold">Test Scores</p>
+                                <div className="rounded-xl p-6" style={{ background: 'var(--ink-2)', border: '1px solid var(--ink-3)' }}>
+                                    <p className="text-xs uppercase tracking-wider mb-3 font-semibold" style={{ color: 'var(--text-lo)' }}>Test Scores</p>
                                     <div className="space-y-4">
                                         {academic.satScore && academic.satScore > 0 ? (
                                             <div>
-                                                <p className="text-lg font-bold text-gray-900 mb-1">SAT: {academic.satScore}</p>
+                                                <p className="text-lg font-bold mb-1" style={{ color: 'var(--text-hi)' }}>SAT: {academic.satScore}</p>
                                                 {academic.satMath && academic.satReading && (
-                                                    <p className="text-sm text-gray-600">Math: {academic.satMath} • Reading: {academic.satReading}</p>
+                                                    <p className="text-sm" style={{ color: 'var(--text-mid)' }}>Math: {academic.satMath} • Reading: {academic.satReading}</p>
                                                 )}
                                             </div>
                                         ) : isOwner ? (
-                                            <p className="text-gray-500 italic text-sm">SAT scores not provided</p>
+                                            <p className="italic text-sm" style={{ color: 'var(--text-lo)' }}>SAT scores not provided</p>
                                         ) : null}
                                         {academic.actScore && academic.actScore > 0 ? (
                                             <div>
-                                                <p className="text-lg font-bold text-gray-900">ACT: {academic.actScore}</p>
+                                                <p className="text-lg font-bold" style={{ color: 'var(--text-hi)' }}>ACT: {academic.actScore}</p>
                                             </div>
                                         ) : isOwner && (!academic.satScore || academic.satScore === 0) ? (
-                                            <p className="text-gray-500 italic text-sm">ACT scores not provided</p>
+                                            <p className="italic text-sm" style={{ color: 'var(--text-lo)' }}>ACT scores not provided</p>
                                         ) : null}
                                     </div>
                                 </div>
@@ -241,17 +250,17 @@ export function AcademicProfileSection({
 
                             {/* Class Rank */}
                             {(academic.classRank || isOwner) && (
-                                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
-                                    <p className="text-xs text-gray-600 uppercase tracking-wider mb-2 font-semibold">Class Rank</p>
+                                <div className="rounded-xl p-6" style={{ background: 'var(--ink-2)', border: '1px solid var(--ink-3)' }}>
+                                    <p className="text-xs uppercase tracking-wider mb-2 font-semibold" style={{ color: 'var(--text-lo)' }}>Class Rank</p>
                                     {academic.classRank ? (
                                         <>
-                                            <p className="text-xl md:text-2xl font-bold text-gray-900 mb-1">{academic.classRank}</p>
+                                            <p className="text-xl md:text-2xl font-bold mb-1" style={{ color: 'var(--text-hi)' }}>{academic.classRank}</p>
                                             {academic.classRankDetail && (
-                                                <p className="text-sm text-gray-700">{academic.classRankDetail}</p>
+                                                <p className="text-sm" style={{ color: 'var(--text-mid)' }}>{academic.classRankDetail}</p>
                                             )}
                                         </>
                                     ) : (
-                                        <p className="text-gray-500 italic">Not provided</p>
+                                        <p className="italic" style={{ color: 'var(--text-lo)' }}>Not provided</p>
                                     )}
                                 </div>
                             )}
@@ -261,23 +270,30 @@ export function AcademicProfileSection({
                         <div className="space-y-4">
                             {/* NCAA Eligibility */}
                             {(academic.ncaaEligibilityCenter || isOwner) && (
-                                <div className={`rounded-xl p-6 border ${academic.ncaaEligibilityCenter
-                                    ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'
-                                    : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200'
-                                    }`}>
+                                <div
+                                    className="rounded-xl p-6"
+                                    style={{
+                                        background: academic.ncaaEligibilityCenter
+                                            ? 'oklch(68% 0.22 150 / 0.08)'
+                                            : 'var(--ink-2)',
+                                        border: academic.ncaaEligibilityCenter
+                                            ? '1px solid oklch(68% 0.22 150 / 0.3)'
+                                            : '1px solid var(--ink-3)',
+                                    }}
+                                >
                                     {academic.ncaaEligibilityCenter ? (
                                         <>
                                             <div className="flex items-center gap-3 mb-4">
-                                                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                                                <p className="text-sm font-bold text-green-700 uppercase tracking-wider">NCAA Eligible</p>
+                                                <div className="w-3 h-3 rounded-full animate-pulse" style={{ background: 'var(--status-success)' }}></div>
+                                                <p className="text-sm font-bold uppercase tracking-wider" style={{ color: 'var(--status-success)' }}>NCAA Eligible</p>
                                             </div>
-                                            <p className="text-lg text-gray-900 mb-2 font-semibold">Eligibility Center ID</p>
-                                            <p className="text-2xl font-mono text-gray-700">{academic.ncaaEligibilityCenter}</p>
+                                            <p className="text-lg mb-2 font-semibold" style={{ color: 'var(--text-hi)' }}>Eligibility Center ID</p>
+                                            <p className="text-2xl font-mono" style={{ color: 'var(--text-mid)' }}>{academic.ncaaEligibilityCenter}</p>
                                         </>
                                     ) : (
                                         <>
-                                            <p className="text-xs text-gray-600 uppercase tracking-wider mb-2 font-semibold">NCAA Eligibility</p>
-                                            <p className="text-gray-500 italic">Not registered yet</p>
+                                            <p className="text-xs uppercase tracking-wider mb-2 font-semibold" style={{ color: 'var(--text-lo)' }}>NCAA Eligibility</p>
+                                            <p className="italic" style={{ color: 'var(--text-lo)' }}>Not registered yet</p>
                                         </>
                                     )}
                                 </div>
@@ -285,19 +301,19 @@ export function AcademicProfileSection({
 
                             {/* Coursework */}
                             {((academic.coursework && academic.coursework.length > 0) || isOwner) && (
-                                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
-                                    <p className="text-xs text-gray-600 uppercase tracking-wider mb-3 font-semibold">Advanced Coursework</p>
+                                <div className="rounded-xl p-6" style={{ background: 'var(--ink-2)', border: '1px solid var(--ink-3)' }}>
+                                    <p className="text-xs uppercase tracking-wider mb-3 font-semibold" style={{ color: 'var(--text-lo)' }}>Advanced Coursework</p>
                                     {academic.coursework && academic.coursework.length > 0 ? (
                                         <div className="space-y-3">
                                             {academic.coursework.map((course, idx) => (
                                                 <div key={idx} className="flex items-center gap-3">
-                                                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                                                    <span className="text-gray-900">{course}</span>
+                                                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'var(--brand-500)' }}></div>
+                                                    <span style={{ color: 'var(--text-hi)' }}>{course}</span>
                                                 </div>
                                             ))}
                                         </div>
                                     ) : (
-                                        <p className="text-gray-500 italic">No advanced courses listed</p>
+                                        <p className="italic" style={{ color: 'var(--text-lo)' }}>No advanced courses listed</p>
                                     )}
                                 </div>
                             )}

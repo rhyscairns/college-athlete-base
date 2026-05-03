@@ -126,7 +126,7 @@ export function CoachesPerspectiveSection({
         <section
             id="coaches"
             ref={sectionRef}
-            className={`max-w-6xl mx-auto px-4 py-8 ${isEditing ? 'bg-blue-500/5 border border-blue-500/20 rounded-2xl p-6' : ''}`}
+            className="max-w-6xl mx-auto px-4 py-8"
         >
             {isEditing ? (
                 <CoachesPerspectiveSectionEdit
@@ -138,7 +138,7 @@ export function CoachesPerspectiveSection({
                     onCancel={handleCancel}
                 />
             ) : !hasTestimonials ? (
-                <div className="bg-white rounded-2xl shadow-lg p-8">
+                <div className="rounded-2xl p-8" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
                     <EmptySection
                         title="No Testimonials Yet"
                         description="Add testimonials from coaches who have worked with you to build credibility with college recruiters."
@@ -149,14 +149,23 @@ export function CoachesPerspectiveSection({
                     />
                 </div>
             ) : (
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-yellow-500 to-yellow-400 px-6 py-6 sm:px-8 relative">
+                    <div
+                        className="px-6 py-6 sm:px-8 relative"
+                        style={{
+                            background: `radial-gradient(ellipse 80% 120% at 0% 50%, oklch(68% 0.22 150 / 0.15) 0%, transparent 60%), var(--ink-2)`,
+                            borderBottom: '1px solid var(--ink-3)',
+                        }}
+                    >
                         {isOwner && (
                             <button
                                 onClick={() => onEdit?.()}
                                 disabled={isAnyOtherSectionEditing}
-                                className="absolute top-4 right-4 px-4 py-2 bg-white text-yellow-600 rounded-lg font-semibold hover:bg-yellow-50 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="absolute top-4 right-4 px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                style={{ background: 'var(--ink-3)', color: 'var(--text-hi)' }}
+                                onMouseEnter={e => !isAnyOtherSectionEditing && (e.currentTarget.style.background = 'var(--ink-0)')}
+                                onMouseLeave={e => (e.currentTarget.style.background = 'var(--ink-3)')}
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -165,12 +174,12 @@ export function CoachesPerspectiveSection({
                             </button>
                         )}
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--ink-3)' }}>
                                 <span className="text-2xl">💬</span>
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-white">Coaches&apos; Perspective</h2>
-                                <p className="text-yellow-100">What the coaches say</p>
+                                <h2 className="text-2xl font-bold" style={{ color: 'var(--text-hi)' }}>Coaches&apos; Perspective</h2>
+                                <p style={{ color: 'var(--text-lo)' }}>What the coaches say</p>
                             </div>
                         </div>
                     </div>
@@ -181,25 +190,28 @@ export function CoachesPerspectiveSection({
                             {testimonials.map((testimonial) => (
                                 <div
                                     key={testimonial.id}
-                                    className="group relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 md:p-8 border border-gray-200 hover:border-yellow-400 hover:shadow-lg transition-all"
+                                    className="group relative rounded-2xl p-6 md:p-8 transition-all"
+                                    style={{ background: 'var(--ink-2)', border: '1px solid var(--ink-3)' }}
+                                    onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--brand-500)')}
+                                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--ink-3)')}
                                 >
                                     {/* Quote Icon */}
-                                    <div className="text-5xl text-yellow-500/40 mb-4">&ldquo;</div>
+                                    <div className="text-5xl mb-4" style={{ color: 'oklch(68% 0.22 150 / 0.4)' }}>&ldquo;</div>
 
                                     {/* Quote */}
-                                    <p className="text-base md:text-lg text-gray-700 mb-6 leading-relaxed italic">
+                                    <p className="text-base md:text-lg mb-6 leading-relaxed italic" style={{ color: 'var(--text-mid)' }}>
                                         {testimonial.quote}
                                     </p>
 
                                     {/* Coach Info */}
-                                    <div className="border-t border-gray-200 pt-4">
-                                        <p className="text-gray-900 font-bold mb-1">{testimonial.coachName}</p>
-                                        <p className="text-sm text-gray-600">{testimonial.coachTitle}</p>
-                                        <p className="text-sm text-gray-500">{testimonial.coachOrganization}</p>
+                                    <div className="pt-4" style={{ borderTop: '1px solid var(--ink-3)' }}>
+                                        <p className="font-bold mb-1" style={{ color: 'var(--text-hi)' }}>{testimonial.coachName}</p>
+                                        <p className="text-sm" style={{ color: 'var(--text-mid)' }}>{testimonial.coachTitle}</p>
+                                        <p className="text-sm" style={{ color: 'var(--text-lo)' }}>{testimonial.coachOrganization}</p>
                                     </div>
 
                                     {/* Decorative element */}
-                                    <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-yellow-400/10 to-transparent rounded-tl-3xl"></div>
+                                    <div className="absolute bottom-0 right-0 w-20 h-20 rounded-tl-3xl" style={{ background: 'oklch(68% 0.22 150 / 0.06)' }}></div>
                                 </div>
                             ))}
                         </div>

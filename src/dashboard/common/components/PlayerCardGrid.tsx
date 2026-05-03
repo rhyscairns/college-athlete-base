@@ -1,81 +1,23 @@
 'use client';
 
-import React, { useMemo, type JSX } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { PlayerCard } from './PlayerCard';
+import { PlayerCardSkeleton } from '../../../components/primitives/Skeleton';
 import type { PlayerCardGridProps } from '../types';
 
-/**
- * Loading skeleton component for player cards
- * Displays an animated placeholder while player data is loading
- * 
- * @returns Loading skeleton with accessibility support
- */
-const LoadingSkeleton = (): JSX.Element => (
-    <div
-        className="bg-slate-800/50 rounded-2xl shadow-lg border border-white/10 overflow-hidden animate-pulse"
-        role="status"
-        aria-label="Loading player card"
-    >
-        {/* Image skeleton */}
-        <div className="aspect-video bg-slate-700" />
-        {/* Content skeleton */}
-        <div className="p-4 sm:p-5 space-y-3">
-            <div className="h-6 bg-slate-700 rounded w-3/4" />
-            <div className="h-4 bg-slate-700 rounded w-1/2" />
-            <div className="h-4 bg-slate-700 rounded w-2/3" />
-            <div className="space-y-2 pt-2">
-                <div className="h-11 bg-slate-700 rounded" />
-                <div className="h-11 bg-slate-700 rounded" />
-            </div>
-        </div>
-        <span className="sr-only">Loading player information...</span>
-    </div>
-);
+// Max cards that get stagger animation (rest snap in immediately)
+const STAGGER_MAX = 12;
+const STAGGER_STEP_MS = 50;
 
 /**
- * PlayerCardGrid Component
- * 
- * Displays a responsive grid of player cards with loading and empty states.
- * Automatically filters out the current user's card and adapts button labels
- * based on user type (coach vs player).
- * 
+ * PlayerCardGrid — 2026 redesign
+ *
  * Features:
- * - Responsive grid layout (1/2/3 columns)
- * - Loading skeleton states
- * - Empty state with custom message
- * - Current user filtering
- * - Video modal integration
- * - Performance optimized with memoization
- * - Full accessibility support
- * 
- * @param props - Component props
- * @param props.players - Array of player data to display
- * @param props.currentUserId - ID of the currently logged-in user (filtered out)
- * @param props.userType - Type of current user ('coach' or 'player') for button labels
- * @param props.isLoading - Whether data is currently loading (shows skeletons)
- * @param props.emptyMessage - Custom message to show when no players found
- * @param props.onWatchVideo - Callback when video play button is clicked
- * @returns Grid of player cards with responsive layout
- * 
- * @example
- * ```tsx
- * // Coach viewing players
- * <PlayerCardGrid
- *   players={playerData}
- *   currentUserId="coach-123"
- *   userType="coach"
- *   isLoading={false}
- *   onWatchVideo={(playerId, url, title, name) => openVideoModal(url)}
- * />
- * 
- * // Player viewing other players
- * <PlayerCardGrid
- *   players={playerData}
- *   currentUserId="player-456"
- *   userType="player"
- *   emptyMessage="No players match your search"
- * />
- * ```
+ * - Stagger-reveal on mount (50ms increments, max 12 cards)
+ * - FLIP animation on filter changes (cards animate to new positions)
+ * - Scroll-driven fade via CSS animation-timeline: view() where supported
+ * - Content-shaped PlayerCardSkeleton while loading
+ * - Empty state with accessible status role
  */
 export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
     players,
@@ -87,27 +29,62 @@ export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
     favoritedPlayerIds,
     onFavoriteToggle,
 }) => {
-    // Filter out current user's card
+    // Filter out current user
     const filteredPlayers = useMemo(
-        () => players.filter((player) => player.playerId !== currentUserId),
+        () => players.filter((p) => p.playerId !== currentUserId),
         [players, currentUserId]
     );
 
-    // Determine button labels based on userType
-    const buttonLabels = useMemo((): { primary: string; secondary: string } => {
-        if (userType === 'coach') {
-            return {
-                primary: 'View Profile',
-                secondary: 'Contact',
-            };
-        }
-        return {
-            primary: 'View Profile',
-            secondary: 'Connect',
-        };
-    }, [userType]);
+    const buttonLabels = useMemo(() => ({
+        primary: 'View Profile',
+        secondary: userType === 'coach' ? 'Contact' : 'Connect',
+    }), [userType]);
 
-    // Show loading skeletons
+    // ── FLIP: store previous positions before re-render ──
+    const gridRef = useRef<HTMLDivElement>(null);
+    const prevPositions = useRef<Map<string, DOMRect>>(new Map());
+
+    // Capture positions before update
+    useEffect(() => {
+        const grid = gridRef.current;
+        if (!grid) return;
+        const map = new Map<string, DOMRect>();
+        grid.querySelectorAll<HTMLElement>('[data-player-id]').forEach((el) => {
+            const id = el.dataset.playerId!;
+            map.set(id, el.getBoundingClientRect());
+        });
+        prevPositions.current = map;
+    });
+
+    // Play FLIP after update
+    useEffect(() => {
+        const grid = gridRef.current;
+        if (!grid || prevPositions.current.size === 0) return;
+
+        grid.querySelectorAll<HTMLElement>('[data-player-id]').forEach((el) => {
+            const id = el.dataset.playerId!;
+            const prev = prevPositions.current.get(id);
+            if (!prev) return;
+            const next = el.getBoundingClientRect();
+            const dx = prev.left - next.left;
+            const dy = prev.top - next.top;
+            if (dx === 0 && dy === 0) return;
+
+            el.animate(
+                [
+                    { transform: `translate(${dx}px, ${dy}px)` },
+                    { transform: 'translate(0, 0)' },
+                ],
+                {
+                    duration: 400,
+                    easing: 'cubic-bezier(0.65, 0, 0.35, 1)', // --e-glide
+                    fill: 'both',
+                }
+            );
+        });
+    }, [filteredPlayers]);
+
+    // ── Loading state ──
     if (isLoading) {
         return (
             <div
@@ -116,14 +93,14 @@ export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
                 aria-label="Player cards loading"
                 aria-busy="true"
             >
-                {Array.from({ length: 8 }).map((_, index) => (
-                    <LoadingSkeleton key={index} />
+                {Array.from({ length: 3 }).map((_, i) => (
+                    <PlayerCardSkeleton key={i} data-testid={`player-card-skeleton-${i}`} />
                 ))}
             </div>
         );
     }
 
-    // Show empty state
+    // ── Empty state ──
     if (filteredPlayers.length === 0) {
         return (
             <div
@@ -131,53 +108,61 @@ export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
                 role="status"
                 aria-live="polite"
             >
-                <div className="text-center">
-                    <p className="text-xl text-gray-600">{emptyMessage}</p>
-                </div>
+                <p className="text-xl" style={{ color: 'var(--text-mid)' }}>{emptyMessage}</p>
             </div>
         );
     }
 
-    // Render player cards
-    // First 3 cards get priority loading (above the fold on desktop)
+    // ── Grid ──
     return (
         <div
+            ref={gridRef}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             role="region"
             aria-label={`${filteredPlayers.length} player ${filteredPlayers.length === 1 ? 'card' : 'cards'}`}
+            data-testid="player-card-grid"
         >
             {filteredPlayers.map((player, index) => (
-                <PlayerCard
+                <div
                     key={player.playerId}
-                    playerId={player.playerId}
-                    firstName={player.firstName}
-                    lastName={player.lastName}
-                    position={player.position}
-                    sport={player.sport}
-                    videoThumbnail={player.videoThumbnail}
-                    profileImage={player.profileImage}
-                    status={player.status}
-                    height={player.height}
-                    weight={player.weight}
-                    primaryButtonLabel={buttonLabels.primary}
-                    currentUserId={currentUserId}
-                    userType={userType}
-                    onPrimaryClick={player.onPrimaryClick}
-                    onWatchVideo={
-                        player.videoUrl && onWatchVideo
-                            ? () => onWatchVideo(
-                                player.playerId,
-                                player.videoUrl!,
-                                player.videoTitle,
-                                `${player.firstName} ${player.lastName}`
-                            )
-                            : undefined
-                    }
-                    isFavorited={favoritedPlayerIds?.has(player.playerId)}
-                    onFavoriteToggle={onFavoriteToggle}
-                    onMessageClick={player.onMessageClick}
-                    priority={index < 3}
-                />
+                    data-player-id={player.playerId}
+                    style={{
+                        animationDelay: index < STAGGER_MAX ? `${index * STAGGER_STEP_MS}ms` : '0ms',
+                        animationFillMode: 'both',
+                    }}
+                    className="animate-fade-in scroll-reveal"
+                >
+                    <PlayerCard
+                        playerId={player.playerId}
+                        firstName={player.firstName}
+                        lastName={player.lastName}
+                        position={player.position}
+                        sport={player.sport}
+                        videoThumbnail={player.videoThumbnail}
+                        profileImage={player.profileImage}
+                        status={player.status}
+                        height={player.height}
+                        weight={player.weight}
+                        primaryButtonLabel={buttonLabels.primary}
+                        currentUserId={currentUserId}
+                        userType={userType}
+                        onPrimaryClick={player.onPrimaryClick}
+                        onWatchVideo={
+                            player.videoUrl && onWatchVideo
+                                ? () => onWatchVideo(
+                                    player.playerId,
+                                    player.videoUrl!,
+                                    player.videoTitle,
+                                    `${player.firstName} ${player.lastName}`
+                                )
+                                : undefined
+                        }
+                        isFavorited={favoritedPlayerIds?.has(player.playerId)}
+                        onFavoriteToggle={onFavoriteToggle}
+                        onMessageClick={player.onMessageClick}
+                        priority={index < 3}
+                    />
+                </div>
             ))}
         </div>
     );

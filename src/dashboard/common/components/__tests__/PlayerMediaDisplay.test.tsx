@@ -195,49 +195,6 @@ describe('PlayerMediaDisplay', () => {
         });
     });
 
-    describe('Styling', () => {
-        it('should have aspect-video ratio container', () => {
-            const { container } = render(<PlayerMediaDisplay {...mockProps} />);
-
-            const wrapper = container.firstChild;
-            expect(wrapper).toHaveClass('aspect-video');
-        });
-
-        it('should have gradient background', () => {
-            const { container } = render(<PlayerMediaDisplay {...mockProps} />);
-
-            const wrapper = container.firstChild;
-            expect(wrapper).toHaveClass('bg-gradient-to-br', 'from-slate-800', 'to-slate-900');
-        });
-
-        it('should apply object-cover to images', () => {
-            render(
-                <PlayerMediaDisplay
-                    {...mockProps}
-                    videoThumbnail="https://example.com/video-thumb.jpg"
-                />
-            );
-
-            const image = screen.getByAltText('John Smith highlight video thumbnail');
-            expect(image).toHaveClass('object-cover');
-        });
-
-        it('should have responsive sizes attribute', () => {
-            render(
-                <PlayerMediaDisplay
-                    {...mockProps}
-                    videoThumbnail="https://example.com/video-thumb.jpg"
-                />
-            );
-
-            const image = screen.getByAltText('John Smith highlight video thumbnail');
-            expect(image).toHaveAttribute(
-                'sizes',
-                '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
-            );
-        });
-    });
-
     describe('Accessibility', () => {
         it('should have proper alt text for video thumbnail', () => {
             render(
@@ -314,6 +271,23 @@ describe('PlayerMediaDisplay', () => {
 
             const playButton = screen.getByRole('button');
             expect(playButton).toHaveClass('focus:ring-2', 'focus:ring-yellow-500');
+        });
+    });
+
+    describe('Image Attributes', () => {
+        it('should have responsive sizes attribute', () => {
+            render(
+                <PlayerMediaDisplay
+                    {...mockProps}
+                    videoThumbnail="https://example.com/video-thumb.jpg"
+                />
+            );
+
+            const image = screen.getByAltText('John Smith highlight video thumbnail');
+            expect(image).toHaveAttribute(
+                'sizes',
+                '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
+            );
         });
     });
 

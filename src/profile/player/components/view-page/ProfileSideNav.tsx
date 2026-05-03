@@ -125,24 +125,44 @@ export function ProfileSideNav(): JSX.Element | null {
     }
 
     return (
-        <nav className="fixed left-0 top-0 h-screen w-48 bg-white border-r border-gray-200 z-10 hidden lg:flex flex-col items-center justify-center shadow-lg">
+        <nav
+            className="fixed left-0 top-0 h-screen w-48 z-10 hidden lg:flex flex-col items-center justify-center"
+            style={{ background: 'var(--ink-1)', borderRight: '1px solid var(--ink-3)' }}
+        >
             <div className="space-y-1 w-full px-3">
                 {availableSections.map((section) => (
                     <button
                         key={section.id}
                         onClick={() => scrollToSection(section.id)}
-                        className={`group relative flex items-center w-full px-4 py-3 rounded-lg transition-all text-left ${activeSection === section.id
-                            ? 'bg-blue-50 text-blue-600 font-semibold'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                            }`}
+                        className="group relative flex items-center w-full px-4 py-3 rounded-lg transition-all text-left text-sm"
+                        style={{
+                            background: activeSection === section.id ? 'oklch(68% 0.22 150 / 0.1)' : 'transparent',
+                            color: activeSection === section.id ? 'var(--brand-500)' : 'var(--text-mid)',
+                            fontWeight: activeSection === section.id ? 600 : 400,
+                        }}
+                        onMouseEnter={e => {
+                            if (activeSection !== section.id) {
+                                e.currentTarget.style.background = 'var(--ink-2)';
+                                e.currentTarget.style.color = 'var(--text-hi)';
+                            }
+                        }}
+                        onMouseLeave={e => {
+                            if (activeSection !== section.id) {
+                                e.currentTarget.style.background = 'transparent';
+                                e.currentTarget.style.color = 'var(--text-mid)';
+                            }
+                        }}
                         title={section.label}
                         aria-current={activeSection === section.id ? 'location' : undefined}
                     >
-                        <span className="text-sm">{section.label}</span>
+                        <span>{section.label}</span>
 
                         {/* Active Indicator */}
                         {activeSection === section.id && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 rounded-r-full"></div>
+                            <div
+                                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full"
+                                style={{ background: 'var(--brand-500)' }}
+                            ></div>
                         )}
                     </button>
                 ))}

@@ -42,9 +42,9 @@ export function AcademicProfileSectionEdit({
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fade-in">
+        <div className="rounded-2xl p-6 sm:p-8 space-y-6 animate-fade-in" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
             {/* Section Header */}
-            <h3 className="text-lg font-bold text-gray-900">Academic Profile</h3>
+            <h3 className="text-lg font-bold" style={{ color: 'var(--text-hi)' }}>Academic Profile</h3>
 
             {/* GPA Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -75,7 +75,7 @@ export function AcademicProfileSectionEdit({
 
             {/* Test Scores Section */}
             <div>
-                <h4 className="text-base font-semibold text-gray-900 mb-4">Test Scores</h4>
+                <h4 className="text-base font-semibold mb-4" style={{ color: 'var(--text-hi)' }}>Test Scores</h4>
 
                 {/* SAT Scores */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -167,17 +167,17 @@ export function AcademicProfileSectionEdit({
 
             {/* Coursework List */}
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
+                <label className="block text-sm font-medium mb-3" style={{ color: 'var(--text-mid)' }}>
                     Advanced Coursework
                 </label>
                 <div className="space-y-3">
                     {formData.coursework.length === 0 ? (
-                        <p className="text-center text-gray-500 py-4">
+                        <p className="text-center py-4" style={{ color: 'var(--text-lo)' }}>
                             No courses added yet. Click "Add Course" to get started.
                         </p>
                     ) : (
                         formData.coursework.map((course, idx) => (
-                            <div key={idx} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                            <div key={idx} className="rounded-xl p-4" style={{ background: 'var(--ink-2)', border: '1px solid var(--ink-3)' }}>
                                 <div className="flex flex-col sm:flex-row gap-3">
                                     <div className="flex-1">
                                         <input
@@ -186,14 +186,16 @@ export function AcademicProfileSectionEdit({
                                             onChange={(e) => handleCourseworkChange(idx, e.target.value)}
                                             disabled={isSaving}
                                             placeholder="e.g., AP Calculus AB"
-                                            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                            className="w-full px-4 py-3 rounded-lg focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                            style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)', color: 'var(--text-hi)' }}
                                         />
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => handleCourseworkRemove(idx)}
                                         disabled={isSaving}
-                                        className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg font-semibold hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                                        className="min-h-[44px] w-full sm:w-auto px-4 py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                                        style={{ background: 'oklch(60% 0.22 25 / 0.1)', color: 'var(--status-danger)', border: '1px solid oklch(60% 0.22 25 / 0.3)' }}
                                     >
                                         Remove
                                     </button>
@@ -205,13 +207,14 @@ export function AcademicProfileSectionEdit({
                         type="button"
                         onClick={handleCourseworkAdd}
                         disabled={isSaving}
-                        className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg font-semibold hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                        className="min-h-[44px] w-full sm:w-auto px-4 py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                        style={{ background: 'oklch(68% 0.22 150 / 0.1)', color: 'var(--brand-500)', border: '1px solid oklch(68% 0.22 150 / 0.3)' }}
                     >
                         + Add Course
                     </button>
                 </div>
                 {errors.coursework && (
-                    <p className="mt-1 text-sm text-red-600">{errors.coursework}</p>
+                    <p className="mt-1 text-sm" style={{ color: 'var(--status-danger)' }}>{errors.coursework}</p>
                 )}
             </div>
 

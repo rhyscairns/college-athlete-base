@@ -117,7 +117,7 @@ export function StatsShowcase({
     if (!hasStats && isOwner && !isEditing) {
         return (
             <section id="stats" ref={sectionRef} className="max-w-6xl mx-auto px-4 py-8">
-                <div className="bg-white rounded-2xl shadow-lg p-8">
+                <div className="rounded-2xl p-8" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
                     <EmptySection
                         title="No Stats Yet"
                         description="Add your season statistics to showcase your performance. Include key metrics like receiving yards, touchdowns, and more."
@@ -153,14 +153,23 @@ export function StatsShowcase({
 
     return (
         <section id="stats" ref={sectionRef} className="max-w-6xl mx-auto px-4 py-8">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-6 sm:px-8 relative">
+                <div
+                    className="px-6 py-6 sm:px-8 relative"
+                    style={{
+                        background: `radial-gradient(ellipse 80% 120% at 0% 50%, oklch(68% 0.22 150 / 0.15) 0%, transparent 60%), var(--ink-2)`,
+                        borderBottom: '1px solid var(--ink-3)',
+                    }}
+                >
                     {isOwner && (
                         <button
                             onClick={() => onEdit?.()}
                             disabled={isAnyOtherSectionEditing}
-                            className="absolute top-4 right-4 px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="absolute top-4 right-4 px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            style={{ background: 'var(--ink-3)', color: 'var(--text-hi)' }}
+                            onMouseEnter={e => !isAnyOtherSectionEditing && (e.currentTarget.style.background = 'var(--ink-0)')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'var(--ink-3)')}
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -169,12 +178,12 @@ export function StatsShowcase({
                         </button>
                     )}
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--ink-3)' }}>
                             <span className="text-2xl">📊</span>
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-white">Season Statistics</h2>
-                            <p className="text-blue-100">Junior Year Performance • 2023-24</p>
+                            <h2 className="text-2xl font-bold" style={{ color: 'var(--text-hi)' }}>Season Statistics</h2>
+                            <p style={{ color: 'var(--text-lo)' }}>Performance metrics</p>
                         </div>
                     </div>
                 </div>
@@ -185,11 +194,12 @@ export function StatsShowcase({
                         {statCards.map((stat, idx) => (
                             <div
                                 key={idx}
-                                className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200 hover:shadow-md transition-all"
+                                className="rounded-xl p-6 hover:shadow-md transition-all"
+                                style={{ background: 'var(--ink-2)', border: '1px solid var(--ink-3)' }}
                             >
                                 <div className="text-center">
-                                    <div className="text-3xl font-black text-blue-600 mb-2">{stat.value}</div>
-                                    <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide">{stat.label}</div>
+                                    <div className="text-3xl font-black mb-2" style={{ color: 'var(--brand-500)' }}>{stat.value}</div>
+                                    <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-mid)' }}>{stat.label}</div>
                                 </div>
                             </div>
                         ))}

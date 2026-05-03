@@ -148,7 +148,7 @@ export function PlayerProfileView({
     };
 
     return (
-        <div className="relative bg-slate-100 min-h-screen">
+        <div className="relative min-h-screen">
             {/* Success notification */}
             {showSuccessNotification && (
                 <SuccessNotification

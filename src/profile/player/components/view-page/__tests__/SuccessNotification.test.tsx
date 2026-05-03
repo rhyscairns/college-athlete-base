@@ -32,7 +32,7 @@ describe('SuccessNotification', () => {
 
         const notification = screen.getByRole('alert');
         expect(notification).toHaveClass('fixed', 'top-4', 'right-4', 'px-6', 'py-3');
-        expect(notification).toHaveClass('bg-emerald-500', 'text-white', 'rounded-lg', 'shadow-lg');
+        expect(notification).toHaveClass('rounded-lg', 'shadow-lg');
     });
 
     it('includes a checkmark icon', () => {

@@ -39,22 +39,24 @@ export function AthleticAchievementsSectionEdit({
     };
 
     return (
-        <div className="space-y-4 p-6 sm:p-8 bg-white rounded-2xl shadow-lg animate-fade-in">
+        <div className="space-y-4 p-6 sm:p-8 rounded-2xl animate-fade-in" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
             <div className="space-y-4">
                 {formData.map((achievement, index) => (
                     <div
                         key={achievement.id}
-                        className="space-y-3 p-6 bg-gray-50 rounded-xl border border-gray-200"
+                        className="space-y-3 p-6 rounded-xl"
+                        style={{ background: 'var(--ink-2)', border: '1px solid var(--ink-3)' }}
                     >
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                            <h4 className="text-sm font-semibold text-gray-900">
+                            <h4 className="text-sm font-semibold" style={{ color: 'var(--text-hi)' }}>
                                 Achievement {index + 1}
                             </h4>
                             <button
                                 type="button"
                                 onClick={() => handleRemoveAchievement(index)}
                                 disabled={isSaving}
-                                className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg font-semibold hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                                className="min-h-[44px] w-full sm:w-auto px-4 py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                                style={{ background: 'oklch(60% 0.22 25 / 0.1)', color: 'var(--status-danger)', border: '1px solid oklch(60% 0.22 25 / 0.3)' }}
                             >
                                 Remove
                             </button>
@@ -86,7 +88,8 @@ export function AthleticAchievementsSectionEdit({
                             <div>
                                 <label
                                     htmlFor={`achievement-icon-${index}`}
-                                    className="block text-sm font-medium text-gray-700 mb-2"
+                                    className="block text-sm font-medium mb-2"
+                                    style={{ color: 'var(--text-mid)' }}
                                 >
                                     Icon
                                 </label>
@@ -95,7 +98,8 @@ export function AthleticAchievementsSectionEdit({
                                     value={achievement.icon}
                                     onChange={(e) => handleAchievementChange(index, 'icon', e.target.value)}
                                     disabled={isSaving}
-                                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    className="w-full px-4 py-3 rounded-lg focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)', color: 'var(--text-hi)' }}
                                 >
                                     {iconOptions.map((option) => (
                                         <option key={option.value} value={option.value}>
@@ -108,7 +112,8 @@ export function AthleticAchievementsSectionEdit({
                             <div>
                                 <label
                                     htmlFor={`achievement-color-${index}`}
-                                    className="block text-sm font-medium text-gray-700 mb-2"
+                                    className="block text-sm font-medium mb-2"
+                                    style={{ color: 'var(--text-mid)' }}
                                 >
                                     Color
                                 </label>
@@ -117,7 +122,8 @@ export function AthleticAchievementsSectionEdit({
                                     value={achievement.color}
                                     onChange={(e) => handleAchievementChange(index, 'color', e.target.value)}
                                     disabled={isSaving}
-                                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    className="w-full px-4 py-3 rounded-lg focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)', color: 'var(--text-hi)' }}
                                 >
                                     {colorOptions.map((option) => (
                                         <option key={option.value} value={option.value}>
@@ -132,7 +138,7 @@ export function AthleticAchievementsSectionEdit({
             </div>
 
             {formData.length === 0 && (
-                <p className="text-center text-gray-500 py-8">
+                <p className="text-center py-8" style={{ color: 'var(--text-lo)' }}>
                     No achievements added yet. Click "Add Achievement" to get started.
                 </p>
             )}
@@ -141,13 +147,14 @@ export function AthleticAchievementsSectionEdit({
                 type="button"
                 onClick={handleAddAchievement}
                 disabled={isSaving}
-                className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg font-semibold hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                className="min-h-[44px] w-full sm:w-auto px-4 py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                style={{ background: 'oklch(68% 0.22 150 / 0.1)', color: 'var(--brand-500)', border: '1px solid oklch(68% 0.22 150 / 0.3)' }}
             >
                 + Add Achievement
             </button>
 
             {errors.achievements && (
-                <p className="text-sm text-red-600">{errors.achievements}</p>
+                <p className="text-sm" style={{ color: 'var(--status-danger)' }}>{errors.achievements}</p>
             )}
 
             {/* Action Buttons */}

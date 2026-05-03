@@ -67,16 +67,18 @@ export function createMockPlayerProfile(overrides?: Partial<PlayerProfile>): Pla
 }
 
 /**
- * Helper to select a sport from the typeahead
+ * Helper to select a sport from the typeahead.
+ * Clicks the input first to ensure focus is correct before typing.
  */
 export async function selectSport(sportName: string, searchText: string) {
     const user = userEvent.setup();
     const sportInput = screen.getByLabelText(/sport/i);
 
+    // Click first to ensure focus lands on the correct input
+    await user.click(sportInput);
     await user.clear(sportInput);
     await user.type(sportInput, searchText);
 
-    // Re-click the input if the listbox closed due to parallel test interference
     await waitFor(async () => {
         if (!screen.queryByRole('listbox')) {
             await user.click(sportInput);
@@ -91,7 +93,8 @@ export async function selectSport(sportName: string, searchText: string) {
 }
 
 /**
- * Helper to select a position from the typeahead
+ * Helper to select a position from the typeahead.
+ * Clicks the input first to ensure focus is correct before typing.
  */
 export async function selectPosition(positionName: string, searchText: string) {
     const user = userEvent.setup();
@@ -104,6 +107,7 @@ export async function selectPosition(positionName: string, searchText: string) {
 
     const positionInput = screen.getByLabelText(/position/i);
 
+    await user.click(positionInput);
     await user.clear(positionInput);
     await user.type(positionInput, searchText);
 
@@ -112,14 +116,15 @@ export async function selectPosition(positionName: string, searchText: string) {
         expect(listboxes.length).toBeGreaterThan(0);
     });
 
-    const option = screen.getByRole('option', { name: new RegExp(`^${positionName}$`, 'i') });
+    const option = screen.getByRole('option', { name: new RegExp(`^${positionName}`, 'i') });
     await user.click(option);
 
     return positionInput;
 }
 
 /**
- * Helper to select an event from the typeahead
+ * Helper to select an event from the typeahead.
+ * Clicks the input first to ensure focus is correct before typing.
  */
 export async function selectEvent(eventName: string, searchText: string) {
     const user = userEvent.setup();
@@ -130,6 +135,7 @@ export async function selectEvent(eventName: string, searchText: string) {
 
     const eventInput = screen.getByLabelText(/event/i);
 
+    await user.click(eventInput);
     await user.clear(eventInput);
     await user.type(eventInput, searchText);
 
@@ -138,7 +144,7 @@ export async function selectEvent(eventName: string, searchText: string) {
         expect(listboxes.length).toBeGreaterThan(0);
     });
 
-    const option = screen.getByRole('option', { name: new RegExp(`^${eventName}$`, 'i') });
+    const option = screen.getByRole('option', { name: new RegExp(`^${eventName}`, 'i') });
     await user.click(option);
 
     return eventInput;

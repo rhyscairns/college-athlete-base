@@ -12,7 +12,8 @@ export function SubmitButton({
             type={type}
             onClick={onClick}
             disabled={disabled || loading}
-            className="w-full h-12 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full h-12 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
+            style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
         >
             {loading ? 'Loading...' : children}
         </button>

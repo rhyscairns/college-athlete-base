@@ -63,9 +63,8 @@ describe('ProfileSideNav', () => {
         });
 
         const profileButton = screen.getByTitle('Profile');
-
-        // Check if it has active classes (default is 'hero')
-        expect(profileButton).toHaveClass('bg-blue-50', 'text-blue-600', 'font-semibold');
+        // Active section is indicated by aria-current
+        expect(profileButton).toHaveAttribute('aria-current', 'location');
     });
 
     it('has aria-current attribute on active section', async () => {

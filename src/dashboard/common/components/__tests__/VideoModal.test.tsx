@@ -649,12 +649,11 @@ describe('VideoModal', () => {
         it('should display loading spinner with animation', () => {
             render(<VideoModal {...defaultProps} />);
 
-            const loadingText = screen.getByText('Loading video...');
-            const loadingContainer = loadingText.parentElement;
-            const spinner = loadingContainer?.querySelector('svg');
-
-            expect(spinner).toBeInTheDocument();
-            expect(spinner).toHaveClass('animate-spin');
+            // SpringSpinner replaces animate-spin — verify the loading container is present
+            const loadingContainer = screen.getByTestId('video-loading');
+            expect(loadingContainer).toBeInTheDocument();
+            // SpringSpinner renders a role="status" element
+            expect(loadingContainer.querySelector('[role="status"]')).toBeInTheDocument();
         });
 
         it('should reset loading state when modal reopens', async () => {

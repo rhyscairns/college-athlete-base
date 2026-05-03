@@ -47,9 +47,9 @@ export function StatsShowcaseEdit({
     };
 
     return (
-        <div className="space-y-4 p-6 sm:p-8 bg-white rounded-2xl shadow-lg animate-fade-in">
+        <div className="space-y-4 p-6 sm:p-8 rounded-2xl animate-fade-in" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
             {Object.entries(formData).length === 0 ? (
-                <p className="text-center text-gray-500 py-8">
+                <p className="text-center py-8" style={{ color: 'var(--text-lo)' }}>
                     No stats added yet. Click &quot;Add Stat&quot; to get started.
                 </p>
             ) : (
@@ -82,7 +82,8 @@ export function StatsShowcaseEdit({
                                         type="button"
                                         onClick={() => handleRemoveStat(key)}
                                         disabled={isSaving}
-                                        className="min-h-[44px] px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm font-semibold hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all touch-manipulation whitespace-nowrap"
+                                        className="min-h-[44px] px-4 py-3 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all touch-manipulation whitespace-nowrap"
+                                        style={{ background: 'oklch(60% 0.22 25 / 0.1)', color: 'var(--status-danger)', border: '1px solid oklch(60% 0.22 25 / 0.3)' }}
                                     >
                                         Remove
                                     </button>
@@ -97,13 +98,14 @@ export function StatsShowcaseEdit({
                 type="button"
                 onClick={handleAddStat}
                 disabled={isSaving}
-                className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-600 text-sm font-semibold hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all touch-manipulation"
+                className="min-h-[44px] w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all touch-manipulation"
+                style={{ background: 'oklch(68% 0.22 150 / 0.1)', color: 'var(--brand-500)', border: '1px solid oklch(68% 0.22 150 / 0.3)' }}
             >
                 + Add Stat
             </button>
 
             {errors.stats && (
-                <p className="text-sm text-red-600">{errors.stats}</p>
+                <p className="text-sm" style={{ color: 'var(--status-danger)' }}>{errors.stats}</p>
             )}
 
             {/* Action Buttons */}

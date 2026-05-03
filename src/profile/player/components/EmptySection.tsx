@@ -62,7 +62,8 @@ export function EmptySection({
 
     return (
         <div
-            className={`bg-white/5 backdrop-blur-sm rounded-2xl p-8 md:p-12 border border-white/10 border-dashed text-center ${className}`}
+            className={`rounded-2xl p-8 md:p-12 border-dashed text-center ${className}`}
+            style={{ background: 'oklch(68% 0.22 150 / 0.04)', border: '1px dashed var(--ink-3)' }}
         >
             {/* Icon */}
             {icon && (
@@ -76,12 +77,12 @@ export function EmptySection({
             )}
 
             {/* Title */}
-            <h3 className="text-xl md:text-2xl font-bold text-white mb-3">
+            <h3 className="text-xl md:text-2xl font-bold mb-3" style={{ color: 'var(--text-hi)' }}>
                 {title}
             </h3>
 
             {/* Description */}
-            <p className="text-base text-slate-400 mb-6 max-w-md mx-auto">
+            <p className="text-base mb-6 max-w-md mx-auto" style={{ color: 'var(--text-lo)' }}>
                 {description}
             </p>
 
@@ -89,7 +90,8 @@ export function EmptySection({
             {isOwner && showEditButton && onEdit && (
                 <button
                     onClick={onEdit}
-                    className="min-h-[44px] px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-semibold rounded-lg transition-all shadow-lg hover:shadow-xl hover:scale-105 touch-manipulation"
+                    className="min-h-[44px] px-6 py-3 font-semibold rounded-lg transition-all hover:scale-105 touch-manipulation"
+                    style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
                     aria-label="Add content to this section"
                 >
                     Add Content

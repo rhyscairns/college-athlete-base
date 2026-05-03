@@ -103,18 +103,20 @@ describe('PlayerDashboardPage', () => {
         });
 
         it('should redirect to login when player is not found in database', async () => {
-            // Mock valid token but player not found
+            // The page no longer calls getPlayerById — auth is token-only.
+            // This test now verifies that a mismatched playerId redirects.
             (cookies as jest.Mock).mockResolvedValue({
                 get: jest.fn().mockReturnValue({ value: 'valid-token' }),
             });
-            (verifyToken as jest.Mock).mockResolvedValue(mockTokenPayload);
-            (getPlayerById as jest.Mock).mockResolvedValue(null);
+            (verifyToken as jest.Mock).mockResolvedValue({
+                ...mockTokenPayload,
+                playerId: 'different-player-id',
+            });
 
             await expect(
                 PlayerDashboardPage({ params: Promise.resolve({ playerId: mockPlayerId }) })
             ).rejects.toThrow('NEXT_REDIRECT: /login');
 
-            expect(getPlayerById).toHaveBeenCalledWith(mockPlayerId);
             expect(redirect).toHaveBeenCalledWith('/login');
         });
     });
@@ -133,17 +135,14 @@ describe('PlayerDashboardPage', () => {
             const result = await PlayerDashboardPage({ params: Promise.resolve({ playerId: mockPlayerId }) });
 
             expect(redirect).not.toHaveBeenCalled();
-            expect(getPlayerById).toHaveBeenCalledWith(mockPlayerId);
             expect(result).toBeDefined();
         });
 
         it('should display player information correctly', async () => {
             await PlayerDashboardPage({ params: Promise.resolve({ playerId: mockPlayerId }) });
 
-            // The component should be rendered without redirecting
             expect(redirect).not.toHaveBeenCalled();
             expect(verifyToken).toHaveBeenCalledWith('valid-token');
-            expect(getPlayerById).toHaveBeenCalledWith(mockPlayerId);
         });
 
         it('should handle player with minimal data (no optional fields)', async () => {
@@ -213,11 +212,11 @@ describe('PlayerDashboardPage', () => {
         });
 
         it('should handle error when getPlayerById throws an error', async () => {
+            // Page no longer calls getPlayerById — this test verifies token error handling instead
             (cookies as jest.Mock).mockResolvedValue({
                 get: jest.fn().mockReturnValue({ value: 'valid-token' }),
             });
-            (verifyToken as jest.Mock).mockResolvedValue(mockTokenPayload);
-            (getPlayerById as jest.Mock).mockRejectedValue(new Error('Database error'));
+            (verifyToken as jest.Mock).mockRejectedValue(new Error('Database error'));
 
             await expect(
                 PlayerDashboardPage({ params: Promise.resolve({ playerId: mockPlayerId }) })

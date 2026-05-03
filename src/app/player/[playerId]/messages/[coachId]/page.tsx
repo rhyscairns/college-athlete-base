@@ -71,13 +71,27 @@ export default async function PlayerMessageThreadPage({ params }: ThreadPageProp
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen">
             <div className="max-w-3xl mx-auto px-4 py-8">
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 8rem)' }}>
-                    <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-5 sm:px-8">
-                        <h1 className="text-xl font-bold text-white">{counterpartName}</h1>
+                <div
+                    className="rounded-2xl overflow-hidden flex flex-col"
+                    style={{ height: 'calc(100vh - 8rem)', background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}
+                >
+                    {/* Thread header */}
+                    <div
+                        className="px-6 py-4 sm:px-8 flex-shrink-0"
+                        style={{ borderBottom: '1px solid var(--ink-3)', background: 'var(--ink-2)' }}
+                    >
+                        <h1
+                            className="font-bold tracking-tight"
+                            style={{ fontSize: '1.125rem', color: 'var(--text-hi)' }}
+                        >
+                            {counterpartName}
+                        </h1>
                         {headerSubtitle && (
-                            <p className="text-blue-100 text-sm mt-0.5">{headerSubtitle}</p>
+                            <p className="text-sm mt-0.5" style={{ color: 'var(--brand-500)' }}>
+                                {headerSubtitle}
+                            </p>
                         )}
                     </div>
 

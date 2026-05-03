@@ -134,19 +134,27 @@ export function HeroSectionEdit({
 
     const initials = `${formData.firstName?.charAt(0) || 'F'}${formData.lastName?.charAt(0) || 'L'}`;
 
+    const sectionHeadingStyle: React.CSSProperties = { color: 'var(--text-hi)', fontSize: '1.1rem', fontWeight: 700 };
+    const iconBoxStyle: React.CSSProperties = { background: 'var(--ink-3)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 };
+
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
-            {/* Edit Mode Card */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                {/* Blue Gradient Header - Edit Mode */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-8 sm:px-8 sm:py-10">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="w-16 h-16 rounded-full border-4 border-white bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                            <span className="text-2xl font-bold text-white">{initials}</span>
+            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
+                {/* Header */}
+                <div
+                    className="px-6 py-8 sm:px-8 sm:py-10"
+                    style={{
+                        background: `radial-gradient(ellipse 80% 120% at 0% 50%, oklch(68% 0.22 150 / 0.15) 0%, transparent 60%), var(--ink-2)`,
+                        borderBottom: '1px solid var(--ink-3)',
+                    }}
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ border: '3px solid var(--brand-500)', background: 'var(--ink-3)' }}>
+                            <span className="text-2xl font-bold" style={{ color: 'var(--brand-500)' }}>{initials}</span>
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
-                            <p className="text-blue-100">Update your athletic profile information</p>
+                            <h2 className="text-2xl font-bold" style={{ color: 'var(--text-hi)' }}>Edit Profile</h2>
+                            <p style={{ color: 'var(--text-lo)' }}>Update your athletic profile information</p>
                         </div>
                     </div>
                 </div>
@@ -155,9 +163,9 @@ export function HeroSectionEdit({
                 <div className="p-6 sm:p-8 space-y-6">
                     {/* Personal Information Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
+                            <div style={iconBoxStyle}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
                             </div>
@@ -189,9 +197,9 @@ export function HeroSectionEdit({
 
                     {/* Athletic Information Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
+                            <div style={iconBoxStyle}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </div>
@@ -247,9 +255,9 @@ export function HeroSectionEdit({
 
                     {/* School Information Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
+                            <div style={iconBoxStyle}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                                 </svg>
@@ -291,15 +299,15 @@ export function HeroSectionEdit({
 
                     {/* Recruitment Information Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
+                            <div style={iconBoxStyle}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </div>
                             Recruitment Information
                         </h3>
-                        <p className="text-sm text-gray-600 mb-4">
+                        <p className="text-sm mb-4" style={{ color: 'var(--text-mid)' }}>
                             This information helps coaches find you in their athlete search. All fields are optional but recommended for better visibility.
                         </p>
                         <div className="space-y-4">
@@ -350,8 +358,8 @@ export function HeroSectionEdit({
                                     step={1000}
                                 />
                             </div>
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <p className="text-sm text-blue-800">
+                            <div className="rounded-lg p-4" style={{ background: 'oklch(68% 0.22 150 / 0.08)', border: '1px solid oklch(68% 0.22 150 / 0.25)' }}>
+                                <p className="text-sm" style={{ color: 'var(--text-mid)' }}>
                                     <strong>Note:</strong> The "Affordable Amount" is the amount you can afford to pay per year for college.
                                     This helps coaches understand your financial situation and match you with appropriate scholarship opportunities.
                                 </p>
@@ -361,9 +369,9 @@ export function HeroSectionEdit({
 
                     {/* Status Information Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
+                            <div style={iconBoxStyle}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
@@ -395,9 +403,9 @@ export function HeroSectionEdit({
 
                     {/* Additional Information Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
+                            <div style={iconBoxStyle}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
@@ -425,8 +433,8 @@ export function HeroSectionEdit({
                                     placeholder="https://example.com/profile.jpg"
                                 />
                             </div>
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <p className="text-sm text-blue-800">
+                            <div className="rounded-lg p-4" style={{ background: 'oklch(68% 0.22 150 / 0.08)', border: '1px solid oklch(68% 0.22 150 / 0.25)' }}>
+                                <p className="text-sm" style={{ color: 'var(--text-mid)' }}>
                                     <strong>Note:</strong> Your age will be automatically calculated from your date of birth. You must be at least 13 years old to use this platform.
                                 </p>
                             </div>
@@ -434,7 +442,7 @@ export function HeroSectionEdit({
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="pt-6 border-t border-gray-200">
+                    <div className="pt-6" style={{ borderTop: '1px solid var(--ink-3)' }}>
                         <ActionButtons
                             onSave={onSave}
                             onCancel={onCancel}
