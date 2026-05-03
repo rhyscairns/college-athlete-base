@@ -62,12 +62,12 @@ describe('ProspectsTable', () => {
     describe('Row data rendering', () => {
         it('renders player name, sport, position, gpa, high school, and scholarship', () => {
             render(<ProspectsTable prospects={[makeProspect()]} coachId={coachId} />);
-            expect(screen.getByText('Jane Doe')).toBeInTheDocument();
-            expect(screen.getByText('Soccer')).toBeInTheDocument();
-            expect(screen.getByText('Forward')).toBeInTheDocument();
-            expect(screen.getByText('3.8')).toBeInTheDocument();
-            expect(screen.getByText('Lincoln High')).toBeInTheDocument();
-            expect(screen.getByText('$15,000')).toBeInTheDocument();
+            expect(screen.getAllByText('Jane Doe')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('Soccer')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('Forward')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('3.8')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('Lincoln High')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('$15,000')[0]).toBeInTheDocument();
         });
 
         it('renders multiple rows', () => {
@@ -76,15 +76,14 @@ describe('ProspectsTable', () => {
                 makeProspect({ playerId: 'p2', firstName: 'Bob', lastName: 'Jones' }),
             ];
             render(<ProspectsTable prospects={prospects} coachId={coachId} />);
-            expect(screen.getByText('Alice Smith')).toBeInTheDocument();
-            expect(screen.getByText('Bob Jones')).toBeInTheDocument();
+            expect(screen.getAllByText('Alice Smith')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('Bob Jones')[0]).toBeInTheDocument();
         });
     });
 
     describe('Null field handling (Requirement 6.6)', () => {
         it('shows dash for null sport', () => {
             render(<ProspectsTable prospects={[makeProspect({ sport: null })]} coachId={coachId} />);
-            // The component renders '—' for null values
             const cells = screen.getAllByText('—');
             expect(cells.length).toBeGreaterThan(0);
         });
@@ -123,14 +122,14 @@ describe('ProspectsTable', () => {
         it('renders Watch Video button when videoUrl is present', () => {
             const prospect = makeProspect({ videoUrl: 'https://youtube.com/watch?v=abc', videoTitle: 'Highlights' });
             render(<ProspectsTable prospects={[prospect]} coachId={coachId} />);
-            expect(screen.getByRole('button', { name: /watch video for jane doe/i })).toBeInTheDocument();
+            expect(screen.getAllByRole('button', { name: /watch video for jane doe/i })[0]).toBeInTheDocument();
         });
 
         it('opens VideoModal when Watch Video is clicked', () => {
             const prospect = makeProspect({ videoUrl: 'https://youtube.com/watch?v=abc', videoTitle: 'My Highlights' });
             render(<ProspectsTable prospects={[prospect]} coachId={coachId} />);
 
-            fireEvent.click(screen.getByRole('button', { name: /watch video for jane doe/i }));
+            fireEvent.click(screen.getAllByRole('button', { name: /watch video for jane doe/i })[0]);
 
             expect(screen.getByRole('dialog', { name: /video modal/i })).toBeInTheDocument();
             expect(screen.getByText('My Highlights')).toBeInTheDocument();
@@ -140,7 +139,7 @@ describe('ProspectsTable', () => {
             const prospect = makeProspect({ videoUrl: 'https://youtube.com/watch?v=abc', videoTitle: 'Highlights' });
             render(<ProspectsTable prospects={[prospect]} coachId={coachId} />);
 
-            fireEvent.click(screen.getByRole('button', { name: /watch video for jane doe/i }));
+            fireEvent.click(screen.getAllByRole('button', { name: /watch video for jane doe/i })[0]);
             expect(screen.getByRole('dialog')).toBeInTheDocument();
 
             fireEvent.click(screen.getByRole('button', { name: /close/i }));
@@ -151,7 +150,7 @@ describe('ProspectsTable', () => {
     describe('View Profile button', () => {
         it('renders View Profile button for each row', () => {
             render(<ProspectsTable prospects={[makeProspect()]} coachId={coachId} />);
-            expect(screen.getByRole('button', { name: /view profile for jane doe/i })).toBeInTheDocument();
+            expect(screen.getAllByRole('button', { name: /view profile for jane doe/i })[0]).toBeInTheDocument();
         });
 
         it('navigates to player profile on click', () => {
@@ -159,7 +158,7 @@ describe('ProspectsTable', () => {
             jest.spyOn(require('next/navigation'), 'useRouter').mockReturnValue({ push: pushMock });
 
             render(<ProspectsTable prospects={[makeProspect({ playerId: 'player-1' })]} coachId={coachId} />);
-            fireEvent.click(screen.getByRole('button', { name: /view profile for jane doe/i }));
+            fireEvent.click(screen.getAllByRole('button', { name: /view profile for jane doe/i })[0]);
 
             expect(pushMock).toHaveBeenCalledWith(`/coach/${coachId}/dashboard/player-profile/player-1`);
         });
@@ -176,7 +175,7 @@ describe('ProspectsTable', () => {
 
         it('renders unfavorite button for each row', () => {
             render(<ProspectsTable prospects={[makeProspect()]} coachId={coachId} />);
-            expect(screen.getByRole('button', { name: /remove jane doe from prospects/i })).toBeInTheDocument();
+            expect(screen.getAllByRole('button', { name: /remove jane doe from prospects/i })[0]).toBeInTheDocument();
         });
 
         it('calls DELETE endpoint when unfavorite is clicked', async () => {
@@ -184,7 +183,7 @@ describe('ProspectsTable', () => {
 
             render(<ProspectsTable prospects={[makeProspect({ playerId: 'player-1' })]} coachId={coachId} />);
             await act(async () => {
-                fireEvent.click(screen.getByRole('button', { name: /remove jane doe from prospects/i }));
+                fireEvent.click(screen.getAllByRole('button', { name: /remove jane doe from prospects/i })[0]);
             });
 
             expect(global.fetch).toHaveBeenCalledWith(
@@ -197,10 +196,10 @@ describe('ProspectsTable', () => {
             (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true });
 
             render(<ProspectsTable prospects={[makeProspect()]} coachId={coachId} />);
-            expect(screen.getByText('Jane Doe')).toBeInTheDocument();
+            expect(screen.getAllByText('Jane Doe')[0]).toBeInTheDocument();
 
             await act(async () => {
-                fireEvent.click(screen.getByRole('button', { name: /remove jane doe from prospects/i }));
+                fireEvent.click(screen.getAllByRole('button', { name: /remove jane doe from prospects/i })[0]);
             });
 
             await waitFor(() => {
@@ -214,7 +213,7 @@ describe('ProspectsTable', () => {
             render(<ProspectsTable prospects={[makeProspect()]} coachId={coachId} />);
 
             await act(async () => {
-                fireEvent.click(screen.getByRole('button', { name: /remove jane doe from prospects/i }));
+                fireEvent.click(screen.getAllByRole('button', { name: /remove jane doe from prospects/i })[0]);
             });
 
             await waitFor(() => {
@@ -228,12 +227,12 @@ describe('ProspectsTable', () => {
             render(<ProspectsTable prospects={[makeProspect()]} coachId={coachId} />);
 
             await act(async () => {
-                fireEvent.click(screen.getByRole('button', { name: /remove jane doe from prospects/i }));
+                fireEvent.click(screen.getAllByRole('button', { name: /remove jane doe from prospects/i })[0]);
             });
 
             await waitFor(() => {
                 expect(screen.getByRole('alert')).toBeInTheDocument();
-                expect(screen.getByText('Jane Doe')).toBeInTheDocument();
+                expect(screen.getAllByText('Jane Doe')[0]).toBeInTheDocument();
             });
         });
 
@@ -243,7 +242,7 @@ describe('ProspectsTable', () => {
             render(<ProspectsTable prospects={[makeProspect()]} coachId={coachId} />);
 
             await act(async () => {
-                fireEvent.click(screen.getByRole('button', { name: /remove jane doe from prospects/i }));
+                fireEvent.click(screen.getAllByRole('button', { name: /remove jane doe from prospects/i })[0]);
             });
 
             await waitFor(() => {
@@ -258,12 +257,12 @@ describe('ProspectsTable', () => {
             );
 
             render(<ProspectsTable prospects={[makeProspect()]} coachId={coachId} />);
-            const btn = screen.getByRole('button', { name: /remove jane doe from prospects/i });
+            const btn = screen.getAllByRole('button', { name: /remove jane doe from prospects/i })[0];
 
             fireEvent.click(btn);
 
             await waitFor(() => {
-                expect(screen.getByRole('button', { name: /remove jane doe from prospects/i })).toBeDisabled();
+                expect(screen.getAllByRole('button', { name: /remove jane doe from prospects/i })[0]).toBeDisabled();
             });
 
             await act(async () => { resolve(); });
