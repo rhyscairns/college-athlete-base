@@ -42,7 +42,7 @@ describe('ProspectsTable', () => {
     describe('Empty state', () => {
         it('renders empty state message when no prospects', () => {
             render(<ProspectsTable prospects={[]} coachId={coachId} />);
-            expect(screen.getByText(/no prospects yet/i)).toBeInTheDocument();
+            expect(screen.getByTestId('empty-prospects')).toBeInTheDocument();
         });
     });
 
@@ -217,7 +217,7 @@ describe('ProspectsTable', () => {
             });
 
             await waitFor(() => {
-                expect(screen.getByText(/no prospects yet/i)).toBeInTheDocument();
+                expect(screen.getByTestId('empty-prospects')).toBeInTheDocument();
             });
         });
 

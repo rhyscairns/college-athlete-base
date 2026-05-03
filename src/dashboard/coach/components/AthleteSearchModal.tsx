@@ -152,9 +152,10 @@ export function AthleteSearchModal({ isOpen, onClose, coachId }: AthleteSearchMo
                 ref={modalRef}
                 className="relative w-full h-full md:h-auto md:max-w-2xl md:max-h-[90vh] bg-white md:rounded-xl shadow-2xl overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
+                data-testid="modal-content"
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200" data-testid="modal-header">
                     <h2 id="search-modal-title" className="text-xl sm:text-2xl font-bold text-gray-900">
                         Search Athletes
                     </h2>

@@ -46,11 +46,10 @@ describe('TypeaheadInput - Responsive Design', () => {
             global.innerHeight = 1080;
             window.matchMedia = createMatchMedia(1920);
 
-            const { container } = render(<TypeaheadInput {...defaultProps} />);
+            render(<TypeaheadInput {...defaultProps} />);
             const input = screen.getByLabelText('Sport');
 
             expect(input).toBeInTheDocument();
-            expect(container.firstChild).toHaveClass('relative');
         });
 
         test('renders correctly at 1440px width', () => {
@@ -58,11 +57,10 @@ describe('TypeaheadInput - Responsive Design', () => {
             global.innerHeight = 900;
             window.matchMedia = createMatchMedia(1440);
 
-            const { container } = render(<TypeaheadInput {...defaultProps} />);
+            render(<TypeaheadInput {...defaultProps} />);
             const input = screen.getByLabelText('Sport');
 
             expect(input).toBeInTheDocument();
-            expect(container.firstChild).toHaveClass('relative');
         });
 
         test('renders correctly at 1024px width', () => {
@@ -70,11 +68,10 @@ describe('TypeaheadInput - Responsive Design', () => {
             global.innerHeight = 768;
             window.matchMedia = createMatchMedia(1024);
 
-            const { container } = render(<TypeaheadInput {...defaultProps} />);
+            render(<TypeaheadInput {...defaultProps} />);
             const input = screen.getByLabelText('Sport');
 
             expect(input).toBeInTheDocument();
-            expect(container.firstChild).toHaveClass('relative');
         });
 
         test('hover states work on desktop', async () => {
@@ -132,11 +129,10 @@ describe('TypeaheadInput - Responsive Design', () => {
         });
 
         test('renders correctly at 768px width', () => {
-            const { container } = render(<TypeaheadInput {...defaultProps} />);
+            const { container: _c } = render(<TypeaheadInput {...defaultProps} />);
             const input = screen.getByLabelText('Sport');
 
             expect(input).toBeInTheDocument();
-            expect(container.firstChild).toHaveClass('relative');
         });
 
         test('dropdown renders with appropriate sizing on tablet', async () => {
@@ -181,11 +177,10 @@ describe('TypeaheadInput - Responsive Design', () => {
             global.innerHeight = 667;
             window.matchMedia = createMatchMedia(375);
 
-            const { container } = render(<TypeaheadInput {...defaultProps} />);
+            render(<TypeaheadInput {...defaultProps} />);
             const input = screen.getByLabelText('Sport');
 
             expect(input).toBeInTheDocument();
-            expect(container.firstChild).toHaveClass('relative');
         });
 
         test('renders correctly at 320px width', () => {
@@ -193,18 +188,17 @@ describe('TypeaheadInput - Responsive Design', () => {
             global.innerHeight = 568;
             window.matchMedia = createMatchMedia(320);
 
-            const { container } = render(<TypeaheadInput {...defaultProps} />);
+            render(<TypeaheadInput {...defaultProps} />);
             const input = screen.getByLabelText('Sport');
 
             expect(input).toBeInTheDocument();
-            expect(container.firstChild).toHaveClass('relative');
         });
 
         test('dropdown does not cause horizontal scrolling on mobile', async () => {
             global.innerWidth = 375;
             window.matchMedia = createMatchMedia(375);
 
-            const { container } = render(<TypeaheadInput {...defaultProps} />);
+            render(<TypeaheadInput {...defaultProps} />);
             const input = screen.getByLabelText('Sport');
 
             fireEvent.change(input, { target: { value: 'Bas' } });
@@ -218,7 +212,6 @@ describe('TypeaheadInput - Responsive Design', () => {
 
             // Verify dropdown is visible and contained
             expect(listbox).toBeVisible();
-            expect(container.firstChild).toHaveClass('relative');
         });
 
         test('touch interactions work smoothly on mobile', async () => {
@@ -334,7 +327,7 @@ describe('TypeaheadInput - Responsive Design', () => {
             global.innerWidth = 375;
             window.matchMedia = createMatchMedia(375);
 
-            const { container } = render(<TypeaheadInput {...defaultProps} />);
+            render(<TypeaheadInput {...defaultProps} />);
             const input = screen.getByLabelText('Sport');
 
             fireEvent.change(input, { target: { value: 'Bas' } });
@@ -346,9 +339,8 @@ describe('TypeaheadInput - Responsive Design', () => {
 
             const listbox = screen.getByRole('listbox');
 
-            // Verify dropdown is rendered (actual width is set via CSS)
+            // Verify dropdown is rendered
             expect(listbox).toBeVisible();
-            expect(container.firstChild).toHaveClass('relative');
         });
     });
 

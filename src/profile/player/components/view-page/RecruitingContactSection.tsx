@@ -187,7 +187,7 @@ export function RecruitingContactSection({
         <section
             id="contact"
             ref={sectionRef}
-            className={`max-w-6xl mx-auto px-4 py-8 ${isEditing ? 'bg-blue-500/5 border border-blue-500/20 rounded-2xl p-6' : ''}`}
+            className="max-w-6xl mx-auto px-4 py-8"
         >
             {isEditing ? (
                 <RecruitingContactSectionEdit
@@ -199,7 +199,7 @@ export function RecruitingContactSection({
                     onCancel={handleCancel}
                 />
             ) : !hasSectionData(contact, 'contact') ? (
-                <div className="bg-white rounded-2xl shadow-lg p-8">
+                <div className="rounded-2xl p-8" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
                     <EmptySection
                         title="No Contact Information Yet"
                         description="Add your contact details, social media links, and coach information to make it easy for recruiters to reach you."
@@ -210,14 +210,23 @@ export function RecruitingContactSection({
                     />
                 </div>
             ) : (
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-green-600 to-green-500 px-6 py-6 sm:px-8 relative">
+                    <div
+                        className="px-6 py-6 sm:px-8 relative"
+                        style={{
+                            background: `radial-gradient(ellipse 80% 120% at 0% 50%, oklch(68% 0.22 150 / 0.15) 0%, transparent 60%), var(--ink-2)`,
+                            borderBottom: '1px solid var(--ink-3)',
+                        }}
+                    >
                         {isOwner && (
                             <button
                                 onClick={() => onEdit?.()}
                                 disabled={isAnyOtherSectionEditing}
-                                className="absolute top-4 right-4 px-4 py-2 bg-white text-green-600 rounded-lg font-semibold hover:bg-green-50 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="absolute top-4 right-4 px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                style={{ background: 'var(--ink-3)', color: 'var(--text-hi)' }}
+                                onMouseEnter={e => !isAnyOtherSectionEditing && (e.currentTarget.style.background = 'var(--ink-0)')}
+                                onMouseLeave={e => (e.currentTarget.style.background = 'var(--ink-3)')}
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -226,12 +235,12 @@ export function RecruitingContactSection({
                             </button>
                         )}
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--ink-3)' }}>
                                 <span className="text-2xl">📞</span>
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-white">Get In Touch</h2>
-                                <p className="text-green-100">Ready to recruit? Let&apos;s connect</p>
+                                <h2 className="text-2xl font-bold" style={{ color: 'var(--text-hi)' }}>Get In Touch</h2>
+                                <p style={{ color: 'var(--text-lo)' }}>Ready to recruit? Let&apos;s connect</p>
                             </div>
                         </div>
                     </div>
@@ -240,25 +249,25 @@ export function RecruitingContactSection({
                     <div className="p-6 sm:p-8">
                         <div className="grid md:grid-cols-2 gap-4 md:gap-6">
                             {/* Player Contact */}
-                            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 md:p-8 border border-gray-200">
-                                <h3 className="text-2xl font-bold text-gray-900 mb-6">Player Contact</h3>
+                            <div className="rounded-2xl p-6 md:p-8" style={{ background: 'var(--ink-2)', border: '1px solid var(--ink-3)' }}>
+                                <h3 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-hi)' }}>Player Contact</h3>
 
                                 <div className="space-y-4">
                                     {/* Email - Required field, always show */}
                                     <div className="flex items-start gap-4">
-                                        <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--ink-3)' }}>
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                             </svg>
                                         </div>
                                         <div>
-                                            <p className="text-sm text-gray-600 mb-1">Email</p>
+                                            <p className="text-sm mb-1" style={{ color: 'var(--text-mid)' }}>Email</p>
                                             {contact.email ? (
-                                                <a href={`mailto:${contact.email}`} className="text-gray-900 hover:text-yellow-600 transition-colors break-all font-medium">
+                                                <a href={`mailto:${contact.email}`} className="break-all font-medium transition-colors" style={{ color: 'var(--text-hi)' }}>
                                                     {contact.email}
                                                 </a>
                                             ) : (
-                                                <p className="text-gray-400 italic">Not provided</p>
+                                                <p className="italic" style={{ color: 'var(--text-lo)' }}>Not provided</p>
                                             )}
                                         </div>
                                     </div>
@@ -266,19 +275,19 @@ export function RecruitingContactSection({
                                     {/* Phone - Optional field */}
                                     {(contact.phone || isOwner) && (
                                         <div className="flex items-start gap-4">
-                                            <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--ink-3)' }}>
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                                 </svg>
                                             </div>
                                             <div>
-                                                <p className="text-sm text-gray-600 mb-1">Phone</p>
+                                                <p className="text-sm mb-1" style={{ color: 'var(--text-mid)' }}>Phone</p>
                                                 {contact.phone ? (
-                                                    <a href={`tel:${contact.phone}`} className="text-gray-900 hover:text-yellow-600 transition-colors font-medium">
+                                                    <a href={`tel:${contact.phone}`} className="font-medium transition-colors" style={{ color: 'var(--text-hi)' }}>
                                                         {contact.phone}
                                                     </a>
                                                 ) : (
-                                                    <p className="text-gray-400 italic">Not provided</p>
+                                                    <p className="italic" style={{ color: 'var(--text-lo)' }}>Not provided</p>
                                                 )}
                                             </div>
                                         </div>
@@ -286,40 +295,40 @@ export function RecruitingContactSection({
 
                                     {/* Parent/Guardian Info - Optional */}
                                     {((contact.parentGuardianName || contact.parentGuardianPhone || contact.parentGuardianEmail) || isOwner) && (
-                                        <div className="mt-6 pt-6 border-t border-gray-200">
-                                            <p className="text-sm text-gray-600 mb-4 font-semibold">Parent/Guardian Contact</p>
+                                        <div className="mt-6 pt-6" style={{ borderTop: '1px solid var(--ink-3)' }}>
+                                            <p className="text-sm mb-4 font-semibold" style={{ color: 'var(--text-mid)' }}>Parent/Guardian Contact</p>
                                             <div className="space-y-3">
                                                 {(contact.parentGuardianName || isOwner) && (
                                                     <div>
-                                                        <p className="text-xs text-gray-500 mb-1">Name</p>
+                                                        <p className="text-xs mb-1" style={{ color: 'var(--text-lo)' }}>Name</p>
                                                         {contact.parentGuardianName ? (
-                                                            <p className="text-gray-900 font-medium">{contact.parentGuardianName}</p>
+                                                            <p className="font-medium" style={{ color: 'var(--text-hi)' }}>{contact.parentGuardianName}</p>
                                                         ) : (
-                                                            <p className="text-gray-400 italic text-sm">Not provided</p>
+                                                            <p className="italic text-sm" style={{ color: 'var(--text-lo)' }}>Not provided</p>
                                                         )}
                                                     </div>
                                                 )}
                                                 {(contact.parentGuardianEmail || isOwner) && (
                                                     <div>
-                                                        <p className="text-xs text-gray-500 mb-1">Email</p>
+                                                        <p className="text-xs mb-1" style={{ color: 'var(--text-lo)' }}>Email</p>
                                                         {contact.parentGuardianEmail ? (
-                                                            <a href={`mailto:${contact.parentGuardianEmail}`} className="text-gray-900 hover:text-yellow-600 transition-colors break-all text-sm font-medium">
+                                                            <a href={`mailto:${contact.parentGuardianEmail}`} className="break-all text-sm font-medium transition-colors" style={{ color: 'var(--text-hi)' }}>
                                                                 {contact.parentGuardianEmail}
                                                             </a>
                                                         ) : (
-                                                            <p className="text-gray-400 italic text-sm">Not provided</p>
+                                                            <p className="italic text-sm" style={{ color: 'var(--text-lo)' }}>Not provided</p>
                                                         )}
                                                     </div>
                                                 )}
                                                 {(contact.parentGuardianPhone || isOwner) && (
                                                     <div>
-                                                        <p className="text-xs text-gray-500 mb-1">Phone</p>
+                                                        <p className="text-xs mb-1" style={{ color: 'var(--text-lo)' }}>Phone</p>
                                                         {contact.parentGuardianPhone ? (
-                                                            <a href={`tel:${contact.parentGuardianPhone}`} className="text-gray-900 hover:text-yellow-600 transition-colors text-sm font-medium">
+                                                            <a href={`tel:${contact.parentGuardianPhone}`} className="text-sm font-medium transition-colors" style={{ color: 'var(--text-hi)' }}>
                                                                 {contact.parentGuardianPhone}
                                                             </a>
                                                         ) : (
-                                                            <p className="text-gray-400 italic text-sm">Not provided</p>
+                                                            <p className="italic text-sm" style={{ color: 'var(--text-lo)' }}>Not provided</p>
                                                         )}
                                                     </div>
                                                 )}
@@ -329,12 +338,12 @@ export function RecruitingContactSection({
 
                                     {/* Preferred Contact Method - Optional */}
                                     {(contact.preferredContactMethod || isOwner) && (
-                                        <div className="mt-6 pt-6 border-t border-gray-200">
-                                            <p className="text-xs text-gray-500 mb-1">Preferred Contact Method</p>
+                                        <div className="mt-6 pt-6" style={{ borderTop: '1px solid var(--ink-3)' }}>
+                                            <p className="text-xs mb-1" style={{ color: 'var(--text-lo)' }}>Preferred Contact Method</p>
                                             {contact.preferredContactMethod ? (
-                                                <p className="text-gray-900 font-medium">{contact.preferredContactMethod}</p>
+                                                <p className="font-medium" style={{ color: 'var(--text-hi)' }}>{contact.preferredContactMethod}</p>
                                             ) : (
-                                                <p className="text-gray-400 italic">Not specified</p>
+                                                <p className="italic" style={{ color: 'var(--text-lo)' }}>Not specified</p>
                                             )}
                                         </div>
                                     )}
@@ -342,8 +351,8 @@ export function RecruitingContactSection({
 
                                 {/* Social Media - Optional */}
                                 {((contact.socialMedia.twitter || contact.socialMedia.instagram || contact.socialMedia.youtube || contact.socialMedia.tiktok) || isOwner) && (
-                                    <div className="mt-6 pt-6 border-t border-gray-200">
-                                        <p className="text-sm text-gray-600 mb-4 font-semibold">Follow on social media</p>
+                                    <div className="mt-6 pt-6" style={{ borderTop: '1px solid var(--ink-3)' }}>
+                                        <p className="text-sm mb-4 font-semibold" style={{ color: 'var(--text-mid)' }}>Follow on social media</p>
                                         {(contact.socialMedia.twitter || contact.socialMedia.instagram || contact.socialMedia.youtube || contact.socialMedia.tiktok) ? (
                                             <div className="flex gap-3">
                                                 {contact.socialMedia.twitter && (
@@ -352,7 +361,8 @@ export function RecruitingContactSection({
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         aria-label="Follow on Twitter (opens in new tab)"
-                                                        className="w-10 h-10 bg-gray-100 hover:bg-yellow-100 rounded-lg flex items-center justify-center transition-all hover:scale-110 border border-gray-200"
+                                                        className="w-10 h-10 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                                                        style={{ background: 'var(--ink-3)', border: '1px solid var(--ink-3)' }}
                                                     >
                                                         <span className="text-xl" aria-hidden="true">𝕏</span>
                                                     </a>
@@ -363,7 +373,8 @@ export function RecruitingContactSection({
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         aria-label="Follow on Instagram (opens in new tab)"
-                                                        className="w-10 h-10 bg-gray-100 hover:bg-yellow-100 rounded-lg flex items-center justify-center transition-all hover:scale-110 border border-gray-200"
+                                                        className="w-10 h-10 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                                                        style={{ background: 'var(--ink-3)', border: '1px solid var(--ink-3)' }}
                                                     >
                                                         <span className="text-xl" aria-hidden="true">📷</span>
                                                     </a>
@@ -374,7 +385,8 @@ export function RecruitingContactSection({
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         aria-label="Watch on YouTube (opens in new tab)"
-                                                        className="w-10 h-10 bg-gray-100 hover:bg-yellow-100 rounded-lg flex items-center justify-center transition-all hover:scale-110 border border-gray-200"
+                                                        className="w-10 h-10 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                                                        style={{ background: 'var(--ink-3)', border: '1px solid var(--ink-3)' }}
                                                     >
                                                         <span className="text-xl" aria-hidden="true">🎥</span>
                                                     </a>
@@ -385,14 +397,15 @@ export function RecruitingContactSection({
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         aria-label="Follow on TikTok (opens in new tab)"
-                                                        className="w-10 h-10 bg-gray-100 hover:bg-yellow-100 rounded-lg flex items-center justify-center transition-all hover:scale-110 border border-gray-200"
+                                                        className="w-10 h-10 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+                                                        style={{ background: 'var(--ink-3)', border: '1px solid var(--ink-3)' }}
                                                     >
                                                         <span className="text-xl" aria-hidden="true">🎵</span>
                                                     </a>
                                                 )}
                                             </div>
                                         ) : (
-                                            <p className="text-gray-400 italic">No social media links added</p>
+                                            <p className="italic" style={{ color: 'var(--text-lo)' }}>No social media links added</p>
                                         )}
                                     </div>
                                 )}
@@ -400,36 +413,36 @@ export function RecruitingContactSection({
 
                             {/* Coach Contact */}
                             {((contact.headCoach && (contact.headCoach.name || contact.headCoach.email || contact.headCoach.phone)) || isOwner) && (
-                                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 md:p-8 border border-gray-200">
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Head Coach</h3>
+                                <div className="rounded-2xl p-6 md:p-8" style={{ background: 'var(--ink-2)', border: '1px solid var(--ink-3)' }}>
+                                    <h3 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-hi)' }}>Head Coach</h3>
 
                                     <div className="space-y-4">
                                         {(contact.headCoach?.name || isOwner) && (
                                             <div>
-                                                <p className="text-sm text-gray-600 mb-1">Name</p>
+                                                <p className="text-sm mb-1" style={{ color: 'var(--text-mid)' }}>Name</p>
                                                 {contact.headCoach?.name ? (
-                                                    <p className="text-xl font-semibold text-gray-900">{contact.headCoach.name}</p>
+                                                    <p className="text-xl font-semibold" style={{ color: 'var(--text-hi)' }}>{contact.headCoach.name}</p>
                                                 ) : (
-                                                    <p className="text-gray-400 italic">Not provided</p>
+                                                    <p className="italic" style={{ color: 'var(--text-lo)' }}>Not provided</p>
                                                 )}
                                             </div>
                                         )}
 
                                         {(contact.headCoach?.email || isOwner) && (
                                             <div className="flex items-start gap-4">
-                                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--ink-3)' }}>
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                                     </svg>
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm text-gray-600 mb-1">Email</p>
+                                                    <p className="text-sm mb-1" style={{ color: 'var(--text-mid)' }}>Email</p>
                                                     {contact.headCoach?.email ? (
-                                                        <a href={`mailto:${contact.headCoach.email}`} className="text-gray-900 hover:text-blue-600 transition-colors break-all font-medium">
+                                                        <a href={`mailto:${contact.headCoach.email}`} className="break-all font-medium transition-colors" style={{ color: 'var(--text-hi)' }}>
                                                             {contact.headCoach.email}
                                                         </a>
                                                     ) : (
-                                                        <p className="text-gray-400 italic">Not provided</p>
+                                                        <p className="italic" style={{ color: 'var(--text-lo)' }}>Not provided</p>
                                                     )}
                                                 </div>
                                             </div>
@@ -437,19 +450,19 @@ export function RecruitingContactSection({
 
                                         {(contact.headCoach?.phone || isOwner) && (
                                             <div className="flex items-start gap-4">
-                                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--ink-3)' }}>
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                                     </svg>
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm text-gray-600 mb-1">Phone</p>
+                                                    <p className="text-sm mb-1" style={{ color: 'var(--text-mid)' }}>Phone</p>
                                                     {contact.headCoach?.phone ? (
-                                                        <a href={`tel:${contact.headCoach.phone}`} className="text-gray-900 hover:text-blue-600 transition-colors font-medium">
+                                                        <a href={`tel:${contact.headCoach.phone}`} className="font-medium transition-colors" style={{ color: 'var(--text-hi)' }}>
                                                             {contact.headCoach.phone}
                                                         </a>
                                                     ) : (
-                                                        <p className="text-gray-400 italic">Not provided</p>
+                                                        <p className="italic" style={{ color: 'var(--text-lo)' }}>Not provided</p>
                                                     )}
                                                 </div>
                                             </div>

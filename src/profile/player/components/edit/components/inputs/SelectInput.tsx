@@ -16,9 +16,9 @@ export function SelectInput({
 
     return (
         <div className="w-full">
-            <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={inputId} className="block text-sm font-medium mb-1" style={{ color: 'var(--text-mid)' }}>
                 {label}
-                {required && <span className="text-red-600 ml-1">*</span>}
+                {required && <span className="ml-1" style={{ color: 'var(--status-danger)' }}>*</span>}
             </label>
             <select
                 id={inputId}
@@ -28,10 +28,12 @@ export function SelectInput({
                 onBlur={onBlur}
                 disabled={disabled}
                 required={required}
-                className={`w-full h-12 px-4 bg-white/60 backdrop-blur-sm text-gray-800 border-2 ${error ? 'border-red-500' : 'border-white/80'
-                    } rounded-xl focus:outline-none focus:bg-white/80 focus:border-white disabled:opacity-50 disabled:cursor-not-allowed transition-all appearance-none`}
+                className="w-full h-12 px-4 rounded-xl focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all appearance-none"
                 style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                    background: 'var(--ink-1)',
+                    border: `1px solid ${error ? 'var(--status-danger)' : 'var(--ink-3)'}`,
+                    color: 'var(--text-hi)',
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23888'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
                     backgroundRepeat: 'no-repeat',
                     backgroundPosition: 'right 0.75rem center',
                     backgroundSize: '1.25rem',
@@ -47,7 +49,7 @@ export function SelectInput({
                     </option>
                 ))}
             </select>
-            {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+            {error && <p className="mt-1 text-sm" style={{ color: 'var(--status-danger)' }}>{error}</p>}
         </div>
     );
 }

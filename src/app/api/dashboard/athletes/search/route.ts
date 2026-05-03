@@ -260,6 +260,7 @@ export async function GET(request: NextRequest) {
             affordableAmount: athlete.affordableAmount,
             profileImage: athlete.profileImageUrl,
             videoUrl: athlete.videoUrl,
+            videoThumbnail: athlete.videoThumbnailUrl,
         }));
 
         // Log successful search

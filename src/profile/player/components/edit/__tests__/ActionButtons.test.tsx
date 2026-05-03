@@ -147,15 +147,8 @@ describe('ActionButtons', () => {
         const saveButton = screen.getByRole('button', { name: /save/i });
         const cancelButton = screen.getByRole('button', { name: /cancel/i });
 
-        // Check Save button classes (light theme)
-        expect(saveButton).toHaveClass('px-6', 'py-3', 'bg-blue-600');
-        expect(saveButton).toHaveClass('rounded-lg', 'text-white', 'font-semibold');
-        expect(saveButton).toHaveClass('hover:bg-blue-700', 'disabled:opacity-50', 'transition-colors');
-
-        // Check Cancel button classes (light theme)
-        expect(cancelButton).toHaveClass('px-6', 'py-3', 'bg-gray-200');
-        expect(cancelButton).toHaveClass('rounded-lg', 'text-gray-900', 'font-semibold');
-        expect(cancelButton).toHaveClass('hover:bg-gray-300', 'transition-colors');
+        expect(saveButton).toHaveClass('px-6', 'py-3', 'rounded-lg', 'font-semibold', 'disabled:opacity-50', 'transition-colors');
+        expect(cancelButton).toHaveClass('px-6', 'py-3', 'rounded-lg', 'font-semibold', 'transition-colors');
     });
 
     it('applies flex layout with gap to container', () => {

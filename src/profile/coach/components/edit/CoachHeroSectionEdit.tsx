@@ -72,19 +72,44 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
 
     const initials = `${formData.firstName?.charAt(0) || 'F'}${formData.lastName?.charAt(0) || 'L'}`;
 
+    const sectionHeadingStyle: React.CSSProperties = {
+        color: 'var(--text-hi)',
+        fontSize: '1.1rem',
+        fontWeight: 700,
+    };
+
+    const iconBoxStyle: React.CSSProperties = {
+        background: 'var(--ink-3)',
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+    };
+
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
-            {/* Edit Mode Card */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                {/* Blue Gradient Header - Edit Mode */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-8 sm:px-8 sm:py-10">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="w-16 h-16 rounded-full border-4 border-white bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                            <span className="text-2xl font-bold text-white">{initials}</span>
+            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
+                {/* Header */}
+                <div
+                    className="px-6 py-8 sm:px-8 sm:py-10"
+                    style={{
+                        background: `radial-gradient(ellipse 80% 120% at 0% 50%, oklch(68% 0.22 150 / 0.15) 0%, transparent 60%), var(--ink-2)`,
+                        borderBottom: '1px solid var(--ink-3)',
+                    }}
+                >
+                    <div className="flex items-center gap-4">
+                        <div
+                            className="w-16 h-16 rounded-full flex items-center justify-center"
+                            style={{ border: '3px solid var(--brand-500)', background: 'var(--ink-3)' }}
+                        >
+                            <span className="text-2xl font-bold" style={{ color: 'var(--brand-500)' }}>{initials}</span>
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
-                            <p className="text-blue-100">Update your coaching profile information</p>
+                            <h2 className="text-2xl font-bold" style={{ color: 'var(--text-hi)' }}>Edit Profile</h2>
+                            <p style={{ color: 'var(--text-lo)' }}>Update your coaching profile information</p>
                         </div>
                     </div>
                 </div>
@@ -93,9 +118,9 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
                 <div className="p-6 sm:p-8 space-y-6">
                     {/* Personal Information Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
+                            <div style={iconBoxStyle}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
                             </div>
@@ -127,9 +152,9 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
 
                     {/* Contact Information Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
+                            <div style={iconBoxStyle}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
                             </div>
@@ -157,9 +182,9 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
 
                     {/* Professional Information Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
+                            <div style={iconBoxStyle}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                 </svg>
                             </div>
@@ -212,9 +237,9 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
 
                     {/* University Information Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
+                            <div style={iconBoxStyle}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                 </svg>
                             </div>
@@ -265,9 +290,9 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
 
                     {/* Office Information Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
+                            <div style={iconBoxStyle}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
@@ -298,9 +323,9 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
 
                     {/* Media & Links Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
+                            <div style={iconBoxStyle}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                             </div>
@@ -332,7 +357,7 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
 
                     {/* Achievements Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
                             <span className="text-2xl">🏆</span>
                             Recent Achievements
                         </h3>
@@ -341,18 +366,25 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
                         {formData.achievements && formData.achievements.length > 0 && (
                             <div className="mb-4 space-y-2">
                                 {formData.achievements.map((achievement, index) => (
-                                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div
+                                        key={index}
+                                        className="flex items-center justify-between p-3 rounded-lg"
+                                        style={{ background: 'var(--ink-2)', border: '1px solid var(--ink-3)' }}
+                                    >
                                         <div className="flex-1">
-                                            <p className="text-sm font-medium text-gray-900">{achievement.title}</p>
+                                            <p className="text-sm font-medium" style={{ color: 'var(--text-hi)' }}>{achievement.title}</p>
                                             {achievement.year && (
-                                                <p className="text-xs text-gray-500">Year: {achievement.year}</p>
+                                                <p className="text-xs" style={{ color: 'var(--text-lo)' }}>Year: {achievement.year}</p>
                                             )}
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => handleRemoveAchievement(index)}
                                             disabled={isSaving}
-                                            className="ml-3 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                                            className="ml-3 p-2 rounded-lg transition-colors disabled:opacity-50"
+                                            style={{ color: 'var(--status-danger)' }}
+                                            onMouseEnter={e => (e.currentTarget.style.background = 'oklch(60% 0.22 25 / 0.1)')}
+                                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                                             aria-label="Remove achievement"
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -365,8 +397,8 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
                         )}
 
                         {/* Add New Achievement */}
-                        <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
-                            <p className="text-sm font-medium text-gray-700">Add New Achievement</p>
+                        <div className="space-y-3 p-4 rounded-lg" style={{ background: 'var(--ink-2)', border: '1px solid var(--ink-3)' }}>
+                            <p className="text-sm font-medium" style={{ color: 'var(--text-mid)' }}>Add New Achievement</p>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <div className="md:col-span-2">
                                     <input
@@ -375,7 +407,12 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
                                         value={newAchievement.title}
                                         onChange={(e) => setNewAchievement(prev => ({ ...prev, title: e.target.value }))}
                                         disabled={isSaving}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                        className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 disabled:opacity-50"
+                                        style={{
+                                            background: 'var(--ink-1)',
+                                            border: '1px solid var(--ink-3)',
+                                            color: 'var(--text-hi)',
+                                        }}
                                     />
                                 </div>
                                 <div className="flex gap-2">
@@ -387,13 +424,19 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
                                         disabled={isSaving}
                                         min="1900"
                                         max="2100"
-                                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                        className="flex-1 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 disabled:opacity-50"
+                                        style={{
+                                            background: 'var(--ink-1)',
+                                            border: '1px solid var(--ink-3)',
+                                            color: 'var(--text-hi)',
+                                        }}
                                     />
                                     <button
                                         type="button"
                                         onClick={handleAddAchievement}
                                         disabled={isSaving || !newAchievement.title.trim()}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        className="px-4 py-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
                                     >
                                         Add
                                     </button>
@@ -403,35 +446,25 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
+                    <div className="flex flex-col sm:flex-row gap-3 pt-6" style={{ borderTop: '1px solid var(--ink-3)' }}>
                         <button
                             onClick={onSave}
                             onKeyDown={handleSaveKeyDown}
                             disabled={isSaving}
-                            className="min-h-[44px] w-full sm:flex-1 px-6 py-3 bg-blue-600 rounded-lg text-white font-semibold hover:bg-blue-700 disabled:opacity-60 transition-all touch-manipulation flex items-center justify-center gap-2"
+                            className="min-h-[44px] w-full sm:flex-1 px-6 py-3 rounded-lg font-semibold disabled:opacity-60 transition-all touch-manipulation flex items-center justify-center gap-2"
+                            style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
                             type="button"
                         >
                             {isSaving && (
                                 <svg
-                                    className="animate-spin h-5 w-5 text-white"
+                                    className="animate-spin h-5 w-5"
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     aria-hidden="true"
                                 >
-                                    <circle
-                                        className="opacity-25"
-                                        cx="12"
-                                        cy="12"
-                                        r="10"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                    ></circle>
-                                    <path
-                                        className="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
                             )}
                             <span>{isSaving ? 'Saving Changes...' : 'Save Changes'}</span>
@@ -440,7 +473,10 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
                             onClick={onCancel}
                             onKeyDown={handleCancelKeyDown}
                             disabled={isSaving}
-                            className="min-h-[44px] w-full sm:w-auto px-6 py-3 bg-gray-100 rounded-lg text-gray-700 font-semibold hover:bg-gray-200 transition-all touch-manipulation disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="min-h-[44px] w-full sm:w-auto px-6 py-3 rounded-lg font-semibold transition-all touch-manipulation disabled:opacity-60 disabled:cursor-not-allowed"
+                            style={{ background: 'var(--ink-3)', color: 'var(--text-mid)' }}
+                            onMouseEnter={e => !isSaving && (e.currentTarget.style.background = 'var(--ink-2)')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'var(--ink-3)')}
                             type="button"
                         >
                             Cancel

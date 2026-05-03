@@ -62,7 +62,7 @@ describe('PlayerLayout', () => {
             expect(mainElement).toHaveAttribute('aria-label', 'Player content');
         });
 
-        it('should apply gradient background classes', () => {
+        it('should apply background classes', () => {
             mockUsePathname.mockReturnValue('/player/player-123/dashboard');
 
             const { container } = render(
@@ -73,7 +73,6 @@ describe('PlayerLayout', () => {
 
             const wrapper = container.firstChild as HTMLElement;
             expect(wrapper).toHaveClass('min-h-screen');
-            expect(wrapper).toHaveClass('bg-gradient-to-br');
         });
     });
 

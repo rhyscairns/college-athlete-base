@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { useSocket } from '../hooks/useSocket';
+import { TypingIndicator } from './TypingIndicator';
 import type { Message, MessageThreadProps } from '../types';
 
 const NEAR_BOTTOM_THRESHOLD = 100;
@@ -20,6 +21,9 @@ export function MessageThread({
     const [sendError, setSendError] = useState<string | null>(null);
     const [isSending, setIsSending] = useState(false);
     const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+    const [isCounterpartTyping, setIsCounterpartTyping] = useState(false);
+    // Track which message ids are newly sent (for entrance animation)
+    const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set());
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -49,14 +53,30 @@ export function MessageThread({
         const handleNewMessage = (message: Message) => {
             const wasNearBottom = isNearBottom();
             setMessages((prev) => {
-                // Deduplicate — sender already appended this optimistically
                 if (prev.some((m) => m.id === message.id)) return prev;
                 return [...prev, message];
             });
+            // Animate incoming counterpart messages
+            if (message.senderId !== currentUserId) {
+                setNewMessageIds(prev => new Set(prev).add(message.id));
+                setTimeout(() => setNewMessageIds(prev => {
+                    const next = new Set(prev);
+                    next.delete(message.id);
+                    return next;
+                }), 600);
+            }
             if (wasNearBottom) {
                 setTimeout(scrollToBottom, 50);
             }
         };
+
+        const handleTyping = () => {
+            setIsCounterpartTyping(true);
+            // Auto-clear after 3s in case the stop event is missed
+            setTimeout(() => setIsCounterpartTyping(false), 3000);
+        };
+
+        const handleStopTyping = () => setIsCounterpartTyping(false);
 
         const handleMessageDeleted = ({ messageId }: { messageId: string }) => {
             setMessages((prev) => prev.filter((m) => m.id !== messageId));
@@ -64,10 +84,14 @@ export function MessageThread({
 
         socket.on('new_message', handleNewMessage);
         socket.on('message_deleted', handleMessageDeleted);
+        socket.on('typing', handleTyping);
+        socket.on('stop_typing', handleStopTyping);
 
         return () => {
             socket.off('new_message', handleNewMessage);
             socket.off('message_deleted', handleMessageDeleted);
+            socket.off('typing', handleTyping);
+            socket.off('stop_typing', handleStopTyping);
         };
     }, [socket, isNearBottom, scrollToBottom]);
 
@@ -103,6 +127,13 @@ export function MessageThread({
             setMessages((prev) =>
                 prev.some((m) => m.id === newMessage.id) ? prev : [...prev, newMessage]
             );
+            // Animate the new bubble
+            setNewMessageIds(prev => new Set(prev).add(newMessage.id));
+            setTimeout(() => setNewMessageIds(prev => {
+                const next = new Set(prev);
+                next.delete(newMessage.id);
+                return next;
+            }), 600);
             setInputValue('');
             setTimeout(scrollToBottom, 50);
         } catch {
@@ -151,10 +182,15 @@ export function MessageThread({
     };
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full" style={{ background: 'var(--ink-0)' }}>
             {/* Header */}
-            <div className="px-4 py-3 border-b border-gray-200 bg-white">
-                <h2 className="text-base font-semibold text-gray-900">{counterpartName}</h2>
+            <div
+                className="px-4 py-3 border-b"
+                style={{ borderColor: 'var(--ink-3)', background: 'var(--ink-1)' }}
+            >
+                <h2 className="text-base font-semibold" style={{ color: 'var(--text-hi)' }}>
+                    {counterpartName}
+                </h2>
             </div>
 
             {/* Messages */}
@@ -164,12 +200,13 @@ export function MessageThread({
                 data-testid="messages-container"
             >
                 {messages.length === 0 && (
-                    <p className="text-center text-gray-400 text-sm py-8">
+                    <p className="text-center text-sm py-8" style={{ color: 'var(--text-lo)' }}>
                         No messages yet. Say hello!
                     </p>
                 )}
                 {messages.map((message) => {
                     const isOwn = message.senderId === currentUserId;
+                    const isNew = newMessageIds.has(message.id);
                     return (
                         <div
                             key={message.id}
@@ -179,10 +216,15 @@ export function MessageThread({
                         >
                             <div className={`relative group max-w-[70%] flex items-end gap-1 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
                                 <div
-                                    className={`px-4 py-2 rounded-2xl text-sm break-words ${isOwn
-                                        ? 'bg-blue-600 text-white rounded-br-sm'
-                                        : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                                    className={`px-4 py-2 rounded-2xl text-sm break-words${isNew ? ' bubble-enter' : ''} ${isOwn
+                                        ? 'rounded-br-sm'
+                                        : 'rounded-bl-sm'
                                         }`}
+                                    style={{
+                                        background: isOwn ? 'var(--brand-500)' : 'var(--ink-2)',
+                                        color: isOwn ? 'var(--ink-0)' : 'var(--text-hi)',
+                                    }}
+                                    data-testid={isOwn ? 'message-bubble-own' : 'message-bubble-other'}
                                 >
                                     {message.content}
                                 </div>
@@ -190,7 +232,8 @@ export function MessageThread({
                                     <button
                                         onClick={() => handleDelete(message.id)}
                                         aria-label="Delete message"
-                                        className="p-1 text-red-400 hover:text-red-600 transition-colors flex-shrink-0"
+                                        className="p-1 transition-colors flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-1"
+                                        style={{ color: 'var(--status-danger)' }}
                                     >
                                         <Trash2 size={14} />
                                     </button>
@@ -199,13 +242,22 @@ export function MessageThread({
                         </div>
                     );
                 })}
+
+                {/* Typing indicator (task 4.2) */}
+                {isCounterpartTyping && (
+                    <TypingIndicator name={counterpartName} />
+                )}
+
                 <div ref={messagesEndRef} />
             </div>
 
             {/* Input area */}
-            <div className="border-t border-gray-200 bg-white px-4 py-3">
+            <div
+                className="border-t px-4 py-3"
+                style={{ borderColor: 'var(--ink-3)', background: 'var(--ink-1)' }}
+            >
                 {sendError && (
-                    <p className="text-red-500 text-xs mb-2" role="alert">
+                    <p className="text-xs mb-2" role="alert" style={{ color: 'var(--status-danger)' }}>
                         {sendError}
                     </p>
                 )}
@@ -217,13 +269,22 @@ export function MessageThread({
                         placeholder="Type a message..."
                         rows={1}
                         aria-label="Message input"
-                        className="flex-1 resize-none rounded-xl border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="flex-1 resize-none rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2"
+                        style={{
+                            background: 'var(--ink-2)',
+                            color: 'var(--text-hi)',
+                            border: '1px solid var(--ink-3)',
+                        }}
                     />
                     <button
                         onClick={handleSend}
                         disabled={isSending || !inputValue.trim()}
                         aria-label="Send message"
-                        className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                        className="px-4 py-2 text-sm font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1"
+                        style={{
+                            background: 'var(--brand-500)',
+                            color: 'var(--ink-0)',
+                        }}
                     >
                         Send
                     </button>

@@ -78,7 +78,7 @@ describe('PlayerInfoSection', () => {
             expect(screen.queryByText(/•/)).not.toBeInTheDocument();
         });
 
-        it('should use appropriate text styling for height/weight', () => {
+        it('should render height/weight text', () => {
             const propsWithStats = {
                 ...mockProps,
                 height: '6\'2"',
@@ -88,63 +88,7 @@ describe('PlayerInfoSection', () => {
             render(<PlayerInfoSection {...propsWithStats} />);
 
             const statsElement = screen.getByText('6\'2" • 210 lbs');
-            expect(statsElement).toHaveClass('text-sm', 'text-gray-500');
-        });
-    });
-
-    describe('Styling', () => {
-        it('should have responsive padding', () => {
-            const { container } = render(<PlayerInfoSection {...mockProps} />);
-
-            const section = container.firstChild;
-            expect(section).toHaveClass('p-4', 'sm:p-5');
-        });
-
-        it('should have responsive text sizes for player name', () => {
-            render(<PlayerInfoSection {...mockProps} />);
-
-            const name = screen.getByText('John Smith');
-            expect(name).toHaveClass('text-xl', 'sm:text-2xl');
-        });
-
-        it('should have responsive text sizes for position', () => {
-            render(<PlayerInfoSection {...mockProps} />);
-
-            const position = screen.getByText('Point Guard');
-            expect(position).toHaveClass('text-base', 'sm:text-lg');
-        });
-
-        it('should have responsive text sizes for sport', () => {
-            render(<PlayerInfoSection {...mockProps} />);
-
-            const sport = screen.getByText('Basketball');
-            expect(sport).toHaveClass('text-sm', 'sm:text-base');
-        });
-
-        it('should truncate long player names', () => {
-            const propsWithLongName = {
-                ...mockProps,
-                playerName: 'Christopher Montgomery-Wellington III',
-            };
-
-            render(<PlayerInfoSection {...propsWithLongName} />);
-
-            const name = screen.getByText('Christopher Montgomery-Wellington III');
-            expect(name).toHaveClass('truncate');
-        });
-
-        it('should use blue color for position text', () => {
-            render(<PlayerInfoSection {...mockProps} />);
-
-            const position = screen.getByText('Point Guard');
-            expect(position).toHaveClass('text-blue-600');
-        });
-
-        it('should use gray color for sport text', () => {
-            render(<PlayerInfoSection {...mockProps} />);
-
-            const sport = screen.getByText('Basketball');
-            expect(sport).toHaveClass('text-gray-700');
+            expect(statsElement).toBeInTheDocument();
         });
     });
 

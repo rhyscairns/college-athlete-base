@@ -386,9 +386,12 @@ describe('CoachSearchPage Integration Tests', () => {
 
             const { rerender } = renderPage();
 
+            // Wait for initial fetches (search + prospects)
             await waitFor(() => {
-                expect(global.fetch).toHaveBeenCalledTimes(1);
+                expect(global.fetch).toHaveBeenCalled();
             });
+
+            const callsAfterMount = (global.fetch as jest.Mock).mock.calls.length;
 
             const mockSearchParams2 = new URLSearchParams({ sport: 'Football' });
             (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams2);
@@ -396,7 +399,7 @@ describe('CoachSearchPage Integration Tests', () => {
             rerender(<CoachSearchPage params={resolvedParams('coach-123')} />);
 
             await waitFor(() => {
-                expect(global.fetch).toHaveBeenCalledTimes(2);
+                expect((global.fetch as jest.Mock).mock.calls.length).toBeGreaterThan(callsAfterMount);
             });
         });
     });
@@ -413,7 +416,7 @@ describe('CoachSearchPage Integration Tests', () => {
             renderPage();
 
             expect(screen.getByTestId('loading')).toBeInTheDocument();
-            expect(screen.getByText('Searching for athletes...')).toBeInTheDocument();
+            expect(screen.getByText('Searching for athletes…')).toBeInTheDocument();
         });
 
         it('should hide loading state after results load', async () => {

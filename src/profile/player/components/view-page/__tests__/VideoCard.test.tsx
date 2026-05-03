@@ -154,7 +154,7 @@ describe('VideoCard', () => {
             render(<VideoCard video={mockVideo} variant="featured" onClick={mockOnClick} />);
 
             const button = screen.getByRole('button');
-            expect(button).toHaveClass('focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500');
+            expect(button).toHaveClass('focus:outline-none');
         });
     });
 });

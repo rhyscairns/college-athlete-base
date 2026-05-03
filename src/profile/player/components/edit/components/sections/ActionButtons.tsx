@@ -27,12 +27,13 @@ export function ActionButtons({
                 onClick={onSave}
                 onKeyDown={handleSaveKeyDown}
                 disabled={disabled || isSaving}
-                className="min-h-[44px] w-full sm:w-auto px-6 py-3 bg-blue-600 rounded-lg text-white font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation flex items-center justify-center gap-2"
+                className="min-h-[44px] w-full sm:w-auto px-6 py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation flex items-center justify-center gap-2"
+                style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
                 type="button"
             >
                 {isSaving && (
                     <svg
-                        className="animate-spin h-5 w-5 text-white"
+                        className="animate-spin h-5 w-5"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -59,7 +60,10 @@ export function ActionButtons({
                 onClick={onCancel}
                 onKeyDown={handleCancelKeyDown}
                 disabled={isSaving}
-                className="min-h-[44px] w-full sm:w-auto px-6 py-3 bg-gray-200 rounded-lg text-gray-900 font-semibold hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                className="min-h-[44px] w-full sm:w-auto px-6 py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                style={{ background: 'var(--ink-3)', color: 'var(--text-mid)' }}
+                onMouseEnter={e => !isSaving && ((e.currentTarget as HTMLButtonElement).style.background = 'var(--ink-2)')}
+                onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = 'var(--ink-3)')}
                 type="button"
             >
                 Cancel

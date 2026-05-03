@@ -1,6 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { EmptyState } from '@/components/primitives/EmptyState';
+import { EmptyInboxIllustration } from '@/components/primitives/illustrations/EmptyInbox';
 import type { MessagesTableProps } from '../types';
 
 export function MessagesTable({ conversations, currentUserId, userType, emptyMessage }: MessagesTableProps) {
@@ -14,9 +16,15 @@ export function MessagesTable({ conversations, currentUserId, userType, emptyMes
         }
     };
 
+    // ── Empty state (task 4.4 + 4.8) ──
     if (conversations.length === 0) {
         return (
-            <p className="text-gray-500 text-center py-12">{emptyMessage}</p>
+            <EmptyState
+                illustration={<EmptyInboxIllustration />}
+                title="No messages yet"
+                description={emptyMessage ?? 'Start a conversation — reach out to a player or coach.'}
+                data-testid="empty-inbox"
+            />
         );
     }
 

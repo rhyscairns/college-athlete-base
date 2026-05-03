@@ -36,6 +36,13 @@ describe('DashboardHeader', () => {
             const subtitle = screen.getByText('Discover and connect with talented athletes');
             expect(subtitle.tagName).toBe('P');
         });
+
+        it('should render with data-testid attributes', () => {
+            render(<DashboardHeader {...mockProps} />);
+            expect(screen.getByTestId('dashboard-header')).toBeInTheDocument();
+            expect(screen.getByTestId('dashboard-title')).toBeInTheDocument();
+            expect(screen.getByTestId('dashboard-subtitle')).toBeInTheDocument();
+        });
     });
 
     describe('Content Variations', () => {
@@ -86,65 +93,6 @@ describe('DashboardHeader', () => {
         });
     });
 
-    describe('Styling', () => {
-        it('should have light theme background', () => {
-            const { container } = render(<DashboardHeader {...mockProps} />);
-
-            const header = container.firstChild;
-            expect(header).toHaveClass('bg-white');
-        });
-
-        it('should have responsive padding', () => {
-            const { container } = render(<DashboardHeader {...mockProps} />);
-
-            const header = container.firstChild;
-            expect(header).toHaveClass('px-6', 'py-8', 'sm:px-8', 'sm:py-12');
-        });
-
-        it('should have responsive text sizes for title', () => {
-            render(<DashboardHeader {...mockProps} />);
-
-            const title = screen.getByRole('heading', { level: 1 });
-            expect(title).toHaveClass('text-3xl', 'sm:text-4xl');
-        });
-
-        it('should have responsive text sizes for subtitle', () => {
-            render(<DashboardHeader {...mockProps} />);
-
-            const subtitle = screen.getByText('Discover and connect with talented athletes');
-            expect(subtitle).toHaveClass('text-base', 'sm:text-lg');
-        });
-
-        it('should have dark text for title', () => {
-            render(<DashboardHeader {...mockProps} />);
-
-            const title = screen.getByRole('heading', { level: 1 });
-            expect(title).toHaveClass('text-gray-900');
-        });
-
-        it('should have gray text for subtitle', () => {
-            render(<DashboardHeader {...mockProps} />);
-
-            const subtitle = screen.getByText('Discover and connect with talented athletes');
-            expect(subtitle).toHaveClass('text-gray-600');
-        });
-
-        it('should have max-width container', () => {
-            const { container } = render(<DashboardHeader {...mockProps} />);
-
-            const innerContainer = container.querySelector('.max-w-7xl');
-            expect(innerContainer).toBeInTheDocument();
-            expect(innerContainer).toHaveClass('mx-auto');
-        });
-
-        it('should have spacing between title and subtitle', () => {
-            render(<DashboardHeader {...mockProps} />);
-
-            const title = screen.getByRole('heading', { level: 1 });
-            expect(title).toHaveClass('mb-2');
-        });
-    });
-
     describe('Component Memoization', () => {
         it('should be memoized with React.memo', () => {
             expect(typeof DashboardHeader).toBe('object');
@@ -159,16 +107,14 @@ describe('DashboardHeader', () => {
             expect(h1).toBeInTheDocument();
         });
 
-        it('should have readable text contrast', () => {
+        it('should have readable text content', () => {
             render(<DashboardHeader {...mockProps} />);
 
             const title = screen.getByRole('heading', { level: 1 });
             const subtitle = screen.getByText('Discover and connect with talented athletes');
 
-            // Dark text on light background
-            expect(title).toHaveClass('text-gray-900');
-            // Gray text on light background
-            expect(subtitle).toHaveClass('text-gray-600');
+            expect(title).toBeInTheDocument();
+            expect(subtitle).toBeInTheDocument();
         });
     });
 

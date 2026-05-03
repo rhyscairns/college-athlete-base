@@ -133,7 +133,7 @@ export default async function CoachProfilePage({
 
     // Allow viewing without authentication, but editing requires authentication
     return (
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen">
             <CoachProfileView
                 coachId={coachId}
                 currentUserId={currentUserId}

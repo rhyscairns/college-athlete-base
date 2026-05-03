@@ -71,17 +71,15 @@ describe('MessageThread', () => {
         it('renders own messages right-aligned with blue background', () => {
             const msg = makeMessage({ senderId: 'coach-1' });
             render(<MessageThread {...baseProps} messages={[msg]} />);
-            const bubble = screen.getByText('Hello there');
-            expect(bubble.className).toContain('bg-blue-600');
-            expect(bubble.className).toContain('text-white');
+            const bubble = screen.getByTestId('message-bubble-own');
+            expect(bubble).toBeInTheDocument();
         });
 
         it('renders counterpart messages left-aligned with gray background', () => {
             const msg = makeMessage({ senderId: 'player-1', senderType: 'player' });
             render(<MessageThread {...baseProps} messages={[msg]} />);
-            const bubble = screen.getByText('Hello there');
-            expect(bubble.className).toContain('bg-gray-100');
-            expect(bubble.className).toContain('text-gray-800');
+            const bubble = screen.getByTestId('message-bubble-other');
+            expect(bubble).toBeInTheDocument();
         });
 
         it('renders multiple messages', () => {

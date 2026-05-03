@@ -168,10 +168,6 @@ describe('PlayerDashboard', () => {
             mockFetch
                 .mockResolvedValueOnce({
                     ok: true,
-                    json: async () => ({ success: true, data: mockPlayerData }),
-                } as Response)
-                .mockResolvedValueOnce({
-                    ok: true,
                     json: async () => ({ success: true, data: { sports: [] } }),
                 } as Response)
                 .mockResolvedValueOnce({
@@ -181,27 +177,33 @@ describe('PlayerDashboard', () => {
 
             render(<PlayerDashboard playerId="player-123" />);
 
+            // Profile is validated server-side; dashboard fetches players directly
             await waitFor(() => {
-                expect(mockFetch).toHaveBeenCalledWith('/api/player/player-123/profile');
+                expect(mockFetch).toHaveBeenCalledWith(
+                    expect.stringContaining('/api/dashboard/players')
+                );
             });
         });
 
         it('should handle 401 error during profile fetch', async () => {
-            mockFetch.mockResolvedValueOnce({
-                ok: false,
-                status: 401,
-                json: async () => ({ success: false, error: 'Unauthorized' }),
-            } as Response);
+            mockFetch
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: async () => ({ success: true, data: { sports: [] } }),
+                } as Response)
+                .mockResolvedValueOnce({
+                    ok: false,
+                    status: 401,
+                    json: async () => ({ success: false, error: 'Unauthorized' }),
+                } as Response);
 
             render(<PlayerDashboard playerId="player-123" />);
 
-            // Verify the fetch was called
             await waitFor(() => {
-                expect(mockFetch).toHaveBeenCalledWith('/api/player/player-123/profile');
+                expect(mockFetch).toHaveBeenCalledWith(
+                    expect.stringContaining('/api/dashboard/players')
+                );
             });
-
-            // The component should attempt to redirect (router.push is called)
-            // Note: In a real scenario, this would redirect to /login
         });
 
         it('should handle 403 error during players fetch', async () => {
@@ -233,10 +235,6 @@ describe('PlayerDashboard', () => {
     describe('Filter Functionality', () => {
         it('should change sport filter', async () => {
             mockFetch
-                .mockResolvedValueOnce({
-                    ok: true,
-                    json: async () => ({ success: true, data: mockPlayerData }),
-                } as Response)
                 .mockResolvedValueOnce({
                     ok: true,
                     json: async () => ({ success: true, data: { sports: ['Basketball', 'Football'] } }),
@@ -305,10 +303,6 @@ describe('PlayerDashboard', () => {
             mockFetch
                 .mockResolvedValueOnce({
                     ok: true,
-                    json: async () => ({ success: true, data: mockPlayerData }),
-                } as Response)
-                .mockResolvedValueOnce({
-                    ok: true,
                     json: async () => ({ success: true, data: { sports: [] } }),
                 } as Response)
                 .mockResolvedValueOnce({
@@ -325,10 +319,6 @@ describe('PlayerDashboard', () => {
 
         it('should show retry button on error', async () => {
             mockFetch
-                .mockResolvedValueOnce({
-                    ok: true,
-                    json: async () => ({ success: true, data: mockPlayerData }),
-                } as Response)
                 .mockResolvedValueOnce({
                     ok: true,
                     json: async () => ({ success: true, data: { sports: [] } }),
@@ -476,10 +466,6 @@ describe('PlayerDashboard', () => {
     describe('Pagination', () => {
         it('should show pagination when players are loaded', async () => {
             mockFetch
-                .mockResolvedValueOnce({
-                    ok: true,
-                    json: async () => ({ success: true, data: mockPlayerData }),
-                } as Response)
                 .mockResolvedValueOnce({
                     ok: true,
                     json: async () => ({ success: true, data: { sports: [] } }),

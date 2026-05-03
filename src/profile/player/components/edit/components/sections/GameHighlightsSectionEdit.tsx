@@ -60,19 +60,20 @@ export function GameHighlightsSectionEdit({
     };
 
     return (
-        <div className="space-y-4 p-6 sm:p-8 bg-white rounded-2xl shadow-lg animate-fade-in">
+        <div className="space-y-4 p-6 sm:p-8 rounded-2xl animate-fade-in" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
             <div className="space-y-4">
                 {formData.map((video, index) => (
                     <div
                         key={video.id}
-                        className="space-y-3 p-6 bg-gray-50 rounded-xl border border-gray-200"
+                        className="space-y-3 p-6 rounded-xl"
+                        style={{ background: 'var(--ink-2)', border: '1px solid var(--ink-3)' }}
                     >
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                             <div className="flex items-center gap-3">
-                                <h4 className="text-sm font-semibold text-gray-900">
+                                <h4 className="text-sm font-semibold" style={{ color: 'var(--text-hi)' }}>
                                     Video {index + 1}
                                     {video.isFeatured && (
-                                        <span className="ml-2 px-2 py-0.5 bg-yellow-100 border border-yellow-300 rounded text-xs text-yellow-700 font-medium">
+                                        <span className="ml-2 px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'oklch(68% 0.22 150 / 0.15)', color: 'var(--brand-500)', border: '1px solid oklch(68% 0.22 150 / 0.3)' }}>
                                             MAIN VIDEO
                                         </span>
                                     )}
@@ -82,14 +83,15 @@ export function GameHighlightsSectionEdit({
                                 type="button"
                                 onClick={() => handleRemoveVideo(index)}
                                 disabled={isSaving}
-                                className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-semibold hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                                className="min-h-[44px] w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                                style={{ background: 'oklch(60% 0.22 25 / 0.1)', color: 'var(--status-danger)', border: '1px solid oklch(60% 0.22 25 / 0.3)' }}
                             >
                                 Remove
                             </button>
                         </div>
 
                         {/* Main Video Selection */}
-                        <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center gap-2 p-3 rounded-lg" style={{ background: 'oklch(68% 0.22 150 / 0.08)', border: '1px solid oklch(68% 0.22 150 / 0.25)' }}>
                             <input
                                 type="radio"
                                 id={`main-video-${index}`}
@@ -97,11 +99,12 @@ export function GameHighlightsSectionEdit({
                                 checked={video.isFeatured || false}
                                 onChange={() => handleSetMainVideo(index)}
                                 disabled={isSaving}
-                                className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                className="w-4 h-4 disabled:opacity-50"
                             />
                             <label
                                 htmlFor={`main-video-${index}`}
-                                className="text-sm font-medium text-gray-700 cursor-pointer"
+                                className="text-sm font-medium cursor-pointer"
+                                style={{ color: 'var(--text-mid)' }}
                             >
                                 Set as main video (appears on player card)
                             </label>
@@ -130,7 +133,7 @@ export function GameHighlightsSectionEdit({
                         />
 
                         {video.url && !validateUrl(video.url) && (
-                            <p className="text-sm text-red-600 -mt-2">
+                            <p className="text-sm -mt-2" style={{ color: 'var(--status-danger)' }}>
                                 Please enter a valid URL
                             </p>
                         )}
@@ -183,7 +186,7 @@ export function GameHighlightsSectionEdit({
             </div>
 
             {formData.length === 0 && (
-                <p className="text-center text-gray-500 py-8">
+                <p className="text-center py-8" style={{ color: 'var(--text-lo)' }}>
                     No videos added yet. Click "Add Video" to get started.
                 </p>
             )}
@@ -192,13 +195,14 @@ export function GameHighlightsSectionEdit({
                 type="button"
                 onClick={handleAddVideo}
                 disabled={isSaving}
-                className="min-h-[44px] w-full sm:w-auto px-4 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-sm font-semibold hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                className="min-h-[44px] w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation"
+                style={{ background: 'oklch(68% 0.22 150 / 0.1)', color: 'var(--brand-500)', border: '1px solid oklch(68% 0.22 150 / 0.3)' }}
             >
                 + Add Video
             </button>
 
             {errors.videos && (
-                <p className="text-sm text-red-600">{errors.videos}</p>
+                <p className="text-sm" style={{ color: 'var(--status-danger)' }}>{errors.videos}</p>
             )}
 
             {/* Action Buttons */}

@@ -73,6 +73,7 @@ export interface PlayerProfile {
     weightLbs: number;
     affordableAmount?: number;
     profileImageUrl?: string;
+    videoThumbnailUrl?: string;
     videoUrl?: string;
 }
 
@@ -115,6 +116,14 @@ export interface AthleteSearchResultsProps {
     currentPage: number;
     pageSize: number;
     onPageChange: (page: number) => void;
+    /** Coach ID — used to build the correct coach-scoped player profile URL */
+    coachId?: string;
+    /** Set of player IDs the coach has already favorited */
+    favoritedPlayerIds?: Set<string>;
+    /** Callback when the heart icon is toggled on a card */
+    onFavoriteToggle?: (playerId: string, currentState: boolean) => void | Promise<void>;
+    /** Callback when the video play button is clicked */
+    onWatchVideo?: (playerId: string, videoUrl: string, videoTitle?: string, playerName?: string) => void;
 }
 
 /** Shape returned by GET /api/dashboard/players */

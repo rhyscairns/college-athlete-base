@@ -38,8 +38,9 @@ export function SuccessNotification({
 
     return (
         <div
-            className={`fixed top-4 right-4 px-6 py-3 bg-emerald-500 text-white rounded-lg shadow-lg transition-all duration-300 z-50 ${isFadingOut ? 'opacity-0 translate-x-2' : 'opacity-100 translate-x-0 animate-fade-in'
+            className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 z-50 ${isFadingOut ? 'opacity-0 translate-x-2' : 'opacity-100 translate-x-0 animate-fade-in'
                 }`}
+            style={{ background: 'var(--status-success)', color: 'var(--text-hi)' }}
             role="alert"
             aria-live="polite"
         >

@@ -1,41 +1,48 @@
 'use client';
 
 import { PlayerNavbar } from '@/dashboard/player/components/PlayerNavbar';
+import { ProgressBar } from '@/components/primitives/ProgressBar';
+import { PlayerCacheProvider } from './PlayerCacheContext';
 import { usePathname } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { extractPlayerId } from './utils/extractPlayerId';
 
 interface PlayerLayoutProps {
     children: React.ReactNode;
 }
 
-/**
- * Player Layout Component
- * 
- * Wraps all player pages with consistent navigation and background styling.
- * Extracts playerId from URL patterns and provides it to the PlayerNavbar.
- * 
- * Supported URL patterns:
- * - /player/[playerId]/dashboard
- * - /player/[playerId]/profile
- * - /player/dashboard/[playerId]/...
- * 
- * @param props - Component props
- * @param props.children - Child components to render within the layout
- * @returns Layout wrapper with navigation and gradient background
- */
 export default function PlayerLayout({ children }: PlayerLayoutProps) {
     const pathname = usePathname();
     const playerId = extractPlayerId(pathname);
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-[#0A1628] via-[#1a2942] to-[#0A1628]">
-            {/* Navigation Bar */}
-            <PlayerNavbar playerId={playerId} />
+    // ProgressBar: active during route transitions
+    const [navLoading, setNavLoading] = useState(false);
+    const prevPathname = useRef(pathname);
 
-            {/* Content Area */}
-            <main className="pt-20" role="main" aria-label="Player content">
-                {children}
-            </main>
-        </div>
+    useEffect(() => {
+        if (prevPathname.current !== pathname) {
+            setNavLoading(true);
+            const t = setTimeout(() => setNavLoading(false), 500);
+            prevPathname.current = pathname;
+            return () => clearTimeout(t);
+        }
+    }, [pathname]);
+
+    return (
+        <PlayerCacheProvider>
+            <div
+                className="relative min-h-screen"
+                style={{ background: 'var(--ink-0)' }}
+            >
+                <div aria-hidden="true" className="field-bg" />
+                <div className="relative z-10">
+                    <ProgressBar active={navLoading} />
+                    <PlayerNavbar playerId={playerId} />
+                    <main className="pt-14 md:pt-16 pb-16 md:pb-0" role="main" aria-label="Player content">
+                        {children}
+                    </main>
+                </div>
+            </div>
+        </PlayerCacheProvider>
     );
 }

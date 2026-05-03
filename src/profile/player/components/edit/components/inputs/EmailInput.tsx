@@ -12,9 +12,9 @@ export function EmailInput({
 }: EmailInputProps) {
     return (
         <div className="w-full">
-            <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={name} className="block text-sm font-medium mb-1" style={{ color: 'var(--text-mid)' }}>
                 {label}
-                <span className="text-red-600 ml-1">*</span>
+                <span className="ml-1" style={{ color: 'var(--status-danger)' }}>*</span>
             </label>
             <input
                 id={name}
@@ -25,12 +25,14 @@ export function EmailInput({
                 onBlur={onBlur}
                 placeholder={placeholder}
                 disabled={disabled}
-                className={`w-full px-4 py-3 bg-white border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all ${error
-                    ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20'
-                    : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
-                    }`}
+                className="w-full px-4 py-3 rounded-lg focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                style={{
+                    background: 'var(--ink-1)',
+                    border: `1px solid ${error ? 'var(--status-danger)' : 'var(--ink-3)'}`,
+                    color: 'var(--text-hi)',
+                }}
             />
-            {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+            {error && <p className="mt-1 text-sm" style={{ color: 'var(--status-danger)' }}>{error}</p>}
         </div>
     );
 }

@@ -73,40 +73,10 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
         return hasSportEvents(selectedSport) && !hasSportPositions(selectedSport) ? 'All Events' : 'All Positions';
     }, [selectedSport]);
 
-    // Fetch player profile and set initial filters
+    // Auth is validated server-side; mark profile loaded immediately
     useEffect(() => {
-        const fetchPlayerProfile = async () => {
-            try {
-                setIsLoading(true);
-                setError(null);
-
-                const response = await fetch(`/api/player/${playerId}/profile`);
-
-                // Handle authentication errors
-                if (response.status === 401 || response.status === 403) {
-                    router.push('/login');
-                    return;
-                }
-
-                const data = await response.json();
-
-                if (!response.ok || !data.success) {
-                    throw new Error(data.error || 'Failed to fetch player profile');
-                }
-
-                // Set initial sport filter to "All Sports" for players
-                setSelectedSport('All Sports');
-                setProfileLoaded(true);
-            } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : 'Unable to load player profile. Please check your connection.';
-                setError(errorMessage);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchPlayerProfile();
-    }, [playerId, router]);
+        setProfileLoaded(true);
+    }, []);
 
     // Fetch available sports from players
     useEffect(() => {
@@ -285,17 +255,19 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen">
             {/* Skip Links for Accessibility */}
             <a
                 href="#main-content"
-                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-500 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:outline-none"
+                style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
             >
                 Skip to main content
             </a>
             <a
                 href="#filter-controls"
-                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-40 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-500 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-40 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:outline-none"
+                style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
             >
                 Skip to filters
             </a>
@@ -329,15 +301,17 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
                 {/* Error Display */}
                 {error && (
                     <div
-                        className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg"
+                        className="mb-6 p-4 rounded-lg"
+                        style={{ background: 'oklch(60% 0.22 25 / 0.1)', border: '1px solid oklch(60% 0.22 25 / 0.3)' }}
                         role="alert"
                         aria-live="assertive"
                     >
-                        <p className="text-red-400 mb-2">{error}</p>
+                        <p className="mb-2" style={{ color: 'var(--status-danger)' }}>{error}</p>
                         <div className="flex gap-2">
                             <button
                                 onClick={fetchPlayers}
-                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+                                className="px-4 py-2 rounded-lg transition-colors focus:outline-none font-semibold"
+                                style={{ background: 'var(--status-danger)', color: 'var(--text-hi)' }}
                                 aria-label="Retry loading players"
                             >
                                 Retry
@@ -345,7 +319,8 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
                             {(selectedSport !== 'All Sports' || selectedPosition !== 'All Positions') && (
                                 <button
                                     onClick={handleClearFilters}
-                                    className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+                                    className="px-4 py-2 rounded-lg transition-colors focus:outline-none font-semibold"
+                                    style={{ background: 'var(--ink-3)', color: 'var(--text-mid)' }}
                                     aria-label="Clear all filters"
                                 >
                                     Clear Filters
@@ -358,15 +333,17 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
                 {/* No Results Message with Clear Filters */}
                 {!isLoading && !error && players.length === 0 && (
                     <div
-                        className="mb-6 p-4 bg-slate-800/50 border border-slate-700 rounded-lg"
+                        className="mb-6 p-4 rounded-lg"
+                        style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}
                         role="status"
                         aria-live="polite"
                     >
-                        <p className="text-slate-400 mb-2">No players found matching your filters.</p>
+                        <p className="mb-2" style={{ color: 'var(--text-lo)' }}>No players found matching your filters.</p>
                         {(selectedSport !== 'All Sports' || selectedPosition !== 'All Positions') && (
                             <button
                                 onClick={handleClearFilters}
-                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+                                className="px-4 py-2 rounded-lg transition-colors focus:outline-none font-semibold"
+                                style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
                                 aria-label="Clear all filters"
                             >
                                 Clear Filters

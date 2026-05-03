@@ -23,6 +23,7 @@ jest.mock('../../../../messages/components/NotificationBell', () => ({
 
 jest.mock('next/navigation', () => ({
     useRouter: () => ({ push: jest.fn() }),
+    usePathname: () => '/coach/coach-123/dashboard',
 }));
 
 describe('CoachNavbar Accessibility', () => {
@@ -31,13 +32,13 @@ describe('CoachNavbar Accessibility', () => {
     describe('Semantic HTML', () => {
         it('renders a <nav> element with aria-label', () => {
             render(<CoachNavbar coachId={coachId} />);
-            const nav = screen.getByRole('navigation', { name: /main navigation/i });
-            expect(nav).toBeInTheDocument();
+            const navs = screen.getAllByRole('navigation', { name: /main navigation/i });
+            expect(navs[0]).toBeInTheDocument();
         });
 
         it('branding link has descriptive aria-label', () => {
             render(<CoachNavbar coachId={coachId} />);
-            expect(screen.getByRole('link', { name: /college athlete base/i })).toBeInTheDocument();
+            expect(screen.getAllByRole('link', { name: /college athlete base/i })[0]).toBeInTheDocument();
         });
     });
 
@@ -99,9 +100,10 @@ describe('CoachNavbar Accessibility', () => {
 
         it('Messages button is focusable and clickable', () => {
             render(<CoachNavbar coachId={coachId} />);
-            const messagesBtn = screen.getAllByRole('button', { name: 'Messages' })[0];
-            expect(messagesBtn).not.toHaveAttribute('tabindex', '-1');
-            expect(() => fireEvent.click(messagesBtn)).not.toThrow();
+            // Messages is a Link in the redesign
+            const messagesLinks = screen.getAllByText('Messages');
+            expect(messagesLinks[0]).toBeInTheDocument();
+            expect(() => fireEvent.click(messagesLinks[0])).not.toThrow();
         });
     });
 });

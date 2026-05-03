@@ -61,23 +61,56 @@ export default async function CoachMessagesPage({ params }: MessagesPageProps) {
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen">
             <div className="max-w-6xl mx-auto px-4 py-8">
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-8 sm:px-8 sm:py-10">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-white">Messages</h1>
-                        <p className="text-blue-100 mt-1">Your conversations with players</p>
-                    </div>
 
-                    <div className="p-6 sm:p-8">
-                        <MessagesTable
-                            conversations={conversations}
-                            currentUserId={coachId}
-                            userType="coach"
-                            emptyMessage="No messages yet. Start a conversation from the dashboard."
-                        />
+                {/* Page header */}
+                <header className="relative overflow-hidden text-center px-6 pt-12 pb-10 mb-8 rounded-2xl">
+                    <div
+                        aria-hidden="true"
+                        className="absolute inset-0 -z-10 rounded-2xl"
+                        style={{
+                            background: `radial-gradient(ellipse 80% 60% at 50% -10%, oklch(68% 0.22 150 / 0.18) 0%, transparent 70%), var(--ink-1)`,
+                        }}
+                    />
+                    <div
+                        aria-hidden="true"
+                        className="absolute inset-0 -z-10 opacity-[0.03] rounded-2xl"
+                        style={{
+                            backgroundImage: `linear-gradient(var(--text-hi) 1px, transparent 1px), linear-gradient(90deg, var(--text-hi) 1px, transparent 1px)`,
+                            backgroundSize: '48px 48px',
+                        }}
+                    />
+                    <div
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest mb-5"
+                        style={{ background: 'oklch(68% 0.22 150 / 0.15)', border: '1px solid oklch(68% 0.22 150 / 0.3)', color: 'var(--brand-500)' }}
+                    >
+                        <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--brand-500)' }} />
+                        Inbox
                     </div>
-                </div>
+                    <h1
+                        className="font-black tracking-tight leading-none mb-3"
+                        style={{
+                            fontSize: 'clamp(2rem, 4vw + 1rem, 3rem)',
+                            background: `linear-gradient(135deg, var(--text-hi) 0%, oklch(85% 0.15 150) 50%, var(--text-hi) 100%)`,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text',
+                        }}
+                    >
+                        Messages
+                    </h1>
+                    <p className="text-base" style={{ color: 'var(--text-mid)' }}>
+                        Your conversations with players
+                    </p>
+                </header>
+
+                <MessagesTable
+                    conversations={conversations}
+                    currentUserId={coachId}
+                    userType="coach"
+                    emptyMessage="No messages yet. Start a conversation from the dashboard."
+                />
             </div>
         </div>
     );

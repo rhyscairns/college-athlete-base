@@ -41,10 +41,10 @@ export function RecruitingContactSectionEdit({
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fade-in">
+        <div className="rounded-2xl p-6 sm:p-8 space-y-6 animate-fade-in" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
             {/* Player Contact Information */}
             <div className="space-y-4">
-                <h3 className="text-lg font-bold text-gray-900">Player Contact</h3>
+                <h3 className="text-lg font-bold" style={{ color: 'var(--text-hi)' }}>Player Contact</h3>
 
                 <EmailInput
                     label="Email"
@@ -68,8 +68,8 @@ export function RecruitingContactSectionEdit({
             </div>
 
             {/* Parent/Guardian Contact */}
-            <div className="space-y-4 pt-6 border-t border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900">Parent/Guardian Contact</h3>
+            <div className="space-y-4 pt-6" style={{ borderTop: '1px solid var(--ink-3)' }}>
+                <h3 className="text-lg font-bold" style={{ color: 'var(--text-hi)' }}>Parent/Guardian Contact</h3>
 
                 <TextInput
                     label="Parent/Guardian Name"
@@ -104,8 +104,8 @@ export function RecruitingContactSectionEdit({
             </div>
 
             {/* Social Media Links */}
-            <div className="space-y-4 pt-6 border-t border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900">Social Media</h3>
+            <div className="space-y-4 pt-6" style={{ borderTop: '1px solid var(--ink-3)' }}>
+                <h3 className="text-lg font-bold" style={{ color: 'var(--text-hi)' }}>Social Media</h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <TextInput
@@ -151,8 +151,8 @@ export function RecruitingContactSectionEdit({
             </div>
 
             {/* Head Coach Contact */}
-            <div className="space-y-4 pt-6 border-t border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900">Head Coach Contact</h3>
+            <div className="space-y-4 pt-6" style={{ borderTop: '1px solid var(--ink-3)' }}>
+                <h3 className="text-lg font-bold" style={{ color: 'var(--text-hi)' }}>Head Coach Contact</h3>
 
                 <TextInput
                     label="Head Coach Name"
@@ -187,7 +187,7 @@ export function RecruitingContactSectionEdit({
             </div>
 
             {/* Preferred Contact Method */}
-            <div className="pt-6 border-t border-gray-200">
+            <div className="pt-6" style={{ borderTop: '1px solid var(--ink-3)' }}>
                 <TextInput
                     label="Preferred Contact Method"
                     name="preferredContactMethod"
