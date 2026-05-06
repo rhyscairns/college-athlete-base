@@ -6,7 +6,7 @@ export async function GET(
     _request: NextRequest,
     context: { params: Promise<{ coachId: string }> }
 ) {
-    const requestId = generateRequestId();
+    generateRequestId();
     const { coachId } = await context.params;
 
     if (!coachId || !isValidUUID(coachId)) {
@@ -68,6 +68,4 @@ export async function GET(
             { status: 500 }
         );
     }
-
-    void requestId;
 }

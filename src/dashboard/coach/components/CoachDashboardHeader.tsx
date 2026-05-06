@@ -2,24 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { InviteModal } from '../../common/components/InviteModal';
+import type { CoachStats, StatTileProps, CoachDashboardHeaderProps } from '../types';
 
-interface CoachStats {
-    prospectsCount: number;
-    newPlayersToday: number;
-    scholarshipsAgreed: number;
-    playersReferred: number;
-    coachesReferred: number;
-    promoCode: string | null;
-}
-
-interface StatTileProps {
-    label: string;
-    value: number;
-    isLoading: boolean;
-    accent?: 'brand' | 'amber' | 'danger';
-}
-
-function StatTile({ label, value, isLoading, accent = 'brand' }: StatTileProps) {
+function StatTile({ label, value, isLoading, accent = 'brand' }: StatTileProps): React.JSX.Element {
     const prevRef = useRef(0);
     const [display, setDisplay] = useState(0);
 
@@ -50,6 +35,7 @@ function StatTile({ label, value, isLoading, accent = 'brand' }: StatTileProps) 
     return (
         <div
             className="relative flex flex-col justify-between p-4 rounded-2xl overflow-hidden"
+            aria-busy={isLoading}
             style={{
                 background: `oklch(19% 0.018 260)`,
                 border: `1px solid ${accentColor}33`,
@@ -78,6 +64,8 @@ function StatTile({ label, value, isLoading, accent = 'brand' }: StatTileProps) 
                 />
             ) : (
                 <span
+                    aria-live="polite"
+                    aria-atomic="true"
                     className="text-4xl font-black tabular-nums leading-none relative"
                     style={{
                         color: accentColor,
@@ -92,13 +80,13 @@ function StatTile({ label, value, isLoading, accent = 'brand' }: StatTileProps) 
     );
 }
 
-export function CoachDashboardHeader({ coachId, prospectsCountOverride }: { coachId: string; prospectsCountOverride?: number }) {
+export function CoachDashboardHeader({ coachId, prospectsCountOverride }: CoachDashboardHeaderProps): React.JSX.Element {
     const [stats, setStats] = useState<CoachStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [inviteOpen, setInviteOpen] = useState(false);
 
     useEffect(() => {
-        const fetchStats = async () => {
+        const fetchStats = async (): Promise<void> => {
             try {
                 const res = await fetch(`/api/coach/${coachId}/stats`);
                 const data = await res.json();

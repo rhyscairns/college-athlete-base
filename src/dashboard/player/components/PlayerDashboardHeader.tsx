@@ -2,23 +2,15 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { InviteModal } from '../../common/components/InviteModal';
+import type { PlayerStats, StatTileProps, PlayerDashboardHeaderProps } from '../types';
 
-interface PlayerStats {
-    profileViews: number;
-    coachesFavorited: number;
-    playersReferred: number;
-    coachesReferred: number;
-    promoCode: string | null;
-}
+const ACCENT_COLORS: Record<NonNullable<StatTileProps['accent']>, string> = {
+    brand: 'oklch(68% 0.22 150)',
+    amber: 'oklch(78% 0.18 75)',
+    danger: 'oklch(65% 0.24 25)',
+};
 
-interface StatTileProps {
-    label: string;
-    value: number;
-    isLoading: boolean;
-    accent?: 'brand' | 'amber' | 'danger';
-}
-
-function StatTile({ label, value, isLoading, accent = 'brand' }: StatTileProps) {
+function StatTile({ label, value, isLoading, accent = 'brand' }: StatTileProps): React.JSX.Element {
     const prevRef = useRef(0);
     const [display, setDisplay] = useState(0);
 
@@ -29,7 +21,7 @@ function StatTile({ label, value, isLoading, accent = 'brand' }: StatTileProps) 
         const duration = 600;
         const startTime = performance.now();
 
-        const tick = (now: number) => {
+        const tick = (now: number): void => {
             const progress = Math.min((now - startTime) / duration, 1);
             const eased = 1 - Math.pow(1 - progress, 3);
             setDisplay(Math.round(start + (end - start) * eased));
@@ -39,15 +31,12 @@ function StatTile({ label, value, isLoading, accent = 'brand' }: StatTileProps) 
         requestAnimationFrame(tick);
     }, [value, isLoading]);
 
-    const accentColor = {
-        brand: 'oklch(68% 0.22 150)',
-        amber: 'oklch(78% 0.18 75)',
-        danger: 'oklch(65% 0.24 25)',
-    }[accent];
+    const accentColor = ACCENT_COLORS[accent];
 
     return (
         <div
             className="relative flex flex-col justify-between p-4 rounded-2xl overflow-hidden"
+            aria-busy={isLoading}
             style={{
                 background: `oklch(19% 0.018 260)`,
                 border: `1px solid ${accentColor}33`,
@@ -75,6 +64,8 @@ function StatTile({ label, value, isLoading, accent = 'brand' }: StatTileProps) 
                 />
             ) : (
                 <span
+                    aria-live="polite"
+                    aria-atomic="true"
                     className="text-4xl font-black tabular-nums leading-none relative"
                     style={{
                         color: accentColor,
@@ -89,19 +80,19 @@ function StatTile({ label, value, isLoading, accent = 'brand' }: StatTileProps) 
     );
 }
 
-export function PlayerDashboardHeader({ playerId }: { playerId: string }) {
+export function PlayerDashboardHeader({ playerId }: PlayerDashboardHeaderProps): React.JSX.Element {
     const [stats, setStats] = useState<PlayerStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [inviteOpen, setInviteOpen] = useState(false);
 
     useEffect(() => {
-        const fetchStats = async () => {
+        const fetchStats = async (): Promise<void> => {
             try {
                 const res = await fetch(`/api/player/${playerId}/stats`);
                 const data = await res.json();
                 if (data.success) setStats(data.data);
             } catch {
-                // non-critical
+                // non-critical — stats are decorative, failure is silent
             } finally {
                 setIsLoading(false);
             }
@@ -116,7 +107,7 @@ export function PlayerDashboardHeader({ playerId }: { playerId: string }) {
                 role="banner"
                 data-testid="player-dashboard-header"
             >
-                {/* Background */}
+                {/* Background gradients */}
                 <div
                     aria-hidden="true"
                     className="absolute inset-0 -z-10"
@@ -172,7 +163,7 @@ export function PlayerDashboardHeader({ playerId }: { playerId: string }) {
                         </div>
                     </button>
 
-                    {/* Stat grid — 2 cols mobile → 4 cols lg, always full width */}
+                    {/* Stat grid — 2 cols mobile → 4 cols lg */}
                     <div
                         className="grid grid-cols-2 lg:grid-cols-4 gap-3"
                         role="region"
