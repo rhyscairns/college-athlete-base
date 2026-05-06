@@ -43,6 +43,14 @@ jest.mock('@/dashboard/common/components/DashboardHeader', () => ({
     ),
 }));
 
+jest.mock('@/dashboard/player/components/PlayerDashboardHeader', () => ({
+    PlayerDashboardHeader: () => (
+        <div data-testid="dashboard-header">
+            <h1>Player Discovery Dashboard</h1>
+        </div>
+    ),
+}));
+
 jest.mock('@/dashboard/common/components/FilterBar', () => ({
     FilterBar: ({ sports, positions, selectedSport, selectedPosition, onSportChange, onPositionChange, onSearch, isLoading }: any) => (
         <div data-testid="filter-bar">

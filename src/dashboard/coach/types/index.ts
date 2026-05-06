@@ -1,5 +1,30 @@
 import type { MouseEvent } from 'react';
 
+/** Stats returned by GET /api/coach/[coachId]/stats */
+export interface CoachStats {
+    prospectsCount: number;
+    newPlayersToday: number;
+    scholarshipsAgreed: number;
+    playersReferred: number;
+    coachesReferred: number;
+    promoCode: string | null;
+}
+
+/** Props for the StatTile sub-component in CoachDashboardHeader */
+export interface StatTileProps {
+    label: string;
+    value: number;
+    isLoading: boolean;
+    accent?: 'brand' | 'amber' | 'danger';
+}
+
+/** Props for the CoachDashboardHeader component */
+export interface CoachDashboardHeaderProps {
+    coachId: string;
+    /** Live override for prospects count — updated optimistically by parent on favorite toggle */
+    prospectsCountOverride?: number;
+}
+
 /** Navigation item structure for coach nav menus */
 export interface NavItem {
     label: string;

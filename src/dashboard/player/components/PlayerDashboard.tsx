@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { PlayerDashboardProps } from '../types';
 import type { PlayerCardData, VideoModalState } from '../../common/types';
-import { DashboardHeader } from '../../common/components/DashboardHeader';
+import { PlayerDashboardHeader } from './PlayerDashboardHeader';
 import { FilterBar } from '../../common/components/FilterBar';
 import { PlayerCardGrid } from '../../common/components/PlayerCardGrid';
 import { Pagination } from '../../common/components/Pagination';
@@ -273,10 +273,7 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
             </a>
 
             {/* Dashboard Header */}
-            <DashboardHeader
-                title="Player Discovery Dashboard"
-                subtitle="Connect with other athletes and explore opportunities"
-            />
+            <PlayerDashboardHeader playerId={playerId} />
 
             {/* Main Content */}
             <main

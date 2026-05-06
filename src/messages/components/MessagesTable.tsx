@@ -39,16 +39,19 @@ export function MessagesTable({ conversations, currentUserId, userType, emptyMes
                 {conversations.map((conversation) => {
                     const fullName = `${conversation.firstName} ${conversation.lastName}`;
                     return (
-                        <div key={conversation.counterpartId} className="bg-white rounded-xl border border-gray-200 p-4">
+                        <div key={conversation.counterpartId} className="rounded-xl p-4" style={{ background: 'var(--ink-1)', border: '1px solid var(--ink-3)' }}>
                             <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0">
-                                    <p className="text-sm font-semibold text-gray-900 truncate">{fullName}</p>
-                                    <p className="text-xs text-gray-500 truncate mt-0.5">{conversation.email}</p>
+                                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-hi)' }}>{fullName}</p>
+                                    <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-lo)' }}>{conversation.email}</p>
                                 </div>
                                 <button
                                     onClick={() => handleViewMessages(conversation.counterpartId)}
                                     aria-label={`View messages with ${fullName}`}
-                                    className="shrink-0 px-3 py-1.5 text-xs font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                                    className="shrink-0 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1"
+                                    style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
+                                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--brand-600)')}
+                                    onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-500)')}
                                 >
                                     View Messages
                                 </button>
@@ -56,14 +59,14 @@ export function MessagesTable({ conversations, currentUserId, userType, emptyMes
                             <div className="mt-3 flex flex-col gap-1">
                                 {userType === 'coach' ? (
                                     <>
-                                        <span className="text-xs text-gray-500"><span className="font-medium text-gray-700">Sport:</span> {conversation.sport ?? '—'}</span>
-                                        <span className="text-xs text-gray-500"><span className="font-medium text-gray-700">Position:</span> {conversation.position ?? '—'}</span>
+                                        <span className="text-xs" style={{ color: 'var(--text-lo)' }}><span className="font-medium" style={{ color: 'var(--text-mid)' }}>Sport:</span> {conversation.sport ?? '—'}</span>
+                                        <span className="text-xs" style={{ color: 'var(--text-lo)' }}><span className="font-medium" style={{ color: 'var(--text-mid)' }}>Position:</span> {conversation.position ?? '—'}</span>
                                     </>
                                 ) : (
                                     <>
-                                        <span className="text-xs text-gray-500"><span className="font-medium text-gray-700">University:</span> {conversation.university ?? '—'}</span>
-                                        <span className="text-xs text-gray-500"><span className="font-medium text-gray-700">Position:</span> {conversation.position ?? '—'}</span>
-                                        <span className="text-xs text-gray-500"><span className="font-medium text-gray-700">Sport:</span> {conversation.sport ?? '—'}</span>
+                                        <span className="text-xs" style={{ color: 'var(--text-lo)' }}><span className="font-medium" style={{ color: 'var(--text-mid)' }}>University:</span> {conversation.university ?? '—'}</span>
+                                        <span className="text-xs" style={{ color: 'var(--text-lo)' }}><span className="font-medium" style={{ color: 'var(--text-mid)' }}>Position:</span> {conversation.position ?? '—'}</span>
+                                        <span className="text-xs" style={{ color: 'var(--text-lo)' }}><span className="font-medium" style={{ color: 'var(--text-mid)' }}>Sport:</span> {conversation.sport ?? '—'}</span>
                                     </>
                                 )}
                             </div>
@@ -73,59 +76,69 @@ export function MessagesTable({ conversations, currentUserId, userType, emptyMes
             </div>
 
             {/* Desktop table */}
-            <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200">
-                <table className="w-full divide-y divide-gray-200 bg-white">
+            <div className="hidden md:block overflow-x-auto overflow-hidden rounded-xl" style={{ border: '1px solid var(--ink-3)' }}>
+                <table className="w-full divide-y" style={{ borderColor: 'var(--ink-3)', background: 'var(--ink-1)' }}>
                     <thead>
-                        <tr className="bg-blue-50">
+                        <tr style={{ background: 'var(--ink-2)' }}>
                             {columns.map((col) => (
                                 <th
                                     key={col}
                                     scope="col"
-                                    className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap"
+                                    className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap"
+                                    style={{ color: 'var(--brand-500)' }}
                                 >
                                     {col}
                                 </th>
                             ))}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y" style={{ borderColor: 'var(--ink-3)' }}>
                         {conversations.map((conversation) => {
                             const fullName = `${conversation.firstName} ${conversation.lastName}`;
                             return (
-                                <tr key={conversation.counterpartId} className="hover:bg-slate-50 transition-colors">
-                                    <td className="px-4 py-3 text-sm font-semibold text-gray-900 whitespace-nowrap">
+                                <tr
+                                    key={conversation.counterpartId}
+                                    className="transition-colors"
+                                    style={{ borderColor: 'var(--ink-3)' }}
+                                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--ink-2)')}
+                                    onMouseLeave={e => (e.currentTarget.style.background = '')}
+                                >
+                                    <td className="px-4 py-3 text-sm font-semibold whitespace-nowrap" style={{ color: 'var(--text-hi)' }}>
                                         {fullName}
                                     </td>
                                     {userType === 'coach' ? (
                                         <>
-                                            <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                                            <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ color: 'var(--text-mid)' }}>
                                                 {conversation.sport ?? '—'}
                                             </td>
-                                            <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                                            <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ color: 'var(--text-mid)' }}>
                                                 {conversation.position ?? '—'}
                                             </td>
                                         </>
                                     ) : (
                                         <>
-                                            <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                                            <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ color: 'var(--text-mid)' }}>
                                                 {conversation.university ?? '—'}
                                             </td>
-                                            <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                                            <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ color: 'var(--text-mid)' }}>
                                                 {conversation.position ?? '—'}
                                             </td>
-                                            <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                                            <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ color: 'var(--text-mid)' }}>
                                                 {conversation.sport ?? '—'}
                                             </td>
                                         </>
                                     )}
-                                    <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                                    <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ color: 'var(--text-mid)' }}>
                                         {conversation.email}
                                     </td>
                                     <td className="px-4 py-3 whitespace-nowrap">
                                         <button
                                             onClick={() => handleViewMessages(conversation.counterpartId)}
                                             aria-label={`View messages with ${fullName}`}
-                                            className="px-3 py-1.5 text-xs font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                                            className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1"
+                                            style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
+                                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--brand-600)')}
+                                            onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-500)')}
                                         >
                                             View Messages
                                         </button>
