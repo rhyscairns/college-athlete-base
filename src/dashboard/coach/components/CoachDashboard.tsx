@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { CoachDashboardProps, DashboardPlayerApiResponse } from '../types';
 import type { PlayerCardData, VideoModalState } from '../../common/types';
-import { DashboardHeader } from '../../common/components/DashboardHeader';
+import { CoachDashboardHeader } from './CoachDashboardHeader';
 import { FilterBar } from '../../common/components/FilterBar';
 import { PlayerCardGrid } from '../../common/components/PlayerCardGrid';
 import { Pagination } from '../../common/components/Pagination';
@@ -26,6 +26,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
 
     // Prospects / favorites state
     const [favoritedIds, setFavoritedIds] = useState<Set<string>>(new Set());
+    const [prospectsCount, setProspectsCount] = useState<number | undefined>(undefined);
 
     // Debounce filter changes to reduce API calls
     const debouncedSport = useDebounce(selectedSport, 300);
@@ -218,7 +219,9 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
                 const response = await fetch(`/api/coach/${coachId}/prospects`);
                 const data = await response.json();
                 if (response.ok && data.success && Array.isArray(data.data)) {
-                    setFavoritedIds(new Set(data.data.map((p: { playerId: string }) => p.playerId)));
+                    const ids = new Set<string>(data.data.map((p: { playerId: string }) => p.playerId));
+                    setFavoritedIds(ids);
+                    setProspectsCount(ids.size);
                 }
             } catch (_err) {
                 // Non-critical — silently ignore; heart icons will default to unfavorited
@@ -240,6 +243,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
             }
             return next;
         });
+        setProspectsCount((prev) => (prev ?? 0) + (currentState ? -1 : 1));
 
         try {
             let response: Response;
@@ -268,6 +272,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
                     }
                     return next;
                 });
+                setProspectsCount((prev) => (prev ?? 0) + (currentState ? 1 : -1));
                 setError('Failed to update prospect. Please try again.');
             }
         } catch (_err) {
@@ -281,6 +286,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
                 }
                 return next;
             });
+            setProspectsCount((prev) => (prev ?? 0) + (currentState ? 1 : -1));
             setError('Failed to update prospect. Please try again.');
         }
     }, [coachId]);
@@ -375,10 +381,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
             </a>
 
             {/* Dashboard Header */}
-            <DashboardHeader
-                title="Player Recruitment Dashboard"
-                subtitle="Discover and connect with talented athletes"
-            />
+            <CoachDashboardHeader coachId={coachId} prospectsCountOverride={prospectsCount} />
 
             {/* Main Content */}
             <main
