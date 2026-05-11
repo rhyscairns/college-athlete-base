@@ -49,4 +49,8 @@ export interface NotificationItem {
     sentAt: string; // ISO string
     coachId: string;
     playerId: string;
+    /** Notification category — defaults to 'message' for backwards compat */
+    type?: 'message' | 'scholarship';
+    /** Direct navigation href — overrides the default message thread path */
+    href?: string;
 }

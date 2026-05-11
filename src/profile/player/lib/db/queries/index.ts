@@ -32,6 +32,7 @@ interface PlayerProfileRow {
     video_description: string | null;
     video_thumbnail_url: string | null;
     recruitment_status: string | null;
+    has_accepted_offer: boolean;
     created_at: Date;
     updated_at: Date;
 }
@@ -50,15 +51,19 @@ export async function getPlayerProfileById(playerId: string): Promise<PlayerProf
         // Fetch basic player data
         const playerRows = await query<PlayerProfileRow>(
             `SELECT 
-                id, first_name, last_name, email, sex, sport, position,
-                gpa, country, state, region, scholarship_amount, test_scores,
-                date_of_birth,
-                EXTRACT(YEAR FROM AGE(date_of_birth))::INTEGER as age,
-                profile_image_url,
-                highlight_video_url, video_title, video_description, video_thumbnail_url,
-                created_at, updated_at
-            FROM players 
-            WHERE id = $1`,
+                p.id, p.first_name, p.last_name, p.email, p.sex, p.sport, p.position,
+                p.gpa, p.country, p.state, p.region, p.scholarship_amount, p.test_scores,
+                p.date_of_birth,
+                EXTRACT(YEAR FROM AGE(p.date_of_birth))::INTEGER as age,
+                p.profile_image_url,
+                p.highlight_video_url, p.video_title, p.video_description, p.video_thumbnail_url,
+                p.created_at, p.updated_at,
+                EXISTS (
+                    SELECT 1 FROM scholarships s
+                    WHERE s.player_id = p.id AND s.status = 'accepted'
+                ) AS has_accepted_offer
+            FROM players p
+            WHERE p.id = $1`,
             [playerId]
         );
 
@@ -188,6 +193,7 @@ function transformPlayerData(player: PlayerProfileRow): PlayerProfile {
 
         recruitmentStatus: player.recruitment_status ?? 'open',
         commitmentStatus: null,
+        hasAcceptedOffer: player.has_accepted_offer === true,
     };
 }
 

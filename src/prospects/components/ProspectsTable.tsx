@@ -128,6 +128,16 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
                                 >
                                     View Profile
                                 </button>
+                                <button
+                                    onClick={() => router.push(`/coach/${coachId}/scholarships/new?playerId=${prospect.playerId}`)}
+                                    aria-label={`Send scholarship to ${fullName}`}
+                                    className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1"
+                                    style={{ background: 'oklch(75% 0.18 85 / 0.15)', color: 'oklch(75% 0.18 85)', border: '1px solid oklch(75% 0.18 85 / 0.3)' }}
+                                    onMouseEnter={e => (e.currentTarget.style.background = 'oklch(75% 0.18 85 / 0.25)')}
+                                    onMouseLeave={e => (e.currentTarget.style.background = 'oklch(75% 0.18 85 / 0.15)')}
+                                >
+                                    Send Scholarship
+                                </button>
                             </div>
                         </div>
                     );
@@ -204,6 +214,16 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
                                                 onMouseLeave={e => (e.currentTarget.style.background = 'var(--ink-3)')}
                                             >
                                                 View Profile
+                                            </button>
+                                            <button
+                                                onClick={() => router.push(`/coach/${coachId}/scholarships/new?playerId=${prospect.playerId}`)}
+                                                aria-label={`Send scholarship to ${fullName}`}
+                                                className="px-3 py-1.5 text-xs font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors"
+                                                style={{ background: 'oklch(75% 0.18 85 / 0.15)', color: 'oklch(75% 0.18 85)', border: '1px solid oklch(75% 0.18 85 / 0.3)' }}
+                                                onMouseEnter={e => (e.currentTarget.style.background = 'oklch(75% 0.18 85 / 0.25)')}
+                                                onMouseLeave={e => (e.currentTarget.style.background = 'oklch(75% 0.18 85 / 0.15)')}
+                                            >
+                                                Send Scholarship
                                             </button>
                                             <button
                                                 onClick={() => handleUnfavorite(prospect.playerId)}

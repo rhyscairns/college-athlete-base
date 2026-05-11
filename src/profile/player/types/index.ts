@@ -145,6 +145,8 @@ export interface PlayerProfile {
     contact: Contact;
     recruitmentStatus?: string;
     commitmentStatus?: string | null;
+    /** Whether the player has an accepted scholarship offer */
+    hasAcceptedOffer?: boolean;
 }
 
 // ============================================

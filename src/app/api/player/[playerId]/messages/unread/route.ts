@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/authentication/middleware/session';
 import { getUnreadCount, getUnreadNotifications } from '@/lib/db/queries/messages';
+import { query } from '@/authentication/db/client';
 import { logger } from '@/lib/logger';
 import { isValidUUID, generateRequestId, formatExecutionTime } from '@/lib/api/utils';
+import type { NotificationItem } from '@/messages/types';
 
 /**
  * GET /api/player/[playerId]/messages/unread
@@ -59,15 +61,51 @@ export async function GET(
         }
 
         let count: number;
-        let notifications;
+        let notifications: NotificationItem[];
         try {
-            logger.dbOperation('getUnreadCount + getUnreadNotifications', { requestId, playerId });
-            const [countResult, notificationsResult] = await Promise.allSettled([
+            logger.dbOperation('getUnreadCount + getUnreadNotifications + pendingScholarships', { requestId, playerId });
+            const [countResult, notificationsResult, scholarshipsResult] = await Promise.allSettled([
                 getUnreadCount(playerId, 'player'),
                 getUnreadNotifications(playerId, 'player'),
+                // Fetch pending scholarship offers as notifications
+                query<{ id: string; school_name: string; coach_first_name: string | null; coach_last_name: string | null; coach_id: string; created_at: string }>(
+                    `SELECT s.id, s.school_name, s.coach_id, s.created_at,
+                            c.first_name AS coach_first_name, c.last_name AS coach_last_name
+                     FROM scholarships s
+                     LEFT JOIN coaches c ON c.id = s.coach_id
+                     WHERE s.player_id = $1 AND s.status = 'pending'
+                     ORDER BY s.created_at DESC
+                     LIMIT 5`,
+                    [playerId]
+                ),
             ]);
+
             count = countResult.status === 'fulfilled' ? countResult.value : 0;
-            notifications = notificationsResult.status === 'fulfilled' ? notificationsResult.value : [];
+            const messageNotifications: NotificationItem[] = notificationsResult.status === 'fulfilled'
+                ? notificationsResult.value.map(n => ({ ...n, type: 'message' as const }))
+                : [];
+
+            const scholarshipNotifications: NotificationItem[] = scholarshipsResult.status === 'fulfilled'
+                ? scholarshipsResult.value.map(row => ({
+                    messageId: row.id,
+                    senderName: [row.coach_first_name, row.coach_last_name].filter(Boolean).join(' ') || row.school_name,
+                    preview: `New scholarship offer from ${row.school_name}`,
+                    sentAt: row.created_at,
+                    coachId: row.coach_id,
+                    playerId,
+                    type: 'scholarship' as const,
+                    href: `/player/${playerId}/scholarship-offers/${row.coach_id}`,
+                }))
+                : [];
+
+            // Merge and sort by sentAt descending, cap at 5
+            notifications = [...messageNotifications, ...scholarshipNotifications]
+                .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime())
+                .slice(0, 5);
+
+            // Total count = unread messages + pending scholarship offers
+            count = count + scholarshipNotifications.length;
+
             if (countResult.status === 'rejected') {
                 logger.dbError('getUnreadCount', countResult.reason instanceof Error ? countResult.reason : new Error('Unknown'), { requestId, playerId });
             }

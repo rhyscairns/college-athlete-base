@@ -16,6 +16,7 @@ interface DashboardPlayer {
     videoThumbnail?: string;
     videoUrl?: string;
     videoTitle?: string;
+    hasAcceptedOffer: boolean;
 }
 
 /**
@@ -106,21 +107,21 @@ function buildQuery(params: {
 
     // Filter by sport (case-insensitive)
     if (params.sport && params.sport !== 'All Sports') {
-        conditions.push('LOWER(sport) = LOWER($' + paramIndex + ')');
+        conditions.push('LOWER(p.sport) = LOWER($' + paramIndex + ')');
         queryParams.push(params.sport);
         paramIndex++;
     }
 
     // Filter by position (case-insensitive)
     if (params.position && params.position !== 'All Positions') {
-        conditions.push('LOWER(position) = LOWER($' + paramIndex + ')');
+        conditions.push('LOWER(p.position) = LOWER($' + paramIndex + ')');
         queryParams.push(params.position);
         paramIndex++;
     }
 
     // Exclude specific user
     if (params.excludeUserId) {
-        conditions.push('id != $' + paramIndex);
+        conditions.push('p.id != $' + paramIndex);
         queryParams.push(params.excludeUserId);
         paramIndex++;
     }
@@ -177,7 +178,7 @@ export async function GET(request: NextRequest) {
         try {
             logger.dbOperation('countPlayers', { requestId, sport, position, excludeUserId });
             const countResult = await query<{ count: string }>(
-                'SELECT COUNT(*) as count FROM players ' + whereClause,
+                'SELECT COUNT(*) as count FROM players p ' + whereClause,
                 queryParams
             );
             totalCount = parseInt(countResult[0]?.count || '0', 10);
@@ -211,18 +212,22 @@ export async function GET(request: NextRequest) {
             const offsetParam = queryParams.length + 2;
             const result = await query<any>(
                 `SELECT 
-                    id, 
-                    first_name, 
-                    last_name, 
-                    sport, 
-                    position,
-                    profile_image_url,
-                    video_thumbnail_url,
-                    highlight_video_url,
-                    video_title
-                FROM players 
+                    p.id, 
+                    p.first_name, 
+                    p.last_name, 
+                    p.sport, 
+                    p.position,
+                    p.profile_image_url,
+                    p.video_thumbnail_url,
+                    p.highlight_video_url,
+                    p.video_title,
+                    EXISTS (
+                        SELECT 1 FROM scholarships s
+                        WHERE s.player_id = p.id AND s.status = 'accepted'
+                    ) AS has_accepted_offer
+                FROM players p
                 ${whereClause}
-                ORDER BY created_at DESC
+                ORDER BY p.created_at DESC
                 LIMIT $${limitParam} OFFSET $${offsetParam}`,
                 [...queryParams, pageSize, offset]
             );
@@ -237,6 +242,7 @@ export async function GET(request: NextRequest) {
                 videoThumbnail: row.video_thumbnail_url || undefined,
                 videoUrl: row.highlight_video_url || undefined,
                 videoTitle: row.video_title || undefined,
+                hasAcceptedOffer: row.has_accepted_offer === true,
             }));
         } catch (error) {
             logger.dbError('getPlayers', error instanceof Error ? error : new Error('Unknown database error'), {

@@ -168,15 +168,16 @@ export function CoachDashboardHeader({ coachId, prospectsCountOverride }: CoachD
                         </div>
                     </button>
 
-                    {/* Stat grid — 2 cols mobile → 3 cols md → 5 cols lg, always full width */}
+                    {/* Stat grid — 2 cols mobile → 4 cols md → 6 cols lg, always full width */}
                     <div
-                        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3"
+                        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3"
                         role="region"
                         aria-label="Recruitment statistics"
                     >
                         <StatTile label="Prospects" value={prospectsCount} isLoading={isLoading} accent="brand" />
                         <StatTile label="New Players Today" value={stats?.newPlayersToday ?? 0} isLoading={isLoading} accent="amber" />
-                        <StatTile label="Scholarships Agreed" value={stats?.scholarshipsAgreed ?? 0} isLoading={isLoading} accent="brand" />
+                        <StatTile label="Scholarships Offered" value={stats?.scholarshipsOffered ?? 0} isLoading={isLoading} accent="amber" />
+                        <StatTile label="Scholarships Accepted" value={stats?.scholarshipsAccepted ?? 0} isLoading={isLoading} accent="brand" />
                         <StatTile label="Players Referred" value={stats?.playersReferred ?? 0} isLoading={isLoading} accent="amber" />
                         <StatTile label="Coaches Referred" value={stats?.coachesReferred ?? 0} isLoading={isLoading} accent="brand" />
                     </div>

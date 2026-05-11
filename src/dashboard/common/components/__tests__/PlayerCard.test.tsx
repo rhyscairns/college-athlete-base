@@ -583,6 +583,49 @@ describe('PlayerCard', () => {
         });
     });
 
+    describe('Accepted Offer Indicator', () => {
+        it('should not render offer accepted banner when hasAcceptedOffer is false', () => {
+            render(<PlayerCard {...mockPlayerData} hasAcceptedOffer={false} />);
+            expect(screen.queryByTestId('offer-accepted-banner')).not.toBeInTheDocument();
+            expect(screen.queryByText('Offer Accepted')).not.toBeInTheDocument();
+        });
+
+        it('should not render offer accepted banner when hasAcceptedOffer is not provided', () => {
+            render(<PlayerCard {...mockPlayerData} />);
+            expect(screen.queryByTestId('offer-accepted-banner')).not.toBeInTheDocument();
+        });
+
+        it('should render offer accepted banner when hasAcceptedOffer is true', () => {
+            render(<PlayerCard {...mockPlayerData} hasAcceptedOffer={true} />);
+            expect(screen.getByTestId('offer-accepted-banner')).toBeInTheDocument();
+            expect(screen.getByText('Offer Accepted')).toBeInTheDocument();
+        });
+
+        it('should apply brand-green border style when hasAcceptedOffer is true', () => {
+            render(<PlayerCard {...mockPlayerData} hasAcceptedOffer={true} />);
+            const card = screen.getByTestId('player-card');
+            expect(card).toHaveStyle({ border: '2px solid oklch(68% 0.22 150 / 0.6)' });
+        });
+
+        it('should not apply brand-green border when hasAcceptedOffer is false', () => {
+            render(<PlayerCard {...mockPlayerData} hasAcceptedOffer={false} />);
+            const card = screen.getByTestId('player-card');
+            expect(card).not.toHaveStyle({ border: '2px solid oklch(68% 0.22 150 / 0.6)' });
+        });
+
+        it('should include offer accepted in aria-label when hasAcceptedOffer is true', () => {
+            render(<PlayerCard {...mockPlayerData} hasAcceptedOffer={true} />);
+            const card = screen.getByTestId('player-card');
+            expect(card).toHaveAttribute('aria-label', 'Player card for John Smith, offer accepted');
+        });
+
+        it('should not include offer accepted in aria-label when hasAcceptedOffer is false', () => {
+            render(<PlayerCard {...mockPlayerData} hasAcceptedOffer={false} />);
+            const card = screen.getByTestId('player-card');
+            expect(card).toHaveAttribute('aria-label', 'Player card for John Smith');
+        });
+    });
+
     describe('Play Button Overlay', () => {
         it('should render clickable play button when video thumbnail and onWatchVideo are provided', () => {
             const handleWatchVideo = jest.fn();

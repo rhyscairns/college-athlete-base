@@ -164,6 +164,23 @@ describe('ProspectsTable', () => {
         });
     });
 
+    describe('Send Scholarship button (Requirement 2.1)', () => {
+        it('renders Send Scholarship button for each row', () => {
+            render(<ProspectsTable prospects={[makeProspect()]} coachId={coachId} />);
+            expect(screen.getAllByRole('button', { name: /send scholarship to jane doe/i })[0]).toBeInTheDocument();
+        });
+
+        it('navigates to new scholarship page with playerId query param on click', () => {
+            const pushMock = jest.fn();
+            jest.spyOn(require('next/navigation'), 'useRouter').mockReturnValue({ push: pushMock });
+
+            render(<ProspectsTable prospects={[makeProspect({ playerId: 'player-1' })]} coachId={coachId} />);
+            fireEvent.click(screen.getAllByRole('button', { name: /send scholarship to jane doe/i })[0]);
+
+            expect(pushMock).toHaveBeenCalledWith(`/coach/${coachId}/scholarships/new?playerId=player-1`);
+        });
+    });
+
     describe('Unfavorite button (Requirement 7.4)', () => {
         beforeEach(() => {
             global.fetch = jest.fn();

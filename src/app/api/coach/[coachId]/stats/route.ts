@@ -14,7 +14,7 @@ export async function GET(
     }
 
     try {
-        const [prospectsResult, newPlayersResult, promoCodeResult, referralsResult] = await Promise.all([
+        const [prospectsResult, newPlayersResult, promoCodeResult, referralsResult, scholarshipsResult] = await Promise.all([
             // Total prospects saved
             query<{ count: string }>(
                 `SELECT COUNT(*) AS count FROM coach_prospects WHERE coach_id = $1`,
@@ -45,18 +45,30 @@ export async function GET(
                     OR referred.external_referral_promo_code = c.promo_code`,
                 [coachId]
             ),
+            // Scholarship counts — offered (all) and accepted
+            query<{ offered: string; accepted: string }>(
+                `SELECT
+                    COUNT(*) AS offered,
+                    COUNT(*) FILTER (WHERE status = 'accepted') AS accepted
+                 FROM scholarships
+                 WHERE coach_id = $1`,
+                [coachId]
+            ),
         ]);
 
         const promoCode = promoCodeResult[0]?.promo_code ?? null;
         const playersReferred = parseInt(referralsResult.find(r => r.type === 'player')?.count ?? '0', 10);
         const coachesReferred = parseInt(referralsResult.find(r => r.type === 'coach')?.count ?? '0', 10);
+        const scholarshipsOffered = parseInt(scholarshipsResult[0]?.offered ?? '0', 10);
+        const scholarshipsAccepted = parseInt(scholarshipsResult[0]?.accepted ?? '0', 10);
 
         return NextResponse.json({
             success: true,
             data: {
                 prospectsCount: parseInt(prospectsResult[0]?.count ?? '0', 10),
                 newPlayersToday: parseInt(newPlayersResult[0]?.count ?? '0', 10),
-                scholarshipsAgreed: 0, // placeholder — feature coming soon
+                scholarshipsOffered,
+                scholarshipsAccepted,
                 playersReferred,
                 coachesReferred,
                 promoCode,
