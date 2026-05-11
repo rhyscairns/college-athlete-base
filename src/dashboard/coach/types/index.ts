@@ -4,7 +4,8 @@ import type { MouseEvent } from 'react';
 export interface CoachStats {
     prospectsCount: number;
     newPlayersToday: number;
-    scholarshipsAgreed: number;
+    scholarshipsOffered: number;
+    scholarshipsAccepted: number;
     playersReferred: number;
     coachesReferred: number;
     promoCode: string | null;
@@ -162,4 +163,5 @@ export interface DashboardPlayerApiResponse {
     videoThumbnail?: string;
     videoUrl?: string;
     videoTitle?: string;
+    hasAcceptedOffer?: boolean;
 }

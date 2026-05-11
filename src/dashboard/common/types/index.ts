@@ -60,6 +60,8 @@ export interface PlayerCardProps {
     onFavoriteToggle?: (playerId: string, currentState: boolean) => void | Promise<void>;
     /** Optional callback for message button click (coach view only) */
     onMessageClick?: () => void;
+    /** Whether the player has an accepted scholarship offer */
+    hasAcceptedOffer?: boolean;
 }
 
 /**

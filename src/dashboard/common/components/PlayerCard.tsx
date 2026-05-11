@@ -40,6 +40,7 @@ export const PlayerCard = React.memo(function PlayerCard({
     isFavorited = false,
     onFavoriteToggle,
     onMessageClick,
+    hasAcceptedOffer = false,
 }: PlayerCardProps) {
     const playerName = `${firstName} ${lastName}`;
     const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`;
@@ -121,8 +122,14 @@ export const PlayerCard = React.memo(function PlayerCard({
         <article
             ref={cardRef}
             className="group relative rounded-2xl cursor-default"
-            style={{ ...cardStyle, background: 'var(--ink-1)' }}
-            aria-label={`Player card for ${playerName}`}
+            style={{
+                ...cardStyle,
+                background: 'var(--ink-1)',
+                border: hasAcceptedOffer
+                    ? '2px solid oklch(68% 0.22 150 / 0.6)'
+                    : undefined,
+            }}
+            aria-label={`Player card for ${playerName}${hasAcceptedOffer ? ', offer accepted' : ''}`}
             data-testid="player-card"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
@@ -290,6 +297,37 @@ export const PlayerCard = React.memo(function PlayerCard({
                             </button>
                         )}
                     </div>
+
+                    {/* Accepted offer banner */}
+                    {hasAcceptedOffer && (
+                        <div
+                            className="mt-3 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg"
+                            style={{
+                                background: 'oklch(68% 0.22 150 / 0.12)',
+                                border: '1px solid oklch(68% 0.22 150 / 0.3)',
+                            }}
+                            aria-label="Offer accepted"
+                            data-testid="offer-accepted-banner"
+                        >
+                            <svg
+                                className="w-4 h-4 flex-shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={2.5}
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                                style={{ color: 'var(--brand-500)' }}
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                            <span
+                                className="text-xs font-semibold"
+                                style={{ color: 'var(--brand-500)' }}
+                            >
+                                Offer Accepted
+                            </span>
+                        </div>
+                    )}
                 </div>
             </div>
         </article>

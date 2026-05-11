@@ -20,7 +20,8 @@ const mockStats = {
     data: {
         prospectsCount: 12,
         newPlayersToday: 5,
-        scholarshipsAgreed: 3,
+        scholarshipsOffered: 8,
+        scholarshipsAccepted: 3,
         playersReferred: 7,
         coachesReferred: 2,
         promoCode: 'COACH123',
@@ -55,13 +56,14 @@ describe('CoachDashboardHeader', () => {
         expect(busyTiles.length).toBeGreaterThan(0);
     });
 
-    it('renders all five stat tiles after fetch', async () => {
+    it('renders all six stat tiles after fetch', async () => {
         mockFetch(mockStats);
         render(<CoachDashboardHeader coachId="coach-1" />);
         await waitFor(() => {
             expect(screen.getByText('Prospects')).toBeInTheDocument();
             expect(screen.getByText('New Players Today')).toBeInTheDocument();
-            expect(screen.getByText('Scholarships Agreed')).toBeInTheDocument();
+            expect(screen.getByText('Scholarships Offered')).toBeInTheDocument();
+            expect(screen.getByText('Scholarships Accepted')).toBeInTheDocument();
             expect(screen.getByText('Players Referred')).toBeInTheDocument();
             expect(screen.getByText('Coaches Referred')).toBeInTheDocument();
         });
@@ -177,7 +179,7 @@ describe('accessibility', () => {
         render(<CoachDashboardHeader coachId="coach-1" />);
         await waitFor(() => {
             const liveSpans = document.querySelectorAll('[aria-live="polite"]');
-            expect(liveSpans.length).toBe(5);
+            expect(liveSpans.length).toBe(6);
         });
     });
 });

@@ -468,4 +468,31 @@ describe('HeroSection', () => {
             expect(screen.getAllByText('Some Position').length).toBeGreaterThan(0);
         });
     });
+
+    describe('Scholarship Accepted Badge', () => {
+        it('should not render scholarship accepted badge when hasAcceptedOffer is false', () => {
+            render(<HeroSection player={{ ...mockPlayer, hasAcceptedOffer: false }} />);
+            expect(screen.queryByTestId('scholarship-accepted-badge')).not.toBeInTheDocument();
+            expect(screen.queryByText('Scholarship Accepted')).not.toBeInTheDocument();
+        });
+
+        it('should not render scholarship accepted badge when hasAcceptedOffer is not provided', () => {
+            render(<HeroSection player={mockPlayer} />);
+            expect(screen.queryByTestId('scholarship-accepted-badge')).not.toBeInTheDocument();
+        });
+
+        it('should render scholarship accepted badge when hasAcceptedOffer is true', () => {
+            render(<HeroSection player={{ ...mockPlayer, hasAcceptedOffer: true }} />);
+            expect(screen.getByTestId('scholarship-accepted-badge')).toBeInTheDocument();
+            expect(screen.getByText('Scholarship Accepted')).toBeInTheDocument();
+        });
+
+        it('should render badge near the player name', () => {
+            render(<HeroSection player={{ ...mockPlayer, hasAcceptedOffer: true }} />);
+            const name = screen.getByText('Marcus Johnson');
+            const badge = screen.getByTestId('scholarship-accepted-badge');
+            // Badge should be a sibling or near the name element
+            expect(name.parentElement).toContainElement(badge);
+        });
+    });
 });

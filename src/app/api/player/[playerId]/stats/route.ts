@@ -49,7 +49,7 @@ export async function GET(
         return NextResponse.json({
             success: true,
             data: {
-                profileViews: 0, // placeholder — analytics feature coming soon
+                profileViews: 0,
                 coachesFavorited: parseInt(favoritedResult[0]?.count ?? '0', 10),
                 playersReferred,
                 coachesReferred,

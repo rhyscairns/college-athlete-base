@@ -43,6 +43,7 @@ describe('PlayerNavbar', () => {
             expect(screen.getAllByText('Home')[0]).toBeInTheDocument();
             expect(screen.getAllByText('Profile')[0]).toBeInTheDocument();
             expect(screen.getAllByText('Messages')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('Offers')[0]).toBeInTheDocument();
             expect(screen.getByText('Log Out')).toBeInTheDocument();
         });
 
@@ -96,6 +97,35 @@ describe('PlayerNavbar', () => {
         it('Messages link is clickable and does not throw errors', () => {
             render(<PlayerNavbar playerId={mockPlayerId} />);
             expect(() => fireEvent.click(screen.getAllByText('Messages')[0])).not.toThrow();
+        });
+    });
+
+    describe('Offers Navigation', () => {
+        it('renders Offers link in desktop nav', () => {
+            render(<PlayerNavbar playerId={mockPlayerId} />);
+            expect(screen.getAllByText('Offers')[0]).toBeInTheDocument();
+        });
+
+        it('Offers link has correct href pointing to scholarships', () => {
+            render(<PlayerNavbar playerId={mockPlayerId} />);
+            const offersLink = screen.getAllByText('Offers')[0].closest('a');
+            expect(offersLink).toHaveAttribute('href', `/player/${mockPlayerId}/scholarships`);
+        });
+
+        it('Offers link is clickable and does not throw errors', () => {
+            render(<PlayerNavbar playerId={mockPlayerId} />);
+            expect(() => fireEvent.click(screen.getAllByText('Offers')[0])).not.toThrow();
+        });
+
+        it('renders Offers link in mobile dropdown', () => {
+            const { container } = render(<PlayerNavbar playerId={mockPlayerId} />);
+            const mobileButton = container.querySelector('.mobile-menu-button') as HTMLElement;
+            fireEvent.click(mobileButton);
+            const mobileDropdown = container.querySelector('.mobile-dropdown');
+            const offersEl = Array.from(mobileDropdown?.querySelectorAll('a, button') ?? []).find(
+                el => el.textContent === 'Offers'
+            );
+            expect(offersEl).toBeInTheDocument();
         });
     });
 

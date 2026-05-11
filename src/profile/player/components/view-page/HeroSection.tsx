@@ -259,6 +259,35 @@ export function HeroSection({
                             >
                                 {fullName}
                             </h1>
+                            {player.hasAcceptedOffer && (
+                                <div
+                                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full mb-2"
+                                    style={{
+                                        background: 'oklch(68% 0.22 150 / 0.15)',
+                                        border: '1px solid oklch(68% 0.22 150 / 0.3)',
+                                    }}
+                                    data-testid="scholarship-accepted-badge"
+                                    aria-label="Scholarship accepted"
+                                >
+                                    <svg
+                                        className="w-3.5 h-3.5 flex-shrink-0"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={2.5}
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                        style={{ color: 'var(--brand-500)' }}
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                    </svg>
+                                    <span
+                                        className="text-xs font-semibold"
+                                        style={{ color: 'var(--brand-500)' }}
+                                    >
+                                        Scholarship Accepted
+                                    </span>
+                                </div>
+                            )}
                             <p className="text-lg mb-1" style={{ color: 'var(--brand-500)', fontWeight: 500 }}>
                                 {player.position || 'Position'}
                             </p>

@@ -107,6 +107,31 @@ describe('MessagesTable', () => {
             expect(mockPush).toHaveBeenCalledWith('/coach/coach-123/messages/player-1');
         });
 
+        it('renders Send Scholarship button in coach view (Requirement 2.2)', () => {
+            render(
+                <MessagesTable
+                    conversations={[coachConversation]}
+                    currentUserId="coach-123"
+                    userType="coach"
+                    emptyMessage=""
+                />
+            );
+            expect(screen.getAllByRole('button', { name: /send scholarship to jane doe/i })[0]).toBeInTheDocument();
+        });
+
+        it('navigates to new scholarship page with playerId when Send Scholarship is clicked', () => {
+            render(
+                <MessagesTable
+                    conversations={[coachConversation]}
+                    currentUserId="coach-123"
+                    userType="coach"
+                    emptyMessage=""
+                />
+            );
+            fireEvent.click(screen.getAllByRole('button', { name: /send scholarship to jane doe/i })[0]);
+            expect(mockPush).toHaveBeenCalledWith('/coach/coach-123/scholarships/new?playerId=player-1');
+        });
+
         it('shows dash for missing optional fields', () => {
             const sparse: Conversation = {
                 ...coachConversation,
@@ -170,6 +195,18 @@ describe('MessagesTable', () => {
             );
             fireEvent.click(screen.getAllByRole('button', { name: /view messages with bob smith/i })[0]);
             expect(mockPush).toHaveBeenCalledWith('/player/player-123/messages/coach-1');
+        });
+
+        it('does not render Send Scholarship button in player view', () => {
+            render(
+                <MessagesTable
+                    conversations={[playerConversation]}
+                    currentUserId="player-123"
+                    userType="player"
+                    emptyMessage=""
+                />
+            );
+            expect(screen.queryByRole('button', { name: /send scholarship/i })).not.toBeInTheDocument();
         });
 
         it('shows dash for missing university', () => {

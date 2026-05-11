@@ -46,9 +46,10 @@ describe('CoachNavbar', () => {
             render(<CoachNavbar coachId={mockCoachId} />);
             expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
             expect(screen.getAllByRole('button', { name: 'Search' })[0]).toBeInTheDocument();
-            // Prospects, Messages, Profile are now Links in the redesign
+            // Prospects, Messages, Scholarships, Profile are now Links in the redesign
             expect(screen.getAllByText('Prospects')[0]).toBeInTheDocument();
             expect(screen.getAllByText('Messages')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('Scholarships')[0]).toBeInTheDocument();
             expect(screen.getAllByText('Profile')[0]).toBeInTheDocument();
             expect(screen.getAllByRole('button', { name: 'Log Out' })[0]).toBeInTheDocument();
         });
@@ -117,6 +118,52 @@ describe('CoachNavbar', () => {
                 el => el.textContent === 'Prospects'
             );
             if (prospectsLink) fireEvent.click(prospectsLink);
+            expect(hamburger).toHaveAttribute('aria-expanded', 'false');
+        });
+    });
+
+    describe('Scholarships Navigation', () => {
+        it('should render Scholarships link in desktop nav', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+            expect(screen.getAllByText('Scholarships')[0]).toBeInTheDocument();
+        });
+
+        it('should have correct Scholarships link href', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+            const links = screen.getAllByText('Scholarships');
+            const scholarshipsLink = links[0].closest('a');
+            expect(scholarshipsLink).toHaveAttribute('href', `/coach/${mockCoachId}/scholarships`);
+        });
+
+        it('should render Scholarships link between Messages and Profile', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+            const allText = Array.from(document.querySelectorAll('a, button'))
+                .map(el => el.textContent?.trim())
+                .filter(Boolean);
+            const messagesIdx = allText.indexOf('Messages');
+            const scholarshipsIdx = allText.indexOf('Scholarships');
+            const profileIdx = allText.indexOf('Profile');
+            expect(scholarshipsIdx).toBeGreaterThan(messagesIdx);
+            expect(scholarshipsIdx).toBeLessThan(profileIdx);
+        });
+
+        it('should render Scholarships link in mobile menu', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+            fireEvent.click(screen.getByLabelText('Toggle menu'));
+            expect(screen.getByRole('menu', { name: /mobile navigation menu/i })).toBeInTheDocument();
+            expect(screen.getAllByText('Scholarships').length).toBeGreaterThanOrEqual(1);
+        });
+
+        it('should close mobile menu when Scholarships is clicked', () => {
+            const { container } = render(<CoachNavbar coachId={mockCoachId} />);
+            const hamburger = screen.getByLabelText('Toggle menu');
+            fireEvent.click(hamburger);
+            expect(hamburger).toHaveAttribute('aria-expanded', 'true');
+            const dropdown = container.querySelector('.mobile-dropdown');
+            const scholarshipsLink = Array.from(dropdown?.querySelectorAll('a') ?? []).find(
+                el => el.textContent === 'Scholarships'
+            );
+            if (scholarshipsLink) fireEvent.click(scholarshipsLink);
             expect(hamburger).toHaveAttribute('aria-expanded', 'false');
         });
     });

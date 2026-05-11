@@ -48,6 +48,7 @@ export function PlayerNavbar({ playerId }: PlayerNavbarProps) {
         { key: 'home', label: 'Home', href: `/player/${playerId}/dashboard` },
         { key: 'profile', label: 'Profile', href: `/player/${playerId}/profile` },
         { key: 'messages', label: 'Messages', href: `/player/${playerId}/messages` },
+        { key: 'offers', label: 'Offers', href: `/player/${playerId}/scholarships` },
     ];
 
     return (
@@ -58,7 +59,7 @@ export function PlayerNavbar({ playerId }: PlayerNavbarProps) {
                 className="fixed top-0 left-0 right-0 z-50 hidden md:block"
                 style={glassNavStyle}
             >
-                <div className="flex items-center justify-between h-16 px-6 max-w-screen-xl mx-auto">
+                <div className="flex items-center justify-between h-16 px-6 max-w-screen-xl mx-auto relative">
                     <Link
                         href={`/player/${playerId}/dashboard`}
                         className="text-2xl font-bold tracking-tight focus:outline-none focus:ring-2 focus:ring-white rounded"
@@ -68,7 +69,8 @@ export function PlayerNavbar({ playerId }: PlayerNavbarProps) {
                         CAB
                     </Link>
 
-                    <div className="flex items-center gap-1" role="list">
+                    {/* Absolutely centred nav links */}
+                    <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1" role="list">
                         {navItems.map(item => (
                             <NavLink
                                 key={item.key}
@@ -265,6 +267,17 @@ function BottomTabBar({
             icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+            ),
+        },
+        {
+            key: 'offers',
+            label: 'Offers',
+            href: `/player/${playerId}/scholarships`,
+            icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                 </svg>
             ),
         },

@@ -70,6 +70,20 @@ export function MessagesTable({ conversations, currentUserId, userType, emptyMes
                                     </>
                                 )}
                             </div>
+                            {userType === 'coach' && (
+                                <div className="mt-3">
+                                    <button
+                                        onClick={() => router.push(`/coach/${currentUserId}/scholarships/new?playerId=${conversation.counterpartId}`)}
+                                        aria-label={`Send scholarship to ${fullName}`}
+                                        className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1"
+                                        style={{ background: 'oklch(75% 0.18 85 / 0.15)', color: 'oklch(75% 0.18 85)', border: '1px solid oklch(75% 0.18 85 / 0.3)' }}
+                                        onMouseEnter={e => (e.currentTarget.style.background = 'oklch(75% 0.18 85 / 0.25)')}
+                                        onMouseLeave={e => (e.currentTarget.style.background = 'oklch(75% 0.18 85 / 0.15)')}
+                                    >
+                                        Send Scholarship
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     );
                 })}
@@ -132,16 +146,30 @@ export function MessagesTable({ conversations, currentUserId, userType, emptyMes
                                         {conversation.email}
                                     </td>
                                     <td className="px-4 py-3 whitespace-nowrap">
-                                        <button
-                                            onClick={() => handleViewMessages(conversation.counterpartId)}
-                                            aria-label={`View messages with ${fullName}`}
-                                            className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1"
-                                            style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
-                                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--brand-600)')}
-                                            onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-500)')}
-                                        >
-                                            View Messages
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => handleViewMessages(conversation.counterpartId)}
+                                                aria-label={`View messages with ${fullName}`}
+                                                className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1"
+                                                style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
+                                                onMouseEnter={e => (e.currentTarget.style.background = 'var(--brand-600)')}
+                                                onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-500)')}
+                                            >
+                                                View Messages
+                                            </button>
+                                            {userType === 'coach' && (
+                                                <button
+                                                    onClick={() => router.push(`/coach/${currentUserId}/scholarships/new?playerId=${conversation.counterpartId}`)}
+                                                    aria-label={`Send scholarship to ${fullName}`}
+                                                    className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1"
+                                                    style={{ background: 'oklch(75% 0.18 85 / 0.15)', color: 'oklch(75% 0.18 85)', border: '1px solid oklch(75% 0.18 85 / 0.3)' }}
+                                                    onMouseEnter={e => (e.currentTarget.style.background = 'oklch(75% 0.18 85 / 0.25)')}
+                                                    onMouseLeave={e => (e.currentTarget.style.background = 'oklch(75% 0.18 85 / 0.15)')}
+                                                >
+                                                    Send Scholarship
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             );
