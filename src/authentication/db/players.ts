@@ -43,8 +43,9 @@ export async function createPlayer(data: PlayerRecord): Promise<string> {
         const result = await query<{ id: string }>(
             `INSERT INTO players (
                 first_name, last_name, date_of_birth, email, password_hash, sex, sport, position, event,
-                gpa, country, state, region, scholarship_amount, test_scores, referral_promo_code
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+                gpa, country, state, region, scholarship_amount, test_scores, referral_promo_code,
+                secondary_referral_promo_code, tertiary_referral_promo_code, subscription_plan
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
             RETURNING id`,
             [
                 data.firstName,
@@ -63,6 +64,9 @@ export async function createPlayer(data: PlayerRecord): Promise<string> {
                 data.scholarshipAmount || null,
                 data.testScores || null,
                 data.referralPromoCode || null,
+                data.secondaryReferralPromoCode ?? null,
+                data.tertiaryReferralPromoCode ?? null,
+                data.subscriptionPlan ?? 'standard',
             ]
         );
 

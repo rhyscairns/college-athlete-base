@@ -189,6 +189,12 @@ export interface PlayerRecord {
     scholarshipAmount?: number;
     testScores?: string;
     referralPromoCode?: string;
+    /** Promo code of whoever referred the tier-1 referrer (tier-2). Requirements: 2.2 */
+    secondaryReferralPromoCode?: string | null;
+    /** Promo code of whoever referred the tier-2 referrer (tier-3). Requirements: 2.3 */
+    tertiaryReferralPromoCode?: string | null;
+    /** Subscription plan applied at registration. Requirements: 3.2, 3.3 */
+    subscriptionPlan?: 'standard' | 'promo_599' | 'promo_699';
 }
 
 /**

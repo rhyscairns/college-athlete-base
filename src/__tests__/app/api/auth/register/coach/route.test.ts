@@ -10,6 +10,14 @@ import * as passwordUtils from '@/authentication/utils/password';
 jest.mock('@/authentication/db/coaches');
 jest.mock('@/authentication/utils/password');
 
+// Mock the referral chain resolver
+jest.mock('@/earnings/utils/resolveReferralChain', () => ({
+    resolveReferralChain: jest.fn().mockResolvedValue(null),
+}));
+
+import { resolveReferralChain } from '@/earnings/utils/resolveReferralChain';
+const mockResolveReferralChain = resolveReferralChain as jest.MockedFunction<typeof resolveReferralChain>;
+
 describe('/api/auth/register/coach', () => {
     const mockCheckCoachEmailExists = coachesDb.checkCoachEmailExists as jest.MockedFunction<typeof coachesDb.checkCoachEmailExists>;
     const mockCreateCoach = coachesDb.createCoach as jest.MockedFunction<typeof coachesDb.createCoach>;
@@ -17,6 +25,8 @@ describe('/api/auth/register/coach', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        // Default: no referral chain
+        mockResolveReferralChain.mockResolvedValue(null);
         // Set default environment variable for CORS
         process.env.ALLOWED_ORIGINS = 'http://localhost:3000,https://dev.example.com';
     });
@@ -78,6 +88,9 @@ describe('/api/auth/register/coach', () => {
                 coachingCategory: 'mens',
                 sports: ['basketball', 'football'],
                 university: 'UCLA',
+                referralPromoCode: undefined,
+                secondaryReferralPromoCode: null,
+                tertiaryReferralPromoCode: null,
             });
         });
 
@@ -357,6 +370,95 @@ describe('/api/auth/register/coach', () => {
             expect(response.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:3000');
             expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, OPTIONS');
             expect(response.headers.get('Access-Control-Allow-Headers')).toContain('Content-Type');
+        });
+    });
+
+    describe('Referral Chain Resolution (Requirements 2.4, 2.5, 2.6)', () => {
+        it('stores null secondary and tertiary codes when no promo code is provided', async () => {
+            mockCheckCoachEmailExists.mockResolvedValue(false);
+            mockHashPassword.mockResolvedValue('hashed_pw');
+            mockCreateCoach.mockResolvedValue('coach-no-promo');
+            mockResolveReferralChain.mockResolvedValueOnce(null);
+
+            const request = createRequest(validCoachData);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(201);
+            expect(data.success).toBe(true);
+            expect(mockCreateCoach).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    secondaryReferralPromoCode: null,
+                    tertiaryReferralPromoCode: null,
+                })
+            );
+        });
+
+        it('stores tier-2 and tier-3 codes when a full chain is resolved', async () => {
+            mockCheckCoachEmailExists.mockResolvedValue(false);
+            mockHashPassword.mockResolvedValue('hashed_pw');
+            mockCreateCoach.mockResolvedValue('coach-full-chain');
+            mockResolveReferralChain.mockResolvedValueOnce({
+                tier1PromoCode: 'TIER1',
+                tier2PromoCode: 'TIER2',
+                tier3PromoCode: 'TIER3',
+            });
+
+            const request = createRequest({ ...validCoachData, referralPromoCode: 'TIER1' });
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(201);
+            expect(data.success).toBe(true);
+            expect(mockCreateCoach).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    referralPromoCode: 'TIER1',
+                    secondaryReferralPromoCode: 'TIER2',
+                    tertiaryReferralPromoCode: 'TIER3',
+                })
+            );
+        });
+
+        it('stores tier-2 code and null tier-3 when chain has only two hops', async () => {
+            mockCheckCoachEmailExists.mockResolvedValue(false);
+            mockHashPassword.mockResolvedValue('hashed_pw');
+            mockCreateCoach.mockResolvedValue('coach-two-hop');
+            mockResolveReferralChain.mockResolvedValueOnce({
+                tier1PromoCode: 'TIER1',
+                tier2PromoCode: 'TIER2',
+                tier3PromoCode: null,
+            });
+
+            const request = createRequest({ ...validCoachData, referralPromoCode: 'TIER1' });
+            const response = await POST(request);
+
+            expect(response.status).toBe(201);
+            expect(mockCreateCoach).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    secondaryReferralPromoCode: 'TIER2',
+                    tertiaryReferralPromoCode: null,
+                })
+            );
+        });
+
+        it('still registers successfully when chain resolver returns null (non-blocking)', async () => {
+            mockCheckCoachEmailExists.mockResolvedValue(false);
+            mockHashPassword.mockResolvedValue('hashed_pw');
+            mockCreateCoach.mockResolvedValue('coach-fallback');
+            mockResolveReferralChain.mockResolvedValueOnce(null);
+
+            const request = createRequest({ ...validCoachData, referralPromoCode: 'SOME_CODE' });
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(201);
+            expect(data.success).toBe(true);
+            expect(mockCreateCoach).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    secondaryReferralPromoCode: null,
+                    tertiaryReferralPromoCode: null,
+                })
+            );
         });
     });
 });

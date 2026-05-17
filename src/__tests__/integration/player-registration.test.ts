@@ -14,11 +14,21 @@ import {
 // Mock the database client
 jest.mock('@/authentication/db/client');
 
+// Mock the referral chain resolver so registration tests don't need DB for chain resolution
+jest.mock('@/earnings/utils/resolveReferralChain', () => ({
+    resolveReferralChain: jest.fn().mockResolvedValue(null),
+}));
+
+import { resolveReferralChain } from '@/earnings/utils/resolveReferralChain';
+const mockResolveReferralChain = resolveReferralChain as jest.MockedFunction<typeof resolveReferralChain>;
+
 describe('Player Registration - Complete Integration Flow', () => {
     const mockQuery = query as jest.MockedFunction<typeof query>;
 
     beforeEach(() => {
         jest.clearAllMocks();
+        // Default: no referral chain
+        mockResolveReferralChain.mockResolvedValue(null);
         // Set required environment variables
         process.env.ALLOWED_ORIGINS = 'http://localhost:3000';
     });
@@ -92,6 +102,9 @@ describe('Player Registration - Complete Integration Flow', () => {
                     null, // region
                     null, // scholarshipAmount
                     null, // testScores
+                    null, // secondary_referral_promo_code
+                    null, // tertiary_referral_promo_code
+                    'standard', // subscription_plan (no promo code used)
                 ])
             );
 
@@ -677,6 +690,127 @@ describe('Player Registration - Complete Integration Flow', () => {
             expect(response.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:3000');
             expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, OPTIONS');
             expect(response.headers.get('Access-Control-Allow-Headers')).toBe('Content-Type');
+        });
+    });
+
+    describe('Referral Chain Resolution (Requirements 2.1, 2.2, 2.3, 2.6, 3.1, 3.2, 3.3)', () => {
+        it('stores null referral columns and standard plan when no promo code is provided', async () => {
+            const registrationData = generatePlayerRegistration();
+            delete (registrationData as any).referralPromoCode;
+
+            mockResolveReferralChain.mockResolvedValueOnce(null);
+            mockQuery.mockResolvedValueOnce([{ exists: false }]);
+            mockQuery.mockResolvedValueOnce([{ id: 'player-no-promo' }]);
+
+            const request = createMockRequest(registrationData);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(201);
+            expect(data.success).toBe(true);
+
+            const insertArgs = mockQuery.mock.calls[1][1] as unknown[];
+            // secondary_referral_promo_code = null
+            expect(insertArgs[16]).toBeNull();
+            // tertiary_referral_promo_code = null
+            expect(insertArgs[17]).toBeNull();
+            // subscription_plan = 'standard'
+            expect(insertArgs[18]).toBe('standard');
+        });
+
+        it('stores tier-2 and tier-3 codes when a full chain is resolved', async () => {
+            const registrationData = generatePlayerRegistration({ referralPromoCode: 'TIER1_CODE' });
+
+            mockResolveReferralChain.mockResolvedValueOnce({
+                tier1PromoCode: 'TIER1_CODE',
+                tier2PromoCode: 'TIER2_CODE',
+                tier3PromoCode: 'TIER3_CODE',
+            });
+            mockQuery.mockResolvedValueOnce([{ exists: false }]);
+            mockQuery.mockResolvedValueOnce([{ id: 'player-full-chain' }]);
+
+            const request = createMockRequest(registrationData);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(201);
+            expect(data.success).toBe(true);
+
+            const insertArgs = mockQuery.mock.calls[1][1] as unknown[];
+            // referral_promo_code (tier 1)
+            expect(insertArgs[15]).toBe('TIER1_CODE');
+            // secondary_referral_promo_code (tier 2)
+            expect(insertArgs[16]).toBe('TIER2_CODE');
+            // tertiary_referral_promo_code (tier 3)
+            expect(insertArgs[17]).toBe('TIER3_CODE');
+            // subscription_plan = 'promo_699' (valid promo code used)
+            expect(insertArgs[18]).toBe('promo_699');
+        });
+
+        it('stores tier-2 code and null tier-3 when chain has only two hops', async () => {
+            const registrationData = generatePlayerRegistration({ referralPromoCode: 'TIER1_CODE' });
+
+            mockResolveReferralChain.mockResolvedValueOnce({
+                tier1PromoCode: 'TIER1_CODE',
+                tier2PromoCode: 'TIER2_CODE',
+                tier3PromoCode: null,
+            });
+            mockQuery.mockResolvedValueOnce([{ exists: false }]);
+            mockQuery.mockResolvedValueOnce([{ id: 'player-two-hop' }]);
+
+            const request = createMockRequest(registrationData);
+            const response = await POST(request);
+
+            expect(response.status).toBe(201);
+
+            const insertArgs = mockQuery.mock.calls[1][1] as unknown[];
+            expect(insertArgs[16]).toBe('TIER2_CODE');
+            expect(insertArgs[17]).toBeNull();
+            expect(insertArgs[18]).toBe('promo_699');
+        });
+
+        it('stores null tier-2 and tier-3 when promo code owner has no referrer', async () => {
+            const registrationData = generatePlayerRegistration({ referralPromoCode: 'ORPHAN_CODE' });
+
+            mockResolveReferralChain.mockResolvedValueOnce({
+                tier1PromoCode: 'ORPHAN_CODE',
+                tier2PromoCode: null,
+                tier3PromoCode: null,
+            });
+            mockQuery.mockResolvedValueOnce([{ exists: false }]);
+            mockQuery.mockResolvedValueOnce([{ id: 'player-orphan' }]);
+
+            const request = createMockRequest(registrationData);
+            const response = await POST(request);
+
+            expect(response.status).toBe(201);
+
+            const insertArgs = mockQuery.mock.calls[1][1] as unknown[];
+            expect(insertArgs[15]).toBe('ORPHAN_CODE');
+            expect(insertArgs[16]).toBeNull();
+            expect(insertArgs[17]).toBeNull();
+            expect(insertArgs[18]).toBe('promo_699');
+        });
+
+        it('still registers successfully when chain resolver returns null (non-blocking)', async () => {
+            const registrationData = generatePlayerRegistration({ referralPromoCode: 'SOME_CODE' });
+
+            // Resolver returns null (e.g. lookup failed silently)
+            mockResolveReferralChain.mockResolvedValueOnce(null);
+            mockQuery.mockResolvedValueOnce([{ exists: false }]);
+            mockQuery.mockResolvedValueOnce([{ id: 'player-fallback' }]);
+
+            const request = createMockRequest(registrationData);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(201);
+            expect(data.success).toBe(true);
+
+            const insertArgs = mockQuery.mock.calls[1][1] as unknown[];
+            expect(insertArgs[16]).toBeNull();
+            expect(insertArgs[17]).toBeNull();
+            expect(insertArgs[18]).toBe('standard');
         });
     });
 });

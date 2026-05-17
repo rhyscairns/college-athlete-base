@@ -78,6 +78,8 @@ describe('Coach Database Operations', () => {
                     ['basketball', 'football'],  // specializations
                     'USA',         // country
                     null,          // referralPromoCode
+                    null,          // secondaryReferralPromoCode
+                    null,          // tertiaryReferralPromoCode
                 ]
             );
         });
