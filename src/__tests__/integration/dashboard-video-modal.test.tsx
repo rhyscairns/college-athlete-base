@@ -144,13 +144,8 @@ describe('Dashboard Video Modal Integration Tests', () => {
             const user = userEvent.setup();
             render(<CoachDashboard coachId="coach-1" />);
 
-            // Wait for players to load
-            await waitFor(() => {
-                expect(screen.getByText('John Doe')).toBeInTheDocument();
-            });
-
-            // Find and click the "Watch Video" button
-            const watchVideoButton = screen.getByRole('button', {
+            // Wait for the Watch Video button to be present (implies players fully loaded)
+            const watchVideoButton = await screen.findByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             await user.click(watchVideoButton);
@@ -172,11 +167,7 @@ describe('Dashboard Video Modal Integration Tests', () => {
             const user = userEvent.setup();
             render(<CoachDashboard coachId="coach-1" />);
 
-            await waitFor(() => {
-                expect(screen.getByText('John Doe')).toBeInTheDocument();
-            });
-
-            const watchVideoButton = screen.getByRole('button', {
+            const watchVideoButton = await screen.findByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             await user.click(watchVideoButton);
@@ -196,12 +187,8 @@ describe('Dashboard Video Modal Integration Tests', () => {
             const user = userEvent.setup();
             render(<CoachDashboard coachId="coach-1" />);
 
-            await waitFor(() => {
-                expect(screen.getByText('John Doe')).toBeInTheDocument();
-            });
-
             // Open modal
-            const watchVideoButton = screen.getByRole('button', {
+            const watchVideoButton = await screen.findByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             await user.click(watchVideoButton);
@@ -226,12 +213,8 @@ describe('Dashboard Video Modal Integration Tests', () => {
             const user = userEvent.setup();
             render(<CoachDashboard coachId="coach-1" />);
 
-            await waitFor(() => {
-                expect(screen.getAllByText('John Doe').length).toBeGreaterThan(0);
-            });
-
             // Open modal
-            const watchVideoButton = screen.getByRole('button', {
+            const watchVideoButton = await screen.findByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             await user.click(watchVideoButton);
@@ -273,12 +256,8 @@ describe('Dashboard Video Modal Integration Tests', () => {
             const user = userEvent.setup();
             render(<CoachDashboard coachId="coach-1" />);
 
-            await waitFor(() => {
-                expect(screen.getByText('John Doe')).toBeInTheDocument();
-            });
-
             // Open modal
-            const watchVideoButton = screen.getByRole('button', {
+            const watchVideoButton = await screen.findByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             await user.click(watchVideoButton);
@@ -300,15 +279,11 @@ describe('Dashboard Video Modal Integration Tests', () => {
             const user = userEvent.setup();
             render(<CoachDashboard coachId="coach-1" />);
 
-            await waitFor(() => {
-                expect(screen.getByText('John Doe')).toBeInTheDocument();
-            });
-
             // Body should not have overflow hidden initially
             expect(document.body.style.overflow).not.toBe('hidden');
 
             // Open modal
-            const watchVideoButton = screen.getByRole('button', {
+            const watchVideoButton = await screen.findByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             await user.click(watchVideoButton);
@@ -325,12 +300,8 @@ describe('Dashboard Video Modal Integration Tests', () => {
             const user = userEvent.setup();
             render(<CoachDashboard coachId="coach-1" />);
 
-            await waitFor(() => {
-                expect(screen.getByText('John Doe')).toBeInTheDocument();
-            });
-
             // Open modal
-            const watchVideoButton = screen.getByRole('button', {
+            const watchVideoButton = await screen.findByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             await user.click(watchVideoButton);
@@ -358,12 +329,8 @@ describe('Dashboard Video Modal Integration Tests', () => {
             const user = userEvent.setup();
             render(<CoachDashboard coachId="coach-1" />);
 
-            await waitFor(() => {
-                expect(screen.getByText('John Doe')).toBeInTheDocument();
-            });
-
             // Open modal
-            const watchVideoButton = screen.getByRole('button', {
+            const watchVideoButton = await screen.findByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             await user.click(watchVideoButton);
@@ -393,12 +360,8 @@ describe('Dashboard Video Modal Integration Tests', () => {
             const user = userEvent.setup();
             render(<CoachDashboard coachId="coach-1" />);
 
-            await waitFor(() => {
-                expect(screen.getByText('John Doe')).toBeInTheDocument();
-            });
-
             // Open modal
-            const watchVideoButton = screen.getByRole('button', {
+            const watchVideoButton = await screen.findByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             await user.click(watchVideoButton);
@@ -427,12 +390,8 @@ describe('Dashboard Video Modal Integration Tests', () => {
             const user = userEvent.setup();
             render(<CoachDashboard coachId="coach-1" />);
 
-            await waitFor(() => {
-                expect(screen.getByText('John Doe')).toBeInTheDocument();
-            });
-
             // Open modal
-            const watchVideoButton = screen.getByRole('button', {
+            const watchVideoButton = await screen.findByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             await user.click(watchVideoButton);
@@ -464,9 +423,7 @@ describe('Dashboard Video Modal Integration Tests', () => {
 
             await waitFor(() => {
                 expect(screen.getByText('Jane Smith')).toBeInTheDocument();
-            });
-
-            // Jane Smith should not have a "Watch Video" button
+            });            // Jane Smith should not have a "Watch Video" button
             const janeCard = screen.getByText('Jane Smith').closest('article');
             expect(janeCard).toBeInTheDocument();
 
@@ -484,13 +441,8 @@ describe('Dashboard Video Modal Integration Tests', () => {
             const user = userEvent.setup();
             render(<PlayerDashboard playerId="player-3" />);
 
-            // Wait for players to load
-            await waitFor(() => {
-                expect(screen.getByText('John Doe')).toBeInTheDocument();
-            });
-
-            // Find and click the "Watch Video" button
-            const watchVideoButton = screen.getByRole('button', {
+            // Find and click the "Watch Video" button (implies players loaded)
+            const watchVideoButton = await screen.findByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             await user.click(watchVideoButton);
@@ -509,12 +461,8 @@ describe('Dashboard Video Modal Integration Tests', () => {
             const user = userEvent.setup();
             render(<PlayerDashboard playerId="player-3" />);
 
-            await waitFor(() => {
-                expect(screen.getByText('John Doe')).toBeInTheDocument();
-            });
-
             // Open modal
-            const watchVideoButton = screen.getByRole('button', {
+            const watchVideoButton = await screen.findByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             await user.click(watchVideoButton);
@@ -542,12 +490,7 @@ describe('Dashboard Video Modal Integration Tests', () => {
 
             render(<CoachDashboard coachId="coach-1" />);
 
-            await waitFor(() => {
-                expect(screen.getAllByText('John Doe').length).toBeGreaterThan(0);
-            });
-
-            // Open first video
-            const watchVideoButton = screen.getByRole('button', {
+            const watchVideoButton = await screen.findByRole('button', {
                 name: /watch highlight video for john doe/i,
             });
             await user.click(watchVideoButton);
