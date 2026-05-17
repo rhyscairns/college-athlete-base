@@ -114,6 +114,26 @@ export async function searchAthletes(
             paramIndex++;
         }
 
+        // Country / location filter
+        if (criteria.country === 'international') {
+            conditions.push("p.country != 'USA'");
+        } else if (criteria.country && criteria.country !== 'USA') {
+            // Specific non-USA country
+            conditions.push('p.country = $' + paramIndex);
+            params.push(criteria.country);
+            paramIndex++;
+        } else {
+            // USA (explicit or default) — always restrict to USA when a state is given
+            if (criteria.country === 'USA' || criteria.state) {
+                conditions.push("p.country = 'USA'");
+            }
+            if (criteria.state) {
+                conditions.push('p.state = $' + paramIndex);
+                params.push(criteria.state);
+                paramIndex++;
+            }
+        }
+
         // Build WHERE clause
         const whereClause = conditions.length > 0
             ? 'WHERE ' + conditions.join(' AND ')
@@ -140,7 +160,9 @@ export async function searchAthletes(
                 p.affordable_amount,
                 p.profile_image_url,
                 p.video_thumbnail_url,
-                p.highlight_video_url as video_url
+                p.highlight_video_url as video_url,
+                p.country,
+                p.state
             FROM players p
             ${whereClause}
             ORDER BY p.gpa DESC, p.last_name ASC

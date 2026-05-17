@@ -32,7 +32,7 @@ export function ScholarshipStatusBadge({ status }: ScholarshipStatusBadgeProps) 
     return (
         <span
             data-testid={`status-badge-${status}`}
-            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
+            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold"
             style={{
                 background: config.background,
                 border: `1px solid ${config.border}`,

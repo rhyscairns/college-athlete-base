@@ -5,9 +5,24 @@ import { generatePlayerRegistration, generateDateOfBirth } from '@/__tests__/uti
 // Helper to get password input reliably
 const getPasswordInput = () => document.getElementById('password') as HTMLInputElement;
 
+/**
+ * Select a country in the custom CountrySelect combobox.
+ * The component renders a text input + listbox, not a native <select>.
+ * Pass the country label (e.g. 'United States', 'Canada').
+ */
+const selectCountry = (label: string) => {
+    const input = screen.getByLabelText(/country/i) as HTMLInputElement;
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: label } });
+    // Find the matching option in the listbox and click it
+    const option = screen.getByRole('option', { name: new RegExp(label, 'i') });
+    fireEvent.mouseDown(option);
+};
+
 // Helper function to fill valid form
+// Sport must be selected before position, since position is a sport-aware dropdown
 const fillValidForm = () => {
-    const testData = generatePlayerRegistration();
+    const testData = generatePlayerRegistration(); // defaults: sport='Basketball', position='Point Guard'
 
     fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: testData.firstName } });
     fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: testData.lastName } });
@@ -15,10 +30,12 @@ const fillValidForm = () => {
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: testData.email } });
     fireEvent.change(getPasswordInput(), { target: { value: testData.password } });
     fireEvent.change(screen.getByLabelText(/sex/i), { target: { value: testData.gender } });
+    // Select sport first so the position dropdown appears
     fireEvent.change(screen.getByLabelText(/sport/i), { target: { value: testData.sport } });
+    // Now position is a select — pick a canonical value
     fireEvent.change(screen.getByLabelText(/position/i), { target: { value: testData.position } });
     fireEvent.change(screen.getByLabelText(/gpa/i), { target: { value: testData.gpa.toString() } });
-    fireEvent.change(screen.getByLabelText(/country/i), { target: { value: testData.country } });
+    selectCountry('United States');
 
     if (testData.state) {
         fireEvent.change(screen.getByLabelText(/state/i), { target: { value: testData.state } });
@@ -53,7 +70,8 @@ describe('PlayerRegistrationForm', () => {
             // Sport-related fields
             expect(screen.getByLabelText(/sex/i)).toBeInTheDocument();
             expect(screen.getByLabelText(/sport/i)).toBeInTheDocument();
-            expect(screen.getByLabelText(/position/i)).toBeInTheDocument();
+            // Position field only appears after a sport with positions is selected
+            expect(screen.queryByLabelText(/position/i)).not.toBeInTheDocument();
             expect(screen.getByLabelText(/gpa/i)).toBeInTheDocument();
 
             // Location fields
@@ -188,14 +206,15 @@ describe('PlayerRegistrationForm', () => {
             });
         });
 
-        it('validates position is required', async () => {
+        it('validates position is optional (no error when position is empty)', async () => {
             const { container } = render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
             const form = container.querySelector('form') as HTMLFormElement;
 
             fireEvent.submit(form);
 
             await waitFor(() => {
-                expect(screen.getAllByText(/this field is required/i).length).toBeGreaterThan(0);
+                // Position errors should not appear — position is optional
+                expect(screen.queryByText(/position.*required/i)).not.toBeInTheDocument();
             });
         });
 
@@ -323,6 +342,7 @@ describe('PlayerRegistrationForm', () => {
                 expect(getPasswordInput()).toBeDisabled();
                 expect(screen.getByLabelText(/sex/i)).toBeDisabled();
                 expect(screen.getByLabelText(/sport/i)).toBeDisabled();
+                // Position is a select rendered after sport is chosen
                 expect(screen.getByLabelText(/position/i)).toBeDisabled();
                 expect(screen.getByLabelText(/gpa/i)).toBeDisabled();
                 expect(screen.getByLabelText(/country/i)).toBeDisabled();
@@ -444,9 +464,8 @@ describe('PlayerRegistrationForm', () => {
     describe('Conditional Field Rendering', () => {
         it('shows state field when USA is selected', () => {
             render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
-            const countrySelect = screen.getByLabelText(/country/i);
 
-            fireEvent.change(countrySelect, { target: { value: 'USA' } });
+            selectCountry('United States');
 
             expect(screen.getByLabelText(/state/i)).toBeInTheDocument();
             expect(screen.queryByLabelText(/region/i)).not.toBeInTheDocument();
@@ -454,9 +473,8 @@ describe('PlayerRegistrationForm', () => {
 
         it('shows region field when non-USA country is selected', async () => {
             render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
-            const countrySelect = screen.getByLabelText(/country/i);
 
-            fireEvent.change(countrySelect, { target: { value: 'CAN' } });
+            selectCountry('Canada');
 
             await waitFor(() => {
                 expect(screen.getByLabelText(/region/i)).toBeInTheDocument();
@@ -466,18 +484,106 @@ describe('PlayerRegistrationForm', () => {
 
         it('clears state when switching from USA to another country', () => {
             render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
-            const countrySelect = screen.getByLabelText(/country/i);
 
             // Select USA and set state
-            fireEvent.change(countrySelect, { target: { value: 'USA' } });
+            selectCountry('United States');
             const stateSelect = screen.getByLabelText(/state/i);
             fireEvent.change(stateSelect, { target: { value: 'CA' } });
 
             // Switch to Canada
-            fireEvent.change(countrySelect, { target: { value: 'CAN' } });
+            selectCountry('Canada');
 
             // State field should not exist anymore
             expect(screen.queryByLabelText(/^state$/i)).not.toBeInTheDocument();
+        });
+
+        // Requirements 2.1, 2.2, 2.3 — sport-aware position dropdown
+        it('does not render a position field when no sport is selected', () => {
+            render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
+
+            // No sport selected yet — position field should not be present
+            expect(screen.queryByLabelText(/position/i)).not.toBeInTheDocument();
+        });
+
+        it('renders a disabled select for position with placeholder when sport is not yet selected but sport field exists', () => {
+            render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
+
+            // Before selecting a sport, position field is absent (hasPositions is false)
+            expect(screen.queryByLabelText(/position/i)).not.toBeInTheDocument();
+        });
+
+        it('renders a position select dropdown after selecting Soccer', () => {
+            render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
+            const sportSelect = screen.getByLabelText(/sport/i);
+
+            fireEvent.change(sportSelect, { target: { value: 'Soccer' } });
+
+            // Position field should now be a select (not a text input)
+            const positionField = screen.getByLabelText(/position/i);
+            expect(positionField).toBeInTheDocument();
+            expect(positionField.tagName).toBe('SELECT');
+        });
+
+        it('populates position dropdown with Soccer positions from constants', () => {
+            render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
+            const sportSelect = screen.getByLabelText(/sport/i);
+
+            fireEvent.change(sportSelect, { target: { value: 'Soccer' } });
+
+            const positionSelect = screen.getByLabelText(/position/i) as HTMLSelectElement;
+            const optionValues = Array.from(positionSelect.options).map((o) => o.value).filter(Boolean);
+
+            // Should include canonical Soccer positions
+            expect(optionValues).toContain('Goalkeeper');
+            expect(optionValues).toContain('Striker');
+            expect(optionValues).toContain('Center Back');
+        });
+
+        it('resets position to empty when sport changes', () => {
+            render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
+            const sportSelect = screen.getByLabelText(/sport/i);
+
+            // Select Soccer and pick a position
+            fireEvent.change(sportSelect, { target: { value: 'Soccer' } });
+            const positionSelect = screen.getByLabelText(/position/i);
+            fireEvent.change(positionSelect, { target: { value: 'Goalkeeper' } });
+            expect((positionSelect as HTMLSelectElement).value).toBe('Goalkeeper');
+
+            // Change sport to Basketball — position should reset
+            fireEvent.change(sportSelect, { target: { value: 'Basketball' } });
+            const newPositionSelect = screen.getByLabelText(/position/i);
+            expect((newPositionSelect as HTMLSelectElement).value).toBe('');
+        });
+
+        it('submits with a valid canonical position value', async () => {
+            mockOnSubmit.mockResolvedValueOnce(undefined);
+            const { container } = render(<PlayerRegistrationForm onSubmit={mockOnSubmit} />);
+
+            // Fill the form using Basketball (default in test data) which has canonical positions
+            const testData = generatePlayerRegistration({ sport: 'Basketball', position: 'Point Guard' });
+
+            fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: testData.firstName } });
+            fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: testData.lastName } });
+            fireEvent.change(screen.getByLabelText(/date of birth/i), { target: { value: testData.dateOfBirth } });
+            fireEvent.change(screen.getByLabelText(/email/i), { target: { value: testData.email } });
+            fireEvent.change(getPasswordInput(), { target: { value: testData.password } });
+            fireEvent.change(screen.getByLabelText(/sex/i), { target: { value: testData.gender } });
+            fireEvent.change(screen.getByLabelText(/sport/i), { target: { value: 'Basketball' } });
+            fireEvent.change(screen.getByLabelText(/position/i), { target: { value: 'Point Guard' } });
+            fireEvent.change(screen.getByLabelText(/gpa/i), { target: { value: testData.gpa.toString() } });
+            selectCountry('United States');
+            fireEvent.change(screen.getByLabelText(/state/i), { target: { value: 'CA' } });
+
+            fireEvent.submit(container.querySelector('form') as HTMLFormElement);
+
+            await waitFor(() => {
+                expect(mockOnSubmit).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        sport: 'Basketball',
+                        position: 'Point Guard',
+                    })
+                );
+            });
         });
     });
 

@@ -44,6 +44,8 @@ export interface PlayerCardProps {
     onPrimaryClick?: () => void;
     /** Optional callback for video play button */
     onWatchVideo?: () => void;
+    /** Optional URL to player's highlight video — forwarded to PlayerMediaDisplay for play button visibility */
+    videoUrl?: string;
     /** Optional label for secondary action button */
     secondaryButtonLabel?: string;
     /** Optional callback for secondary button click */
@@ -245,6 +247,8 @@ export interface PlayerInfoSectionProps {
 export interface PlayerMediaDisplayProps {
     /** Optional URL to video thumbnail image */
     videoThumbnail?: string;
+    /** Optional URL to the player's highlight video — used to show the play button even when no thumbnail is present */
+    videoUrl?: string;
     /** Optional URL to player's profile image */
     profileImage?: string;
     /** Full name of the player for alt text */

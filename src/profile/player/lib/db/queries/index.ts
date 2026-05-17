@@ -257,6 +257,19 @@ export async function updatePlayerProfile(
             values.push(updates.academic.gpa.toString());
         }
 
+        // Handle videos — persist the featured (or first) video to the single-video columns
+        if (updates.videos !== undefined) {
+            const featured = updates.videos.find(v => v.isFeatured) ?? updates.videos[0] ?? null;
+            updateFields.push(`highlight_video_url = $${paramIndex++}`);
+            values.push(featured?.url || null);
+            updateFields.push(`video_title = $${paramIndex++}`);
+            values.push(featured?.title || null);
+            updateFields.push(`video_description = $${paramIndex++}`);
+            values.push(featured?.description || null);
+            updateFields.push(`video_thumbnail_url = $${paramIndex++}`);
+            values.push(featured?.thumbnail || null);
+        }
+
         // Handle test scores (stored as JSON)
         if (updates.academic) {
             const { satScore, satMath, satReading, actScore } = updates.academic;

@@ -26,6 +26,9 @@ export interface CoachProfile {
     // Office information
     officeLocation?: string;
     officeHours?: string;
+    // Financials
+    scholarshipBudget?: number;
+    annualCostPerPlayer?: number;
     // Achievements
     achievements?: Achievement[];
     createdAt: Date;

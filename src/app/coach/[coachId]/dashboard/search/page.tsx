@@ -61,6 +61,8 @@ export default function CoachSearchPage({ params }: SearchPageProps) {
                 if (criteria.heightMax) queryParams.set('heightMax', criteria.heightMax);
                 if (criteria.weightMin !== undefined) queryParams.set('weightMin', criteria.weightMin.toString());
                 if (criteria.weightMax !== undefined) queryParams.set('weightMax', criteria.weightMax.toString());
+                if (criteria.country) queryParams.set('country', criteria.country);
+                if (criteria.state) queryParams.set('state', criteria.state);
                 queryParams.set('page', currentPage.toString());
 
                 const response = await fetch(`/api/dashboard/athletes/search?${queryParams.toString()}`);

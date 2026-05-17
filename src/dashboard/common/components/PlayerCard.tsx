@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { PlayerCardProps } from '../types';
 import { PlayerMediaDisplay } from './PlayerMediaDisplay';
 import { PlayerStatusBadge } from './PlayerStatusBadge';
+import { FavoriteButton } from './FavoriteButton';
 
 /**
  * PlayerCard — 2026 redesign
@@ -15,7 +16,7 @@ import { PlayerStatusBadge } from './PlayerStatusBadge';
  * - Stats in mono font (--type-stat)
  * - Hover: image scales 1.04 (handled in PlayerMediaDisplay), stats panel slides up,
  *   subtle 3D tilt toward cursor via JS mouse tracking
- * - Favorite heart: spring scale animation on click
+ * - Favorite heart: subtle scale on click using brand green
  * - Container query: adapts for grid (image-dominant) vs list view (horizontal)
  */
 export const PlayerCard = React.memo(function PlayerCard({
@@ -32,6 +33,7 @@ export const PlayerCard = React.memo(function PlayerCard({
     primaryButtonLabel = 'View Profile',
     onPrimaryClick,
     onWatchVideo,
+    videoUrl,
     secondaryButtonLabel,
     onSecondaryClick,
     priority = false,
@@ -48,7 +50,6 @@ export const PlayerCard = React.memo(function PlayerCard({
     // Optimistic favorite state
     const [optimisticFavorited, setOptimisticFavorited] = useState(isFavorited);
     const [isToggling, setIsToggling] = useState(false);
-    const [heartAnimating, setHeartAnimating] = useState(false);
 
     // 3D tilt state
     const cardRef = useRef<HTMLElement>(null);
@@ -75,14 +76,11 @@ export const PlayerCard = React.memo(function PlayerCard({
     }, []);
 
     // ── Favorite toggle ──
-    const handleFavoriteClick = async (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
+    const handleFavoriteClick = async () => {
         if (!onFavoriteToggle || isToggling) return;
 
         const previousState = optimisticFavorited;
         setOptimisticFavorited(!previousState);
-        setHeartAnimating(true);
         setIsToggling(true);
 
         try {
@@ -91,7 +89,6 @@ export const PlayerCard = React.memo(function PlayerCard({
             setOptimisticFavorited(previousState);
         } finally {
             setIsToggling(false);
-            setTimeout(() => setHeartAnimating(false), 400);
         }
     };
 
@@ -124,10 +121,7 @@ export const PlayerCard = React.memo(function PlayerCard({
             className="group relative rounded-2xl cursor-default"
             style={{
                 ...cardStyle,
-                background: 'var(--ink-1)',
-                border: hasAcceptedOffer
-                    ? '2px solid oklch(68% 0.22 150 / 0.6)'
-                    : undefined,
+                background: hasAcceptedOffer ? 'oklch(68% 0.22 150 / 0.07)' : 'var(--ink-1)'
             }}
             aria-label={`Player card for ${playerName}${hasAcceptedOffer ? ', offer accepted' : ''}`}
             data-testid="player-card"
@@ -140,6 +134,7 @@ export const PlayerCard = React.memo(function PlayerCard({
                 <div className="relative">
                     <PlayerMediaDisplay
                         videoThumbnail={videoThumbnail}
+                        videoUrl={videoUrl}
                         profileImage={profileImage}
                         playerName={playerName}
                         initials={initials}
@@ -149,6 +144,25 @@ export const PlayerCard = React.memo(function PlayerCard({
 
                     {/* Status badge */}
                     {status && <PlayerStatusBadge status={status} />}
+
+                    {/* Committed overlay badge */}
+                    {hasAcceptedOffer && (
+                        <div
+                            data-testid="offer-accepted-banner"
+                            className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
+                            style={{
+                                background: 'oklch(68% 0.22 150 / 0.92)',
+                                color: 'var(--ink-0)',
+                                backdropFilter: 'blur(4px)',
+                            }}
+                            aria-label="Player has committed"
+                        >
+                            <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                            Committed
+                        </div>
+                    )}
 
                     {/* Glassmorphic name + position strip — slides up on hover */}
                     <div
@@ -173,38 +187,15 @@ export const PlayerCard = React.memo(function PlayerCard({
 
                     {/* Favorite heart button */}
                     {onFavoriteToggle && (
-                        <button
-                            onClick={handleFavoriteClick}
-                            disabled={isToggling}
-                            aria-label={optimisticFavorited
-                                ? `Remove ${playerName} from prospects`
-                                : `Add ${playerName} to prospects`}
-                            aria-pressed={optimisticFavorited}
-                            className="absolute top-3 right-3 z-10 flex items-center justify-center w-11 h-11 rounded-full focus:outline-none focus:ring-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed"
-                            style={{
-                                background: 'oklch(15% 0.015 260 / 0.55)',
-                                backdropFilter: 'blur(8px)',
-                            }}
-                        >
-                            <span
-                                aria-hidden="true"
-                                className={`heart-burst${heartAnimating ? ' animate-spring-pop' : ''}`}
-                                style={{ display: 'inline-flex' }}
-                            >
-                                {optimisticFavorited ? (
-                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"
-                                        style={{ color: 'var(--status-danger)' }}>
-                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                                    </svg>
-                                ) : (
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}
-                                        viewBox="0 0 24 24" aria-hidden="true" style={{ color: 'var(--text-hi)' }}>
-                                        <path strokeLinecap="round" strokeLinejoin="round"
-                                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                    </svg>
-                                )}
-                            </span>
-                        </button>
+                        <div className="absolute top-3 right-3 z-10">
+                            <FavoriteButton
+                                isFavorited={optimisticFavorited}
+                                playerName={playerName}
+                                isDisabled={isToggling}
+                                onClick={handleFavoriteClick}
+                                variant="card"
+                            />
+                        </div>
                     )}
                 </div>
 
@@ -297,37 +288,6 @@ export const PlayerCard = React.memo(function PlayerCard({
                             </button>
                         )}
                     </div>
-
-                    {/* Accepted offer banner */}
-                    {hasAcceptedOffer && (
-                        <div
-                            className="mt-3 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg"
-                            style={{
-                                background: 'oklch(68% 0.22 150 / 0.12)',
-                                border: '1px solid oklch(68% 0.22 150 / 0.3)',
-                            }}
-                            aria-label="Offer accepted"
-                            data-testid="offer-accepted-banner"
-                        >
-                            <svg
-                                className="w-4 h-4 flex-shrink-0"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={2.5}
-                                viewBox="0 0 24 24"
-                                aria-hidden="true"
-                                style={{ color: 'var(--brand-500)' }}
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                            </svg>
-                            <span
-                                className="text-xs font-semibold"
-                                style={{ color: 'var(--brand-500)' }}
-                            >
-                                Offer Accepted
-                            </span>
-                        </div>
-                    )}
                 </div>
             </div>
         </article>

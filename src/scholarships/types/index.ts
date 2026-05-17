@@ -25,6 +25,8 @@ export interface Scholarship {
     coachFirstName?: string;
     coachLastName?: string;
     coachUniversity?: string;
+    /** Annual cost of attendance at this university — joined from coaches table */
+    annualCostPerPlayer?: number;
     createdAt: string;
     updatedAt: string;
 }
@@ -48,6 +50,7 @@ export interface ScholarshipsTableProps {
     scholarships: Scholarship[];
     userType: 'coach' | 'player';
     currentUserId: string;
+    annualCostPerPlayer?: number;
 }
 
 export interface ScholarshipFormProps {
@@ -55,6 +58,12 @@ export interface ScholarshipFormProps {
     initialData?: Partial<ScholarshipFormData>;
     existingScholarship?: Scholarship;
     onSuccess?: (scholarship: Scholarship) => void;
+    /** Coach's total annual scholarship budget */
+    scholarshipBudget?: number;
+    /** Amount already committed to accepted offers */
+    committedAmount?: number;
+    /** Annual cost of attendance per player */
+    annualCostPerPlayer?: number;
 }
 
 export interface ScholarshipDetailProps {
@@ -62,6 +71,8 @@ export interface ScholarshipDetailProps {
     playerId: string;
     coachId: string;
     onStatusChange?: (updated: Scholarship) => void;
+    /** Coach's annual cost per player — used to compute player out-of-pocket cost */
+    annualCostPerPlayer?: number;
 }
 
 export interface ScholarshipStatusBadgeProps {

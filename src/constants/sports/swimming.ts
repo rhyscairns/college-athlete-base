@@ -24,5 +24,6 @@ export const swimming: SportConstants = {
         '4x100m Freestyle Relay',
         '4x200m Freestyle Relay',
         '4x100m Medley Relay',
+        'Other',
     ],
 };

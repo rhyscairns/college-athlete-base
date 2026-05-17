@@ -11,6 +11,7 @@ import type { PlayerMediaDisplayProps } from '../types';
  */
 export const PlayerMediaDisplay: React.FC<PlayerMediaDisplayProps> = ({
     videoThumbnail,
+    videoUrl,
     profileImage,
     playerName,
     initials,
@@ -74,8 +75,8 @@ export const PlayerMediaDisplay: React.FC<PlayerMediaDisplayProps> = ({
                 />
             )}
 
-            {/* ── Watch Video button — shown when onWatchVideo is provided AND videoThumbnail exists ── */}
-            {videoThumbnail && onWatchVideo && (
+            {/* ── Watch Video button — shown when onWatchVideo is provided AND videoUrl or videoThumbnail exists ── */}
+            {(videoUrl || videoThumbnail) && onWatchVideo && (
                 <button
                     onClick={onWatchVideo}
                     aria-label={`Watch highlight video for ${playerName}`}
@@ -102,8 +103,8 @@ export const PlayerMediaDisplay: React.FC<PlayerMediaDisplayProps> = ({
                 </button>
             )}
 
-            {/* ── Decorative play icon (no callback, but has thumbnail) ── */}
-            {videoThumbnail && !onWatchVideo && (
+            {/* ── Decorative play icon (no callback, but has video) ── */}
+            {(videoUrl || videoThumbnail) && !onWatchVideo && (
                 <div
                     aria-hidden="true"
                     className="absolute inset-0 flex items-center justify-center pointer-events-none"

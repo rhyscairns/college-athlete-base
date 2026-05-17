@@ -60,7 +60,7 @@ const EMPTY_FORM: ScholarshipFormData = {
 
 type LookupState = 'idle' | 'loading' | 'found' | 'not_found' | 'error';
 
-export function ScholarshipForm({ coachId, initialData, existingScholarship, onSuccess }: ScholarshipFormProps) {
+export function ScholarshipForm({ coachId, initialData, existingScholarship, onSuccess, scholarshipBudget, committedAmount = 0, annualCostPerPlayer }: ScholarshipFormProps) {
     const router = useRouter();
     const isEditing = Boolean(existingScholarship);
 
@@ -164,10 +164,20 @@ export function ScholarshipForm({ coachId, initialData, existingScholarship, onS
                 : `/api/coach/${coachId}/scholarships`;
             const method = isEditing ? 'PATCH' : 'POST';
 
+            // If annualCostPerPlayer is set, store the player's out-of-pocket cost
+            // (total cost minus the scholarship offered) rather than the raw offer amount.
+            const payload = {
+                ...formData,
+                scholarshipAmount:
+                    annualCostPerPlayer !== undefined && formData.scholarshipAmount !== ''
+                        ? Math.max(0, annualCostPerPlayer - Number(formData.scholarshipAmount))
+                        : formData.scholarshipAmount,
+            };
+
             const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             });
 
             const json = await res.json();
@@ -353,7 +363,12 @@ export function ScholarshipForm({ coachId, initialData, existingScholarship, onS
                     </SelectInput>
                 </Field>
 
-                <Field label="Scholarship Amount ($)" id="scholarshipAmount" required error={errors.scholarshipAmount}>
+                <Field
+                    label={annualCostPerPlayer !== undefined ? 'Scholarship Amount Offered ($)' : 'Scholarship Amount ($)'}
+                    id="scholarshipAmount"
+                    required
+                    error={errors.scholarshipAmount}
+                >
                     <TextInput
                         id="scholarshipAmount"
                         type="number"
@@ -364,6 +379,23 @@ export function ScholarshipForm({ coachId, initialData, existingScholarship, onS
                         step="0.01"
                         hasError={Boolean(errors.scholarshipAmount)}
                     />
+                    {/* Budget hint */}
+                    {scholarshipBudget !== undefined && !errors.scholarshipAmount && (
+                        <p className="mt-1.5 text-xs" style={{ color: 'var(--text-lo)' }}>
+                            {(() => {
+                                const remaining = scholarshipBudget - committedAmount;
+                                const fmt = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+                                return remaining >= 0
+                                    ? `${fmt(remaining)} remaining of ${fmt(scholarshipBudget)} budget`
+                                    : `Budget exceeded by ${fmt(Math.abs(remaining))}`;
+                            })()}
+                        </p>
+                    )}
+                    {annualCostPerPlayer !== undefined && !errors.scholarshipAmount && (
+                        <p className="mt-0.5 text-xs" style={{ color: 'var(--text-lo)' }}>
+                            Annual cost of attendance: {annualCostPerPlayer.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })} / yr
+                        </p>
+                    )}
                 </Field>
 
                 <Field label="Required GPA" id="requiredGpa" required error={errors.requiredGpa}>

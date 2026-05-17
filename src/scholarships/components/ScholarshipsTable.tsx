@@ -25,7 +25,7 @@ function formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function ScholarshipsTable({ scholarships, userType, currentUserId }: ScholarshipsTableProps) {
+export function ScholarshipsTable({ scholarships, userType, currentUserId, annualCostPerPlayer }: ScholarshipsTableProps) {
     const router = useRouter();
 
     const handleView = (id: string) => {
@@ -34,6 +34,12 @@ export function ScholarshipsTable({ scholarships, userType, currentUserId }: Sch
         } else {
             router.push(`/player/${currentUserId}/scholarship-offers/${id}`);
         }
+    };
+
+    // For players: show what they'd pay out of pocket (cost - scholarship)
+    const playerCost = (scholarshipAmount: number) => {
+        if (userType !== 'player' || annualCostPerPlayer === undefined) return null;
+        return Math.max(0, annualCostPerPlayer - scholarshipAmount);
     };
 
     if (scholarships.length === 0) {
@@ -52,7 +58,7 @@ export function ScholarshipsTable({ scholarships, userType, currentUserId }: Sch
     }
 
     const coachColumns = ['Player', 'Sport', 'Amount', 'GPA', 'Status', 'Date', ''];
-    const playerColumns = ['School', 'Sport', 'Contribution / yr', 'GPA', 'Status', 'Date', ''];
+    const playerColumns = ['School', 'Sport', 'Your Cost / yr', 'GPA', 'Status', 'Date', ''];
     const columns = userType === 'coach' ? coachColumns : playerColumns;
 
     return (
@@ -88,9 +94,12 @@ export function ScholarshipsTable({ scholarships, userType, currentUserId }: Sch
                                 </span>
                                 <span className="text-xs" style={{ color: 'var(--text-lo)' }}>
                                     <span className="font-medium" style={{ color: 'var(--text-mid)' }}>
-                                        {userType === 'player' ? 'Contribution Required:' : 'Amount:'}
+                                        {userType === 'player' ? 'Your Cost:' : 'Amount:'}
                                     </span>{' '}
-                                    ${formatAmount(scholarship.scholarshipAmount)}{userType === 'player' ? ' / yr' : ''}
+                                    {userType === 'player' && annualCostPerPlayer !== undefined
+                                        ? `$${formatAmount(Math.max(0, annualCostPerPlayer - scholarship.scholarshipAmount))} / yr`
+                                        : `$${formatAmount(scholarship.scholarshipAmount)}${userType === 'player' ? ' / yr' : ''}`
+                                    }
                                 </span>
                                 <span className="text-xs" style={{ color: 'var(--text-lo)' }}>
                                     <span className="font-medium" style={{ color: 'var(--text-mid)' }}>Required GPA:</span> {scholarship.requiredGpa}
@@ -175,7 +184,10 @@ export function ScholarshipsTable({ scholarships, userType, currentUserId }: Sch
                                         {scholarship.sport}
                                     </td>
                                     <td className="px-4 py-3 text-sm truncate" style={{ fontFamily: 'var(--font-geist-mono, monospace)', color: 'var(--text-mid)' }}>
-                                        ${formatAmount(scholarship.scholarshipAmount)}{userType === 'player' ? ' / yr' : ''}
+                                        {userType === 'player' && annualCostPerPlayer !== undefined
+                                            ? `$${formatAmount(Math.max(0, annualCostPerPlayer - scholarship.scholarshipAmount))} / yr`
+                                            : `$${formatAmount(scholarship.scholarshipAmount)}${userType === 'player' ? ' / yr' : ''}`
+                                        }
                                     </td>
                                     <td className="px-4 py-3 text-sm truncate" style={{ fontFamily: 'var(--font-geist-mono, monospace)', color: 'var(--text-mid)' }}>
                                         {scholarship.requiredGpa}

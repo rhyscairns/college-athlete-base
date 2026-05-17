@@ -1,9 +1,10 @@
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { verifyToken } from '@/authentication/utils/jwt';
+import { getCoachProfileById } from '@/profile/coach/lib/db/queries';
 import { CoachProfileView } from '@/profile/coach/components/view/CoachProfileView';
 import { logger } from '@/lib/logger';
-import type { CoachProfile, CoachProfileApiResponse } from '@/profile/coach/types';
+import type { CoachProfile } from '@/profile/coach/types';
 import type { Metadata } from 'next';
 
 /**
@@ -33,59 +34,13 @@ export async function generateMetadata({
 }
 
 /**
- * Fetch coach profile data from API
- * @param coachId - The coach ID to fetch
- * @returns Coach profile data or null if fetch fails
+ * Fetch coach profile data directly from the database
  */
 async function fetchCoachProfile(coachId: string): Promise<CoachProfile | null> {
     try {
-        // Construct the API URL
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-        const apiUrl = `${baseUrl}/api/coach/${coachId}/profile`;
-
-        logger.info('Fetching coach profile from API', { coachId, apiUrl });
-
-        // Fetch from API with timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-        const response = await fetch(apiUrl, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            signal: controller.signal,
-            cache: 'no-store', // Disable caching for server-side fetches
-        });
-
-        clearTimeout(timeoutId);
-
-        // Check if response is ok
-        if (!response.ok) {
-            logger.warn('API request failed', {
-                coachId,
-                status: response.status,
-                statusText: response.statusText,
-            });
-            return null;
-        }
-
-        // Parse response
-        const data: CoachProfileApiResponse = await response.json();
-
-        if (!data.success || !data.data) {
-            logger.warn('API returned unsuccessful response', {
-                coachId,
-                error: data.error,
-            });
-            return null;
-        }
-
-        logger.info('Successfully fetched coach profile from API', { coachId });
-        return data.data;
+        return await getCoachProfileById(coachId);
     } catch (error) {
-        // Log error and return null
-        logger.error('Error fetching coach profile from API', {
+        logger.error('Error fetching coach profile', {
             coachId,
             error: error instanceof Error ? error.message : 'Unknown error',
         });

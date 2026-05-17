@@ -115,6 +115,14 @@ export function buildSearchQueryString(criteria: SearchCriteria): string {
         params.append('weightMax', criteria.weightMax.toString());
     }
 
+    if (criteria.country) {
+        params.append('country', criteria.country);
+    }
+
+    if (criteria.state) {
+        params.append('state', criteria.state);
+    }
+
     return params.toString();
 }
 
@@ -216,6 +224,12 @@ export function parseSearchParams(
             criteria.weightMax = parsed;
         }
     }
+
+    const country = getValue('country');
+    if (country) criteria.country = country;
+
+    const state = getValue('state');
+    if (state) criteria.state = state;
 
     return criteria;
 }

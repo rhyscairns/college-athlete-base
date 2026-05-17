@@ -355,6 +355,43 @@ export const CoachHeroSectionEdit = React.memo(function CoachHeroSectionEdit({
                         </div>
                     </div>
 
+                    {/* Financials Section */}
+                    <div>
+                        <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>
+                            <div style={iconBoxStyle}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--brand-500)' }}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            Financials
+                        </h3>
+                        <p className="text-sm mb-4" style={{ color: 'var(--text-lo)' }}>
+                            These figures appear on your scholarships page and help you track your remaining budget when creating offers.
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <TextInput
+                                label="Annual Scholarship Budget ($)"
+                                name="scholarshipBudget"
+                                type="number"
+                                value={formData.scholarshipBudget?.toString() || ''}
+                                onChange={(value: string) => handleFieldChange('scholarshipBudget', value ? parseFloat(value) : undefined as any)}
+                                error={errors.scholarshipBudget}
+                                placeholder="e.g. 500000"
+                                disabled={isSaving}
+                            />
+                            <TextInput
+                                label="Annual Cost Per Academic Year($)"
+                                name="annualCostPerPlayer"
+                                type="number"
+                                value={formData.annualCostPerPlayer?.toString() || ''}
+                                onChange={(value: string) => handleFieldChange('annualCostPerPlayer', value ? parseFloat(value) : undefined as any)}
+                                error={errors.annualCostPerPlayer}
+                                placeholder="e.g. 55000"
+                                disabled={isSaving}
+                            />
+                        </div>
+                    </div>
+
                     {/* Achievements Section */}
                     <div>
                         <h3 className="mb-4 flex items-center gap-2" style={sectionHeadingStyle}>

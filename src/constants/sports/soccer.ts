@@ -18,6 +18,7 @@ export const soccer: SportConstants = {
         'Right Winger',
         'Striker',
         'Forward',
+        'Other',
     ],
     events: [],
 };

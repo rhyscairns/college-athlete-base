@@ -8,6 +8,7 @@ export const rowing: SportConstants = {
         'Bow',
         'Port',
         'Starboard',
+        'Other',
     ],
     events: [
         'Single Sculls',
@@ -16,5 +17,6 @@ export const rowing: SportConstants = {
         'Pair',
         'Four',
         'Eight',
+        'Other',
     ],
 };

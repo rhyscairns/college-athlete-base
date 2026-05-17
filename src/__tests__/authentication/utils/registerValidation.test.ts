@@ -518,15 +518,11 @@ describe('registerValidation', () => {
         });
 
         describe('position validation', () => {
-            it('should reject missing position', () => {
+            it('should accept missing position (position is optional)', () => {
                 const data = generatePlayerRegistration({ position: '' });
                 const result = validatePlayerRegistration(data);
-
-                expect(result.isValid).toBe(false);
-                expect(result.errors).toContainEqual({
-                    field: 'position',
-                    message: 'Position is required'
-                });
+                expect(result.isValid).toBe(true);
+                expect(result.errors.some((e) => e.field === 'position')).toBe(false);
             });
 
             it('should reject position shorter than 2 characters', () => {
@@ -540,14 +536,81 @@ describe('registerValidation', () => {
                 });
             });
 
-            it('should accept position with 2 or more characters', () => {
-                const positions = ['PG', 'Guard', 'Point Guard', 'Center'];
+            it('should accept valid canonical positions for the selected sport', () => {
+                // Basketball (the default sport in generatePlayerRegistration) canonical positions
+                const positions = ['Point Guard', 'Shooting Guard', 'Small Forward', 'Power Forward', 'Center'];
 
                 positions.forEach(position => {
                     const data = generatePlayerRegistration({ position });
                     const result = validatePlayerRegistration(data);
                     expect(result.isValid).toBe(true);
                 });
+            });
+
+            it('should accept Soccer with a valid canonical position (Goalkeeper)', () => {
+                const data = generatePlayerRegistration({ sport: 'Soccer', position: 'Goalkeeper' });
+                const result = validatePlayerRegistration(data);
+                expect(result.isValid).toBe(true);
+                expect(result.errors.some((e) => e.field === 'position')).toBe(false);
+            });
+
+            it('should reject a position that is not in the canonical list for the selected sport', () => {
+                const data = generatePlayerRegistration({ sport: 'Soccer', position: 'randomtext' });
+                const result = validatePlayerRegistration(data);
+
+                expect(result.isValid).toBe(false);
+                expect(result.errors).toContainEqual({
+                    field: 'position',
+                    message: 'Invalid position for the selected sport',
+                });
+            });
+
+            it('should accept any non-empty position for a sport with no defined positions', () => {
+                // Cross Country has no positions, only events — free-text fallback applies
+                const data = generatePlayerRegistration({ sport: 'Cross Country', position: 'Distance Runner' });
+                const result = validatePlayerRegistration(data);
+                expect(result.isValid).toBe(true);
+            });
+        });
+
+        describe('event validation', () => {
+            it('should accept missing event (event is optional)', () => {
+                const data = generatePlayerRegistration({ sport: 'Cross Country', position: '', event: '' } as any);
+                const result = validatePlayerRegistration(data);
+                expect(result.isValid).toBe(true);
+                expect(result.errors.some((e) => e.field === 'event')).toBe(false);
+            });
+
+            it('should reject event shorter than 2 characters', () => {
+                const data = generatePlayerRegistration({ sport: 'Cross Country', position: '', event: 'X' } as any);
+                const result = validatePlayerRegistration(data);
+                expect(result.isValid).toBe(false);
+                expect(result.errors).toContainEqual({
+                    field: 'event',
+                    message: 'Event must be at least 2 characters',
+                });
+            });
+
+            it('should accept a valid canonical event for the selected sport', () => {
+                const data = generatePlayerRegistration({ sport: 'Cross Country', position: '', event: '5K' } as any);
+                const result = validatePlayerRegistration(data);
+                expect(result.isValid).toBe(true);
+            });
+
+            it('should reject an event not in the canonical list for the selected sport', () => {
+                const data = generatePlayerRegistration({ sport: 'Cross Country', position: '', event: 'Marathon' } as any);
+                const result = validatePlayerRegistration(data);
+                expect(result.isValid).toBe(false);
+                expect(result.errors).toContainEqual({
+                    field: 'event',
+                    message: 'Invalid event for the selected sport',
+                });
+            });
+
+            it('should accept "Other" as a valid event', () => {
+                const data = generatePlayerRegistration({ sport: 'Cross Country', position: '', event: 'Other' } as any);
+                const result = validatePlayerRegistration(data);
+                expect(result.isValid).toBe(true);
             });
         });
 

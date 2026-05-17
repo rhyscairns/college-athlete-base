@@ -26,6 +26,14 @@ jest.mock('@/lib/logger', () => ({
     },
 }));
 
+// Mock the DB query layer — page now calls getCoachProfileById directly
+jest.mock('@/profile/coach/lib/db/queries', () => ({
+    getCoachProfileById: jest.fn(),
+}));
+
+import { getCoachProfileById } from '@/profile/coach/lib/db/queries';
+const mockGetCoachProfileById = getCoachProfileById as jest.MockedFunction<typeof getCoachProfileById>;
+
 // Mock the CoachProfileView component
 jest.mock('@/profile/coach/components/view/CoachProfileView', () => ({
     CoachProfileView: ({ coachId, currentUserId, initialData }: any) => (
@@ -57,7 +65,7 @@ const mockCoachData = {
 describe('CoachProfilePage', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        global.fetch = jest.fn();
+        mockGetCoachProfileById.mockResolvedValue(mockCoachData as any);
     });
 
     afterEach(() => {
@@ -65,15 +73,6 @@ describe('CoachProfilePage', () => {
     });
 
     it('renders the coach profile with authenticated coach owner', async () => {
-        // Mock successful API fetch
-        (global.fetch as jest.Mock).mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                success: true,
-                data: mockCoachData,
-            }),
-        });
-
         // Mock authenticated session
         const mockCookies = {
             get: jest.fn().mockReturnValue({ value: 'valid-token' }),
@@ -99,15 +98,6 @@ describe('CoachProfilePage', () => {
     });
 
     it('renders the coach profile for unauthenticated user', async () => {
-        // Mock successful API fetch
-        (global.fetch as jest.Mock).mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                success: true,
-                data: mockCoachData,
-            }),
-        });
-
         // Mock no session
         const mockCookies = {
             get: jest.fn().mockReturnValue(undefined),
@@ -124,15 +114,6 @@ describe('CoachProfilePage', () => {
     });
 
     it('renders the coach profile for authenticated non-owner', async () => {
-        // Mock successful API fetch
-        (global.fetch as jest.Mock).mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                success: true,
-                data: mockCoachData,
-            }),
-        });
-
         // Mock authenticated session with different user
         const mockCookies = {
             get: jest.fn().mockReturnValue({ value: 'valid-token' }),
@@ -156,15 +137,7 @@ describe('CoachProfilePage', () => {
     });
 
     it('calls notFound when coach profile is not found', async () => {
-        // Mock failed API fetch
-        (global.fetch as jest.Mock).mockResolvedValue({
-            ok: false,
-            status: 404,
-            json: async () => ({
-                success: false,
-                error: 'Coach not found',
-            }),
-        });
+        mockGetCoachProfileById.mockResolvedValueOnce(null);
 
         const mockCookies = {
             get: jest.fn().mockReturnValue(undefined),
@@ -179,15 +152,6 @@ describe('CoachProfilePage', () => {
     });
 
     it('ignores player tokens and treats as unauthenticated', async () => {
-        // Mock successful API fetch
-        (global.fetch as jest.Mock).mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                success: true,
-                data: mockCoachData,
-            }),
-        });
-
         // Mock authenticated session with player token
         const mockCookies = {
             get: jest.fn().mockReturnValue({ value: 'valid-token' }),
@@ -214,18 +178,10 @@ describe('CoachProfilePage', () => {
 describe('generateMetadata', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        global.fetch = jest.fn();
+        mockGetCoachProfileById.mockResolvedValue(mockCoachData as any);
     });
 
     it('generates metadata for existing coach', async () => {
-        (global.fetch as jest.Mock).mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                success: true,
-                data: mockCoachData,
-            }),
-        });
-
         const params = Promise.resolve({ coachId: 'coach-123' });
         const metadata = await generateMetadata({ params });
 
@@ -236,14 +192,7 @@ describe('generateMetadata', () => {
     });
 
     it('generates not found metadata when coach does not exist', async () => {
-        (global.fetch as jest.Mock).mockResolvedValue({
-            ok: false,
-            status: 404,
-            json: async () => ({
-                success: false,
-                error: 'Coach not found',
-            }),
-        });
+        mockGetCoachProfileById.mockResolvedValueOnce(null);
 
         const params = Promise.resolve({ coachId: 'non-existent' });
         const metadata = await generateMetadata({ params });

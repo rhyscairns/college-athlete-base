@@ -14,10 +14,12 @@ export async function GET(
     }
 
     try {
-        const [favoritedResult, promoCodeResult, referralsResult] = await Promise.all([
-            // Number of coaches who have favorited this player
-            query<{ count: string }>(
-                `SELECT COUNT(*) AS count FROM coach_prospects WHERE player_id = $1`,
+        const [playerResult, promoCodeResult, referralsResult] = await Promise.all([
+            // Profile views and coaches who favorited this player (from player row)
+            query<{ profile_views: string; favorited_count: string }>(
+                `SELECT profile_views,
+                        COALESCE(array_length(favorited_by_coaches, 1), 0) AS favorited_count
+                 FROM players WHERE id = $1`,
                 [playerId]
             ),
             // Player's own promo code
@@ -49,8 +51,8 @@ export async function GET(
         return NextResponse.json({
             success: true,
             data: {
-                profileViews: 0,
-                coachesFavorited: parseInt(favoritedResult[0]?.count ?? '0', 10),
+                profileViews: parseInt(playerResult[0]?.profile_views ?? '0', 10),
+                coachesFavorited: parseInt(playerResult[0]?.favorited_count ?? '0', 10),
                 playersReferred,
                 coachesReferred,
                 promoCode,

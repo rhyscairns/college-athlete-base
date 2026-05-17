@@ -85,13 +85,44 @@ describe('PlayerMediaDisplay', () => {
             expect(playButton).toBeInTheDocument();
         });
 
-        it('should not render play button when no video thumbnail', () => {
+        it('should not render play button when neither videoUrl nor videoThumbnail is set', () => {
             const onWatchVideo = jest.fn();
 
             render(
                 <PlayerMediaDisplay
                     {...mockProps}
                     profileImage="https://example.com/profile.jpg"
+                    onWatchVideo={onWatchVideo}
+                />
+            );
+
+            expect(
+                screen.queryByRole('button', { name: /Watch highlight video/i })
+            ).not.toBeInTheDocument();
+        });
+
+        it('should render play button when videoUrl is set and onWatchVideo is provided, even with no videoThumbnail', () => {
+            const onWatchVideo = jest.fn();
+
+            render(
+                <PlayerMediaDisplay
+                    {...mockProps}
+                    videoUrl="https://youtube.com/watch?v=abc123"
+                    onWatchVideo={onWatchVideo}
+                />
+            );
+
+            expect(
+                screen.getByRole('button', { name: 'Watch highlight video for John Smith' })
+            ).toBeInTheDocument();
+        });
+
+        it('should not render play button when videoUrl is absent and no videoThumbnail', () => {
+            const onWatchVideo = jest.fn();
+
+            render(
+                <PlayerMediaDisplay
+                    {...mockProps}
                     onWatchVideo={onWatchVideo}
                 />
             );

@@ -10,6 +10,7 @@ export const marchingBand: SportConstants = {
         'Percussion',
         'Color Guard',
         'Front Ensemble',
+        'Other',
     ],
     events: [],
 };

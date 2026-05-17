@@ -31,5 +31,6 @@ export const swimmingAndDiving: SportConstants = {
         'Platform',
         'Synchronized 3m Springboard',
         'Synchronized Platform',
+        'Other',
     ],
 };

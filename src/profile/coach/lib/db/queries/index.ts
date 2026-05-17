@@ -29,6 +29,8 @@ interface CoachProfileRow {
     team_name: string | null;
     office_location: string | null;
     office_hours: string | null;
+    scholarship_budget: string | null;
+    annual_cost_per_player: string | null;
     achievements: any | null;
     created_at: Date;
     updated_at: Date;
@@ -52,6 +54,7 @@ export async function getCoachProfileById(coachId: string): Promise<CoachProfile
                 profile_image_url, team_website_url,
                 university_logo_url, conference, division, team_name,
                 office_location, office_hours, achievements,
+                scholarship_budget, annual_cost_per_player,
                 created_at, updated_at
             FROM coaches 
             WHERE id = $1`,
@@ -115,6 +118,8 @@ export async function updateCoachProfile(
             teamName: 'team_name',
             officeLocation: 'office_location',
             officeHours: 'office_hours',
+            scholarshipBudget: 'scholarship_budget',
+            annualCostPerPlayer: 'annual_cost_per_player',
             achievements: 'achievements',
         };
 
@@ -160,6 +165,7 @@ export async function updateCoachProfile(
                 profile_image_url, team_website_url,
                 university_logo_url, conference, division, team_name,
                 office_location, office_hours, achievements,
+                scholarship_budget, annual_cost_per_player,
                 created_at, updated_at
         `;
 
@@ -228,6 +234,8 @@ function transformCoachData(coach: CoachProfileRow): CoachProfile {
         teamName: coach.team_name || undefined,
         officeLocation: coach.office_location || undefined,
         officeHours: coach.office_hours || undefined,
+        scholarshipBudget: coach.scholarship_budget ? parseFloat(coach.scholarship_budget) : undefined,
+        annualCostPerPlayer: coach.annual_cost_per_player ? parseFloat(coach.annual_cost_per_player) : undefined,
         achievements: achievements || undefined,
         createdAt: new Date(coach.created_at),
         updatedAt: new Date(coach.updated_at),

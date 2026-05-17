@@ -42,13 +42,15 @@ export interface PlayerRegistrationData {
     gender: string;
     sex?: string;
     sport: string;
-    position: string;
+    position?: string;
+    event?: string;
     gpa: number;
     country: string;
     state?: string;
     region?: string;
     scholarshipAmount?: number;
     testScores?: string;
+    referralPromoCode?: string;
 }
 
 /**
@@ -62,6 +64,7 @@ export interface CoachRegistrationData {
     coachingCategory: string;
     sports: string[];
     university: string;
+    referralPromoCode?: string;
 }
 
 /**
@@ -75,6 +78,7 @@ export interface PlayerFormState {
     gender: string;
     sport: string;
     position: string;
+    event: string;
     gpa: string;
     country: string;
     state: string;
@@ -176,13 +180,15 @@ export interface PlayerRecord {
     passwordHash: string;
     sex: string;
     sport: string;
-    position: string;
+    position?: string;
+    event?: string;
     gpa: number;
     country: string;
     state?: string;
     region?: string;
     scholarshipAmount?: number;
     testScores?: string;
+    referralPromoCode?: string;
 }
 
 /**

@@ -42,9 +42,9 @@ export async function createPlayer(data: PlayerRecord): Promise<string> {
 
         const result = await query<{ id: string }>(
             `INSERT INTO players (
-                first_name, last_name, date_of_birth, email, password_hash, sex, sport, position,
-                gpa, country, state, region, scholarship_amount, test_scores
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                first_name, last_name, date_of_birth, email, password_hash, sex, sport, position, event,
+                gpa, country, state, region, scholarship_amount, test_scores, referral_promo_code
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
             RETURNING id`,
             [
                 data.firstName,
@@ -54,13 +54,15 @@ export async function createPlayer(data: PlayerRecord): Promise<string> {
                 data.passwordHash,
                 data.sex,
                 data.sport,
-                data.position,
+                data.position || null,
+                data.event || null,
                 data.gpa,
                 data.country,
                 data.state || null,
                 data.region || null,
                 data.scholarshipAmount || null,
                 data.testScores || null,
+                data.referralPromoCode || null,
             ]
         );
 
@@ -93,7 +95,7 @@ export async function getPlayerByEmail(email: string): Promise<PlayerDatabaseRec
         const normalizedEmail = normalizeEmail(email);
         const result = await query<any>(
             `SELECT 
-                id, first_name, last_name, email, password_hash, sex, sport, position,
+                id, first_name, last_name, email, password_hash, sex, sport, position, event,
                 gpa, country, state, region, scholarship_amount, test_scores,
                 created_at, updated_at
             FROM players 
@@ -116,6 +118,7 @@ export async function getPlayerByEmail(email: string): Promise<PlayerDatabaseRec
             sex: row.sex,
             sport: row.sport,
             position: row.position,
+            event: row.event,
             gpa: parseFloat(row.gpa),
             country: row.country,
             state: row.state,
@@ -142,7 +145,7 @@ export async function getPlayerById(id: string): Promise<PlayerDatabaseRecord | 
     try {
         const result = await query<any>(
             `SELECT 
-                id, first_name, last_name, email, password_hash, sex, sport, position,
+                id, first_name, last_name, email, password_hash, sex, sport, position, event,
                 gpa, country, state, region, scholarship_amount, test_scores,
                 created_at, updated_at
             FROM players 
@@ -165,6 +168,7 @@ export async function getPlayerById(id: string): Promise<PlayerDatabaseRecord | 
             sex: row.sex,
             sport: row.sport,
             position: row.position,
+            event: row.event,
             gpa: parseFloat(row.gpa),
             country: row.country,
             state: row.state,

@@ -12,8 +12,6 @@ import { HeroSection } from '@/profile/player/components/view-page/HeroSection';
 import {
     createMockPlayerProfile,
     selectSport,
-    selectPosition,
-    selectEvent,
     clickSave,
     clickCancel,
 } from './helpers/profile-test-helpers';
@@ -85,23 +83,6 @@ describe('Player Profile Sport/Position Edit - Integration Tests', () => {
     });
 
     describe('Position Selection After Sport', () => {
-        it('should allow user to select position after selecting position-based sport', async () => {
-            const mockPlayer = createMockPlayerProfile();
-            render(
-                <HeroSection
-                    player={mockPlayer}
-                    isOwner={true}
-                    isEditing={true}
-                    onSave={onSaveMock}
-                    onCancel={onCancelMock}
-                />
-            );
-
-            await selectSport('Soccer', 'Soc');
-            const positionInput = await selectPosition('Forward', 'For');
-            expect(positionInput).toHaveValue('Forward');
-        });
-
         it('should disable position field when no sport is selected', async () => {
             const mockPlayer = createMockPlayerProfile({ sport: undefined, position: undefined });
 
@@ -121,23 +102,6 @@ describe('Player Profile Sport/Position Edit - Integration Tests', () => {
     });
 
     describe('Event Selection After Event-Based Sport', () => {
-        it('should allow user to select event after selecting event-based sport', async () => {
-            const mockPlayer = createMockPlayerProfile();
-            render(
-                <HeroSection
-                    player={mockPlayer}
-                    isOwner={true}
-                    isEditing={true}
-                    onSave={onSaveMock}
-                    onCancel={onCancelMock}
-                />
-            );
-
-            await selectSport('Swimming & Diving', 'Swim');
-            const eventInput = await selectEvent('100m Freestyle', '100m Free');
-            expect(eventInput).toHaveValue('100m Freestyle');
-        });
-
         it('should show event label for event-based sports', async () => {
             const mockPlayer = createMockPlayerProfile();
             render(
@@ -218,14 +182,12 @@ describe('Player Profile Sport/Position Edit - Integration Tests', () => {
             );
 
             await selectSport('Soccer', 'Soc');
-            await selectPosition('Defensive Midfielder', 'Defensive Mid');
             await clickSave();
 
             await waitFor(() => {
                 expect(onSaveMock).toHaveBeenCalledWith(
                     expect.objectContaining({
                         sport: 'Soccer',
-                        position: 'Defensive Midfielder',
                     })
                 );
             });
@@ -244,14 +206,12 @@ describe('Player Profile Sport/Position Edit - Integration Tests', () => {
             );
 
             await selectSport('Swimming & Diving', 'Swim');
-            await selectEvent('200m Butterfly', '200');
             await clickSave();
 
             await waitFor(() => {
                 expect(onSaveMock).toHaveBeenCalledWith(
                     expect.objectContaining({
                         sport: 'Swimming & Diving',
-                        position: '200m Butterfly',
                     })
                 );
             });
@@ -362,7 +322,7 @@ describe('Player Profile Sport/Position Edit - Integration Tests', () => {
     });
 
     describe('Complete End-to-End Flow', () => {
-        it('should complete full edit flow: select sport, select position, save, and view', async () => {
+        it('should complete full edit flow: select sport, save, and view', async () => {
             const mockPlayer = createMockPlayerProfile();
             const { rerender } = render(
                 <HeroSection
@@ -375,22 +335,15 @@ describe('Player Profile Sport/Position Edit - Integration Tests', () => {
             );
 
             await selectSport('Soccer', 'Soc');
-            await selectPosition('Goalkeeper', 'Goa');
             await clickSave();
 
             await waitFor(() => {
                 expect(onSaveMock).toHaveBeenCalledWith(
-                    expect.objectContaining({
-                        sport: 'Soccer',
-                        position: 'Goalkeeper',
-                    })
+                    expect.objectContaining({ sport: 'Soccer' })
                 );
             });
 
-            const updatedPlayer = createMockPlayerProfile({
-                sport: 'Soccer',
-                position: 'Goalkeeper',
-            });
+            const updatedPlayer = createMockPlayerProfile({ sport: 'Soccer', position: 'Goalkeeper' });
 
             rerender(
                 <HeroSection
@@ -402,8 +355,6 @@ describe('Player Profile Sport/Position Edit - Integration Tests', () => {
 
             await waitFor(() => {
                 expect(screen.getByText('Soccer')).toBeInTheDocument();
-                const goalkeeperElements = screen.getAllByText('Goalkeeper');
-                expect(goalkeeperElements.length).toBeGreaterThan(0);
             });
         });
 

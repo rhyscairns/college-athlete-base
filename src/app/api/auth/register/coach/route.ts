@@ -152,6 +152,7 @@ export async function POST(request: NextRequest) {
             coachingCategory: body.coachingCategory,
             sports: body.sports,
             university: body.university,
+            referralPromoCode: body.referralPromoCode,
         });
 
         const duration = Date.now() - startTime;

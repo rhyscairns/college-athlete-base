@@ -6,15 +6,18 @@ describe('FilterBar', () => {
     const mockOnSportChange = jest.fn();
     const mockOnPositionChange = jest.fn();
     const mockOnSearch = jest.fn();
+    const mockOnStatusChange = jest.fn();
 
     const defaultProps: FilterBarProps = {
         sports: ['All Sports', 'Football', 'Basketball', 'Soccer'],
         positions: ['All Positions', 'Quarterback', 'Wide Receiver'],
         selectedSport: 'Football',
         selectedPosition: 'All Positions',
+        selectedStatus: 'All Statuses',
         onSportChange: mockOnSportChange,
         onPositionChange: mockOnPositionChange,
         onSearch: mockOnSearch,
+        onStatusChange: mockOnStatusChange,
         isLoading: false,
     };
 
@@ -175,7 +178,7 @@ describe('FilterBar', () => {
 
         it('renders dropdowns and button in a row', () => {
             render(<FilterBar {...defaultProps} />);
-            expect(screen.getAllByRole('combobox')).toHaveLength(2);
+            expect(screen.getAllByRole('combobox')).toHaveLength(3);
             expect(screen.getByRole('button', { name: /search/i })).toBeInTheDocument();
         });
     });
