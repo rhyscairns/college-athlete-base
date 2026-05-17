@@ -10,6 +10,7 @@ import { hashPassword } from '@/authentication/utils/password';
 import { checkCoachEmailExists, createCoach } from '@/authentication/db/coaches';
 import { logger } from '@/lib/logger';
 import { validateEmail, validatePassword, validateRequired } from '@/authentication/utils/validation';
+import { resolveReferralChain } from '@/earnings/utils/resolveReferralChain';
 
 // CORS helper function
 function getAllowedOrigin(request: NextRequest): string {
@@ -143,6 +144,10 @@ export async function POST(request: NextRequest) {
         // Hash password
         const passwordHash = await hashPassword(body.password);
 
+        // Resolve referral chain (non-blocking — failures leave columns NULL)
+        // Requirements: 2.4, 2.5, 2.6
+        const referralChain = await resolveReferralChain(body.referralPromoCode);
+
         // Create coach record
         const coachId = await createCoach({
             firstName: body.firstName,
@@ -153,6 +158,8 @@ export async function POST(request: NextRequest) {
             sports: body.sports,
             university: body.university,
             referralPromoCode: body.referralPromoCode,
+            secondaryReferralPromoCode: referralChain?.tier2PromoCode ?? null,
+            tertiaryReferralPromoCode: referralChain?.tier3PromoCode ?? null,
         });
 
         const duration = Date.now() - startTime;

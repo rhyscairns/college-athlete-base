@@ -3,6 +3,7 @@ import { validatePlayerRegistration } from '@/authentication/utils/registerValid
 import { checkEmailExists, createPlayer } from '@/authentication/db/players';
 import { hashPassword } from '@/authentication/utils/password';
 import { logger } from '@/lib/logger';
+import { resolveReferralChain } from '@/earnings/utils/resolveReferralChain';
 
 /**
  * Get allowed origin for CORS
@@ -151,6 +152,18 @@ export async function POST(request: NextRequest) {
             return addCorsHeaders(response, request);
         }
 
+        // Resolve referral chain (non-blocking — failures leave columns NULL)
+        const referralChain = await resolveReferralChain(body.referralPromoCode);
+
+        // Determine subscription plan based on promo code presence
+        // Requirements: 3.1, 3.2, 3.3
+        let subscriptionPlan: 'standard' | 'promo_599' | 'promo_699' = 'standard';
+        if (referralChain) {
+            // Default promo tier — can be extended to differentiate promo_599 vs promo_699
+            // based on the specific code used. For now any valid promo code → promo_699.
+            subscriptionPlan = 'promo_699';
+        }
+
         // Create player record
         let playerId;
         try {
@@ -177,6 +190,9 @@ export async function POST(request: NextRequest) {
                 scholarshipAmount: body.scholarshipAmount,
                 testScores: body.testScores,
                 referralPromoCode: body.referralPromoCode,
+                secondaryReferralPromoCode: referralChain?.tier2PromoCode ?? null,
+                tertiaryReferralPromoCode: referralChain?.tier3PromoCode ?? null,
+                subscriptionPlan,
             });
         } catch (error) {
             logger.dbError('createPlayer', error instanceof Error ? error : new Error('Unknown database error'), {

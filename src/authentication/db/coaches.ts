@@ -15,6 +15,10 @@ export interface CoachRecord {
     sports: string[];
     university: string;
     referralPromoCode?: string;
+    /** Promo code of whoever referred the tier-1 referrer (tier-2). Requirements: 2.4, 2.5 */
+    secondaryReferralPromoCode?: string | null;
+    /** Promo code of whoever referred the tier-2 referrer (tier-3). Requirements: 2.4, 2.5 */
+    tertiaryReferralPromoCode?: string | null;
 }
 
 export interface CoachDatabaseRecord extends CoachRecord {
@@ -60,8 +64,8 @@ export async function createCoach(data: CoachRecord): Promise<string> {
             `INSERT INTO coaches (
                 first_name, last_name, email, password_hash, 
                 sport, coaching_level, current_organization, specializations, country,
-                referral_promo_code
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                referral_promo_code, secondary_referral_promo_code, tertiary_referral_promo_code
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             RETURNING id`,
             [
                 data.firstName,
@@ -74,6 +78,8 @@ export async function createCoach(data: CoachRecord): Promise<string> {
                 data.sports,
                 'USA',
                 data.referralPromoCode || null,
+                data.secondaryReferralPromoCode ?? null,
+                data.tertiaryReferralPromoCode ?? null,
             ]
         );
 

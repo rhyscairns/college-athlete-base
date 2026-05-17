@@ -233,6 +233,33 @@ describe('CoachNavbar', () => {
         });
     });
 
+    describe('Earnings Navigation', () => {
+        it('should render Earnings link in desktop nav', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+            expect(screen.getAllByText('Earnings')[0]).toBeInTheDocument();
+        });
+
+        it('should have correct Earnings link href', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+            const links = screen.getAllByText('Earnings');
+            const earningsLink = links[0].closest('a');
+            expect(earningsLink).toHaveAttribute('href', `/coach/${mockCoachId}/earnings`);
+        });
+
+        it('should render Earnings link in mobile menu', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+            fireEvent.click(screen.getByLabelText('Toggle menu'));
+            expect(screen.getByRole('menu', { name: /mobile navigation menu/i })).toBeInTheDocument();
+            expect(screen.getAllByText('Earnings').length).toBeGreaterThanOrEqual(1);
+        });
+
+        it('should render Earnings tab in mobile bottom tab bar', () => {
+            render(<CoachNavbar coachId={mockCoachId} />);
+            const earningsLinks = screen.getAllByText('Earnings');
+            expect(earningsLinks.length).toBeGreaterThanOrEqual(1);
+        });
+    });
+
     describe('Edge Cases', () => {
         it('should handle special characters in coachId', () => {
             const specialCoachId = 'coach-123-abc_def';

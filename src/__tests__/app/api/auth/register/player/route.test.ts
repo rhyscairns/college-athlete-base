@@ -133,6 +133,10 @@ describe('Player Registration API Route', () => {
                 region: undefined,
                 scholarshipAmount: undefined,
                 testScores: undefined,
+                referralPromoCode: undefined,
+                secondaryReferralPromoCode: null,
+                tertiaryReferralPromoCode: null,
+                subscriptionPlan: 'standard',
             });
         });
 

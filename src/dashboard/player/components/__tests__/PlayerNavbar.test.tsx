@@ -44,6 +44,7 @@ describe('PlayerNavbar', () => {
             expect(screen.getAllByText('Profile')[0]).toBeInTheDocument();
             expect(screen.getAllByText('Messages')[0]).toBeInTheDocument();
             expect(screen.getAllByText('Offers')[0]).toBeInTheDocument();
+            expect(screen.getAllByText('Earnings')[0]).toBeInTheDocument();
             expect(screen.getByText('Log Out')).toBeInTheDocument();
         });
 
@@ -126,6 +127,36 @@ describe('PlayerNavbar', () => {
                 el => el.textContent === 'Offers'
             );
             expect(offersEl).toBeInTheDocument();
+        });
+    });
+
+    describe('Earnings Navigation', () => {
+        it('renders Earnings link in desktop nav', () => {
+            render(<PlayerNavbar playerId={mockPlayerId} />);
+            expect(screen.getAllByText('Earnings')[0]).toBeInTheDocument();
+        });
+
+        it('Earnings link has correct href', () => {
+            render(<PlayerNavbar playerId={mockPlayerId} />);
+            const earningsLink = screen.getAllByText('Earnings')[0].closest('a');
+            expect(earningsLink).toHaveAttribute('href', `/player/${mockPlayerId}/earnings`);
+        });
+
+        it('renders Earnings link in mobile dropdown', () => {
+            const { container } = render(<PlayerNavbar playerId={mockPlayerId} />);
+            const mobileButton = container.querySelector('.mobile-menu-button') as HTMLElement;
+            fireEvent.click(mobileButton);
+            const mobileDropdown = container.querySelector('.mobile-dropdown');
+            const earningsEl = Array.from(mobileDropdown?.querySelectorAll('a, button') ?? []).find(
+                el => el.textContent === 'Earnings'
+            );
+            expect(earningsEl).toBeInTheDocument();
+        });
+
+        it('renders Earnings tab in mobile bottom tab bar', () => {
+            render(<PlayerNavbar playerId={mockPlayerId} />);
+            const earningsItems = screen.getAllByText('Earnings');
+            expect(earningsItems.length).toBeGreaterThanOrEqual(1);
         });
     });
 
