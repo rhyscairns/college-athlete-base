@@ -90,7 +90,7 @@ export function MessagesTable({ conversations, currentUserId, userType, emptyMes
             </div>
 
             {/* Desktop table */}
-            <div className="hidden md:block overflow-x-auto overflow-hidden rounded-xl" style={{ border: '1px solid var(--ink-3)' }}>
+            <div className="hidden md:block overflow-x-auto rounded-xl" style={{ border: '1px solid var(--ink-3)' }}>
                 <table className="w-full divide-y" style={{ borderColor: 'var(--ink-3)', background: 'var(--ink-1)' }}>
                     <thead>
                         <tr style={{ background: 'var(--ink-2)' }}>
@@ -145,7 +145,7 @@ export function MessagesTable({ conversations, currentUserId, userType, emptyMes
                                     <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ color: 'var(--text-mid)' }}>
                                         {conversation.email}
                                     </td>
-                                    <td className="px-4 py-3 whitespace-nowrap">
+                                    <td className="px-4 py-3 whitespace-nowrap" style={{ minWidth: '14rem' }}>
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => handleViewMessages(conversation.counterpartId)}

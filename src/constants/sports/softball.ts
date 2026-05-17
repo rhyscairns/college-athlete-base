@@ -14,6 +14,7 @@ export const softball: SportConstants = {
         'Right Field',
         'Designated Player',
         'Flex Player',
+        'Other',
     ],
     events: [],
 };

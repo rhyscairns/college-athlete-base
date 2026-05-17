@@ -7,5 +7,6 @@ export const golf: SportConstants = {
         'Individual Stroke Play',
         'Team Stroke Play',
         'Match Play',
+        'Other',
     ],
 };

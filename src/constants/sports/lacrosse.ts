@@ -9,6 +9,7 @@ export const lacrosse: SportConstants = {
         'Attacker',
         'Face-off Specialist',
         'Long-Stick Midfielder',
+        'Other',
     ],
     events: [],
 };

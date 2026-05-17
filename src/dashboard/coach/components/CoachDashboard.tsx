@@ -22,6 +22,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
     // Filter state
     const [selectedSport, setSelectedSport] = useState<string>(ALL_SPORTS);
     const [selectedPosition, setSelectedPosition] = useState<string>(ALL_POSITIONS);
+    const [selectedStatus, setSelectedStatus] = useState<string>('All Statuses');
     const [profileLoaded, setProfileLoaded] = useState<boolean>(false);
 
     // Prospects / favorites state
@@ -31,6 +32,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
     // Debounce filter changes to reduce API calls
     const debouncedSport = useDebounce(selectedSport, 300);
     const debouncedPosition = useDebounce(selectedPosition, 300);
+    const debouncedStatus = useDebounce(selectedStatus, 300);
 
     // Data state
     const [players, setPlayers] = useState<PlayerCardData[]>([]);
@@ -87,6 +89,9 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
                 setIsLoading(true);
                 setError(null);
 
+                // Clear cache on mount so hasAcceptedOffer is always fresh
+                playerFilterCache.clear();
+
                 const response = await fetch(`/api/coach/${coachId}/profile`);
                 const data = await response.json();
 
@@ -141,6 +146,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
                 excludeUserId: coachId,
                 sport: debouncedSport !== ALL_SPORTS ? debouncedSport : undefined,
                 position: debouncedPosition !== ALL_POSITIONS ? debouncedPosition : undefined,
+                status: debouncedStatus !== 'All Statuses' ? debouncedStatus.toLowerCase() : undefined,
             };
 
             // Check cache first
@@ -175,6 +181,11 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
                 urlParams.append('position', debouncedPosition);
             }
 
+            // Add status filter if not "All Statuses"
+            if (debouncedStatus && debouncedStatus !== 'All Statuses') {
+                urlParams.append('status', debouncedStatus.toLowerCase());
+            }
+
             const response = await fetch(`/api/dashboard/players?${urlParams.toString()}`);
             const data = await response.json();
 
@@ -202,7 +213,7 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
         } finally {
             setIsLoading(false);
         }
-    }, [coachId, debouncedSport, debouncedPosition, currentPage]);
+    }, [coachId, debouncedSport, debouncedPosition, debouncedStatus, currentPage]);
 
     // Fetch players when debounced filters or page changes
     useEffect(() => {
@@ -305,6 +316,12 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
         setCurrentPage(1);
     }, []);
 
+    // Handler for status filter change
+    const handleStatusChange = useCallback((status: string): void => {
+        setSelectedStatus(status);
+        setCurrentPage(1);
+    }, []);
+
     // Handler for search button click
     const handleSearch = useCallback((): void => {
         fetchPlayers();
@@ -399,6 +416,8 @@ export default function CoachDashboard({ coachId }: CoachDashboardProps) {
                         onPositionChange={handlePositionChange}
                         onSearch={handleSearch}
                         isLoading={isLoading}
+                        selectedStatus={selectedStatus}
+                        onStatusChange={handleStatusChange}
                     />
                 </div>
 

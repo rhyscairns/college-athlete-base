@@ -28,6 +28,8 @@ export function CoachRegistrationForm({ onSubmit, onCancel }: CoachRegistrationF
     const [primarySport, setPrimarySport] = useState('');
     const [secondarySport, setSecondarySport] = useState('');
     const [university, setUniversity] = useState('');
+    const [referralCode, setReferralCode] = useState('');
+    const [referralState, setReferralState] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
 
     // Error state
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -101,6 +103,19 @@ export function CoachRegistrationForm({ onSubmit, onCancel }: CoachRegistrationF
         }
 
         return undefined;
+    };
+
+    const handleReferralBlur = async () => {
+        const code = referralCode.trim();
+        if (!code) { setReferralState('idle'); return; }
+        setReferralState('checking');
+        try {
+            const res = await fetch(`/api/auth/validate-referral?code=${encodeURIComponent(code)}`);
+            const data = await res.json();
+            setReferralState(data.valid ? 'valid' : 'invalid');
+        } catch {
+            setReferralState('invalid');
+        }
     };
 
     const handleBlur = (fieldName: string, value: string) => {
@@ -182,6 +197,7 @@ export function CoachRegistrationForm({ onSubmit, onCancel }: CoachRegistrationF
                 coachingCategory,
                 sports,
                 university,
+                ...(referralCode.trim() && referralState === 'valid' && { referralPromoCode: referralCode.trim() }),
             };
 
             await onSubmit(registrationData);
@@ -306,6 +322,31 @@ export function CoachRegistrationForm({ onSubmit, onCancel }: CoachRegistrationF
                     required
                     disabled={isSubmitting}
                 />
+
+                {/* Referral code */}
+                <div>
+                    <TextInput
+                        label="Referral Code"
+                        name="referralCode"
+                        value={referralCode}
+                        onChange={(v) => {
+                            setReferralCode(v);
+                            if (referralState !== 'idle') setReferralState('idle');
+                        }}
+                        onBlur={handleReferralBlur}
+                        disabled={isSubmitting}
+                        placeholder="Optional — enter a referral code"
+                    />
+                    {referralState === 'checking' && (
+                        <p className="mt-1 text-xs" style={{ color: 'var(--text-lo)' }}>Checking code…</p>
+                    )}
+                    {referralState === 'valid' && (
+                        <p className="mt-1 text-xs font-medium" style={{ color: 'var(--brand-500)' }}>✓ Valid referral code</p>
+                    )}
+                    {referralState === 'invalid' && (
+                        <p className="mt-1 text-xs" style={{ color: 'var(--status-danger)' }}>Invalid referral code — please check and try again</p>
+                    )}
+                </div>
             </div>
 
             <div className="space-y-3 pt-2">

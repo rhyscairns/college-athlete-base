@@ -3,6 +3,7 @@
  */
 
 import { validateEmail, validatePassword, validateGPA, validateRequired } from './validation';
+import { hasSportPositions, getPositionsForSport, hasSportEvents, getEventsForSport } from '@/constants/sports';
 
 /**
  * Validation error for a specific field
@@ -30,7 +31,8 @@ export interface PlayerRegistrationData {
     password: string;
     sex: string;
     sport: string;
-    position: string;
+    position?: string;
+    event?: string;
     gpa: number;
     country: string;
     state?: string;
@@ -174,17 +176,40 @@ export function validatePlayerRegistration(data: any): ValidationResult {
         });
     }
 
-    // Validate position
-    if (!validateRequired(data.position)) {
-        errors.push({
-            field: 'position',
-            message: 'Position is required',
-        });
-    } else if (data.position.trim().length < 2) {
-        errors.push({
-            field: 'position',
-            message: 'Position must be at least 2 characters',
-        });
+    // Validate position (optional — only validate if provided)
+    if (validateRequired(data.position)) {
+        if (data.position.trim().length < 2) {
+            errors.push({
+                field: 'position',
+                message: 'Position must be at least 2 characters',
+            });
+        } else if (hasSportPositions(data.sport)) {
+            const validPositions = getPositionsForSport(data.sport);
+            if (!validPositions.includes(data.position)) {
+                errors.push({
+                    field: 'position',
+                    message: 'Invalid position for the selected sport',
+                });
+            }
+        }
+    }
+
+    // Validate event (optional — only validate if provided)
+    if (validateRequired(data.event)) {
+        if (data.event.trim().length < 2) {
+            errors.push({
+                field: 'event',
+                message: 'Event must be at least 2 characters',
+            });
+        } else if (hasSportEvents(data.sport)) {
+            const validEvents = getEventsForSport(data.sport);
+            if (!validEvents.includes(data.event)) {
+                errors.push({
+                    field: 'event',
+                    message: 'Invalid event for the selected sport',
+                });
+            }
+        }
     }
 
     // Validate GPA

@@ -71,6 +71,10 @@ export interface SearchCriteria {
     /** pounds */
     weightMin?: number;
     weightMax?: number;
+    /** 'USA', 'international', or a specific country code */
+    country?: string;
+    /** US state abbreviation — only relevant when country is 'USA' */
+    state?: string;
 }
 
 /** Paginated response from the athlete search API */

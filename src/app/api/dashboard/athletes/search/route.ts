@@ -178,6 +178,18 @@ function validateQueryParams(searchParams: URLSearchParams): {
         errors.push({ field: 'weight', message: 'Weight min cannot be greater than weight max' });
     }
 
+    // Country filter ('USA', 'international', or specific country code)
+    const country = searchParams.get('country');
+    if (country) {
+        criteria.country = country.trim();
+    }
+
+    // State filter (US only)
+    const state = searchParams.get('state');
+    if (state) {
+        criteria.state = state.trim().toUpperCase();
+    }
+
     // Note: We allow searches with no filters to return all athletes
     // The frontend can decide whether to require filters or not
 

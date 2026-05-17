@@ -160,6 +160,7 @@ export const PlayerCardGrid: React.FC<PlayerCardGridProps> = ({
                         isFavorited={favoritedPlayerIds?.has(player.playerId)}
                         onFavoriteToggle={onFavoriteToggle}
                         onMessageClick={player.onMessageClick}
+                        hasAcceptedOffer={player.hasAcceptedOffer}
                         priority={index < 3}
                     />
                 </div>

@@ -4,6 +4,7 @@ import {
     COUNTRIES_LIST,
     US_STATES_LIST,
 } from '@/authentication/constants';
+import { getAllSportNames } from '@/constants/sports';
 
 describe('Authentication Constants', () => {
     describe('SEX_OPTIONS', () => {
@@ -39,12 +40,24 @@ describe('Authentication Constants', () => {
             });
         });
 
-        it('should include common college sports', () => {
+        it('should use canonical title-case sport names as values (matching getAllSportNames)', () => {
+            const canonicalNames = getAllSportNames();
             const sportValues = SPORTS_LIST.map((s) => s.value);
-            expect(sportValues).toContain('basketball');
-            expect(sportValues).toContain('football');
-            expect(sportValues).toContain('soccer');
-            expect(sportValues).toContain('baseball');
+            expect(sportValues).toEqual(canonicalNames);
+        });
+
+        it('should have matching value and label for each entry', () => {
+            SPORTS_LIST.forEach((option) => {
+                expect(option.value).toBe(option.label);
+            });
+        });
+
+        it('should include common college sports with title-case values', () => {
+            const sportValues = SPORTS_LIST.map((s) => s.value);
+            expect(sportValues).toContain('Basketball');
+            expect(sportValues).toContain('Football');
+            expect(sportValues).toContain('Soccer');
+            expect(sportValues).toContain('Baseball');
         });
     });
 

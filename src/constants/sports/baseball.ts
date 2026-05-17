@@ -13,6 +13,7 @@ export const baseball: SportConstants = {
         'Center Field',
         'Right Field',
         'Designated Hitter',
+        'Other',
     ],
     events: [],
 };

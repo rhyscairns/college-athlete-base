@@ -37,5 +37,6 @@ export const trackAndField: SportConstants = {
         'Decathlon',
         'Heptathlon',
         'Pentathlon',
+        'Other',
     ],
 };

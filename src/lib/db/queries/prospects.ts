@@ -13,6 +13,7 @@ export interface ProspectRow {
 
 /**
  * Add a player to a coach's prospects list.
+ * Also adds the coach ID to the player's favorited_by_coaches array.
  * Throws a conflict error if the entry already exists.
  */
 export async function addProspect(coachId: string, playerId: string): Promise<ProspectRow> {
@@ -30,6 +31,16 @@ export async function addProspect(coachId: string, playerId: string): Promise<Pr
         [coachId, playerId]
     );
 
+    // Add coach ID to player's favorited_by_coaches array (ignore if already present)
+    await query(
+        `UPDATE players
+         SET favorited_by_coaches = array_append(
+             array_remove(favorited_by_coaches, $1::text), $1::text
+         )
+         WHERE id = $2`,
+        [coachId, playerId]
+    );
+
     const row = rows[0];
     return {
         id: row.id,
@@ -41,6 +52,7 @@ export async function addProspect(coachId: string, playerId: string): Promise<Pr
 
 /**
  * Remove a player from a coach's prospects list.
+ * Also removes the coach ID from the player's favorited_by_coaches array.
  * Returns true if a row was deleted, false if it didn't exist.
  */
 export async function removeProspect(coachId: string, playerId: string): Promise<boolean> {
@@ -53,9 +65,29 @@ export async function removeProspect(coachId: string, playerId: string): Promise
         [coachId, playerId]
     );
 
+    if (rows.length > 0) {
+        // Remove coach ID from player's favorited_by_coaches array
+        await query(
+            `UPDATE players
+             SET favorited_by_coaches = array_remove(favorited_by_coaches, $1::text)
+             WHERE id = $2`,
+            [coachId, playerId]
+        );
+    }
+
     return rows.length > 0;
 }
 
+/**
+ * Increment the profile_views counter for a player.
+ * Fire-and-forget — errors are swallowed since this is non-critical.
+ */
+export async function incrementPlayerProfileViews(playerId: string): Promise<void> {
+    await query(
+        `UPDATE players SET profile_views = profile_views + 1 WHERE id = $1`,
+        [playerId]
+    );
+}
 /**
  * Get all player IDs that a coach has favorited.
  */

@@ -8,6 +8,7 @@ export const basketball: SportConstants = {
         'Small Forward',
         'Power Forward',
         'Center',
+        'Other',
     ],
     events: [],
 };

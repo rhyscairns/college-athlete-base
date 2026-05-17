@@ -2,6 +2,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { verifyToken } from '@/authentication/utils/jwt';
 import { getPlayerById } from '@/authentication/db/players';
+import { getScholarshipsByCoach } from '@/scholarships/db/queries';
+import { getCoachProfileById } from '@/profile/coach/lib/db/queries';
 import { ScholarshipForm } from '@/scholarships/components/ScholarshipForm';
 import { logger } from '@/lib/logger';
 import type { Metadata } from 'next';
@@ -48,6 +50,28 @@ export default async function NewScholarshipPage({ params, searchParams }: NewSc
 
     // ── Pre-fetch player data if playerId provided ────────────────────────────
     let initialData: Partial<ScholarshipFormData> = {};
+    let scholarshipBudget: number | undefined;
+    let annualCostPerPlayer: number | undefined;
+    let committedAmount = 0;
+
+    // Fetch coach financials
+    try {
+        const coachProfile = await getCoachProfileById(coachId);
+        scholarshipBudget = coachProfile?.scholarshipBudget;
+        annualCostPerPlayer = coachProfile?.annualCostPerPlayer;
+    } catch {
+        // Non-fatal
+    }
+
+    // Compute committed amount from all active scholarships (excluding rejected)
+    try {
+        const existing = await getScholarshipsByCoach(coachId);
+        committedAmount = existing
+            .filter(s => s.status !== 'rejected')
+            .reduce((sum, s) => sum + Number(s.scholarshipAmount), 0);
+    } catch {
+        // Non-fatal
+    }
 
     if (playerId) {
         try {
@@ -134,6 +158,9 @@ export default async function NewScholarshipPage({ params, searchParams }: NewSc
                     <ScholarshipForm
                         coachId={coachId}
                         initialData={initialData}
+                        scholarshipBudget={scholarshipBudget}
+                        committedAmount={committedAmount}
+                        annualCostPerPlayer={annualCostPerPlayer}
                     />
                 </div>
             </div>

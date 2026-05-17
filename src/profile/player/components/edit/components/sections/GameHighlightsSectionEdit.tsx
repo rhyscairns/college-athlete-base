@@ -2,6 +2,7 @@ import React from 'react';
 import { TextInput } from '../inputs/TextInput';
 import { ActionButtons } from './ActionButtons';
 import type { GameHighlightsSectionEditProps, Video } from '../../../../types';
+import { extractYouTubeThumbnail } from '../../../../utils/video-helpers';
 
 export function GameHighlightsSectionEdit({
     formData,
@@ -14,10 +15,21 @@ export function GameHighlightsSectionEdit({
     const handleVideoChange = (index: number, field: keyof Video, value: string) => {
         setFormData((prev) => {
             const updated = [...prev];
-            updated[index] = {
-                ...updated[index],
-                [field]: value,
-            };
+            const current = updated[index];
+            updated[index] = { ...current, [field]: value };
+
+            if (field === 'url') {
+                const derived = extractYouTubeThumbnail(value);
+                const existingThumb = current.thumbnail || '';
+                // Only overwrite thumbnail if it's empty or was previously auto-derived
+                const wasAutoDerived =
+                    existingThumb === '' ||
+                    existingThumb === (extractYouTubeThumbnail(current.url || '') ?? '');
+                if (wasAutoDerived) {
+                    updated[index] = { ...updated[index], thumbnail: derived || '' };
+                }
+            }
+
             return updated;
         });
     };
@@ -32,6 +44,7 @@ export function GameHighlightsSectionEdit({
     };
 
     const handleAddVideo = () => {
+        const isFirst = formData.length === 0;
         const newVideo: Video = {
             id: `video-${Date.now()}`,
             title: '',
@@ -39,14 +52,21 @@ export function GameHighlightsSectionEdit({
             url: '',
             thumbnail: '',
             duration: '',
-            isFeatured: false,
+            isFeatured: isFirst,
             date: '',
         };
         setFormData((prev) => [...prev, newVideo]);
     };
 
     const handleRemoveVideo = (index: number) => {
-        setFormData((prev) => prev.filter((_, i) => i !== index));
+        setFormData((prev) => {
+            const updated = prev.filter((_, i) => i !== index);
+            const hasFeatured = updated.some((v) => v.isFeatured);
+            if (!hasFeatured && updated.length > 0) {
+                updated[0] = { ...updated[0], isFeatured: true };
+            }
+            return updated;
+        });
     };
 
     const validateUrl = (url: string): boolean => {
@@ -90,25 +110,27 @@ export function GameHighlightsSectionEdit({
                             </button>
                         </div>
 
-                        {/* Main Video Selection */}
-                        <div className="flex items-center gap-2 p-3 rounded-lg" style={{ background: 'oklch(68% 0.22 150 / 0.08)', border: '1px solid oklch(68% 0.22 150 / 0.25)' }}>
-                            <input
-                                type="radio"
-                                id={`main-video-${index}`}
-                                name="main-video"
-                                checked={video.isFeatured || false}
-                                onChange={() => handleSetMainVideo(index)}
-                                disabled={isSaving}
-                                className="w-4 h-4 disabled:opacity-50"
-                            />
-                            <label
-                                htmlFor={`main-video-${index}`}
-                                className="text-sm font-medium cursor-pointer"
-                                style={{ color: 'var(--text-mid)' }}
-                            >
-                                Set as main video (appears on player card)
-                            </label>
-                        </div>
+                        {/* Main Video Selection — only shown when there are multiple videos */}
+                        {formData.length > 1 && (
+                            <div className="flex items-center gap-2 p-3 rounded-lg" style={{ background: 'oklch(68% 0.22 150 / 0.08)', border: '1px solid oklch(68% 0.22 150 / 0.25)' }}>
+                                <input
+                                    type="radio"
+                                    id={`main-video-${index}`}
+                                    name="main-video"
+                                    checked={video.isFeatured || false}
+                                    onChange={() => handleSetMainVideo(index)}
+                                    disabled={isSaving}
+                                    className="w-4 h-4 disabled:opacity-50"
+                                />
+                                <label
+                                    htmlFor={`main-video-${index}`}
+                                    className="text-sm font-medium cursor-pointer"
+                                    style={{ color: 'var(--text-mid)' }}
+                                >
+                                    Set as main video (appears on player card)
+                                </label>
+                            </div>
+                        )}
 
                         <TextInput
                             label="Title"
@@ -180,6 +202,16 @@ export function GameHighlightsSectionEdit({
                                 disabled={isSaving}
                                 placeholder="https://..."
                             />
+                            {video.thumbnail && (
+                                <div className="mt-2">
+                                    <img
+                                        src={video.thumbnail}
+                                        alt="Thumbnail preview"
+                                        className="h-16 rounded object-cover"
+                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}

@@ -4,23 +4,41 @@ import { useState, useEffect } from 'react';
 import { AthleteSearchFormProps, SearchCriteria, FormErrors } from '../types';
 import { getAllSportNames, getPositionsForSport } from '@/constants/sports';
 import { getAllDivisions } from '@/constants/divisions';
+import { US_STATES_LIST } from '@/authentication/constants';
+import { CountrySelect } from '@/authentication/components/CountrySelect';
 import { heightToInches } from '../utils/search';
 
+const inputCls = 'w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors';
+const inputStyle = { background: 'var(--ink-2)', border: '1px solid var(--ink-3)', color: 'var(--text-hi)' };
+const inputErrorStyle = { ...inputStyle, border: '1px solid var(--status-danger)' };
+const labelStyle = { color: 'var(--text-mid)' };
+const errorStyle = { color: 'var(--status-danger)' };
+
+function Label({ htmlFor, children }: { htmlFor?: string; children: React.ReactNode }) {
+    return (
+        <label htmlFor={htmlFor} className="block text-sm font-medium mb-1.5" style={labelStyle}>
+            {children}
+        </label>
+    );
+}
+
+function FieldError({ message }: { message?: string }) {
+    if (!message) return null;
+    return <p className="mt-1 text-xs" style={errorStyle} role="alert">{message}</p>;
+}
+
 export function AthleteSearchForm({ onSubmit, onCancel, isSubmitting }: AthleteSearchFormProps) {
-    const [formData, setFormData] = useState<SearchCriteria>({});
+    const [formData, setFormData] = useState<SearchCriteria>({ country: 'USA' });
     const [errors, setErrors] = useState<FormErrors>({});
     const [positions, setPositions] = useState<string[]>([]);
 
     const sportOptions = getAllSportNames();
     const divisionOptions = getAllDivisions();
 
-    // Update positions when sport changes
     useEffect(() => {
         if (formData.sport) {
             const sportPositions = getPositionsForSport(formData.sport);
             setPositions(sportPositions);
-
-            // Clear position if it's not valid for the new sport
             if (formData.position && !sportPositions.includes(formData.position)) {
                 setFormData(prev => ({ ...prev, position: undefined }));
             }
@@ -33,11 +51,8 @@ export function AthleteSearchForm({ onSubmit, onCancel, isSubmitting }: AthleteS
     const validateForm = (): boolean => {
         const newErrors: FormErrors = {};
 
-        // GPA validation
-        if (formData.gpaMin !== undefined && formData.gpaMax !== undefined) {
-            if (formData.gpaMin > formData.gpaMax) {
-                newErrors.gpa = 'Minimum GPA cannot be greater than maximum GPA';
-            }
+        if (formData.gpaMin !== undefined && formData.gpaMax !== undefined && formData.gpaMin > formData.gpaMax) {
+            newErrors.gpa = 'Min GPA cannot exceed max GPA';
         }
         if (formData.gpaMin !== undefined && (formData.gpaMin < 0 || formData.gpaMin > 4.0)) {
             newErrors.gpa = 'GPA must be between 0.0 and 4.0';
@@ -45,47 +60,18 @@ export function AthleteSearchForm({ onSubmit, onCancel, isSubmitting }: AthleteS
         if (formData.gpaMax !== undefined && (formData.gpaMax < 0 || formData.gpaMax > 4.0)) {
             newErrors.gpa = 'GPA must be between 0.0 and 4.0';
         }
-
-        // Height validation
         if (formData.heightMin || formData.heightMax) {
-            const minInches = formData.heightMin ? heightToInches(formData.heightMin) : null;
-            const maxInches = formData.heightMax ? heightToInches(formData.heightMax) : null;
-
-            if (formData.heightMin && minInches === null) {
-                newErrors.height = 'Invalid height format. Use format like 5\'10" or 70';
-            }
-            if (formData.heightMax && maxInches === null) {
-                newErrors.height = 'Invalid height format. Use format like 5\'10" or 70';
-            }
-            if (minInches !== null && maxInches !== null && minInches > maxInches) {
-                newErrors.height = 'Minimum height cannot be greater than maximum height';
-            }
+            const minIn = formData.heightMin ? heightToInches(formData.heightMin) : null;
+            const maxIn = formData.heightMax ? heightToInches(formData.heightMax) : null;
+            if (formData.heightMin && minIn === null) newErrors.height = "Invalid height format — use 5'10\" or 70";
+            if (formData.heightMax && maxIn === null) newErrors.height = "Invalid height format — use 5'10\" or 70";
+            if (minIn !== null && maxIn !== null && minIn > maxIn) newErrors.height = 'Min height cannot exceed max height';
         }
-
-        // Weight validation
-        if (formData.weightMin !== undefined && formData.weightMax !== undefined) {
-            if (formData.weightMin > formData.weightMax) {
-                newErrors.weight = 'Minimum weight cannot be greater than maximum weight';
-            }
+        if (formData.weightMin !== undefined && formData.weightMax !== undefined && formData.weightMin > formData.weightMax) {
+            newErrors.weight = 'Min weight cannot exceed max weight';
         }
-        if (formData.weightMin !== undefined && formData.weightMin < 0) {
-            newErrors.weight = 'Weight must be a positive number';
-        }
-        if (formData.weightMax !== undefined && formData.weightMax < 0) {
-            newErrors.weight = 'Weight must be a positive number';
-        }
-
-        // Affordable amount validation
         if (formData.affordableAmount !== undefined && formData.affordableAmount < 0) {
-            newErrors.affordableAmount = 'Affordable amount must be non-negative';
-        }
-
-        // Check if at least one filter is selected
-        const hasFilters = Object.values(formData).some(value =>
-            value !== undefined && value !== '' && value !== null
-        );
-        if (!hasFilters) {
-            newErrors.general = 'Please select at least one search filter';
+            newErrors.affordableAmount = 'Amount must be non-negative';
         }
 
         setErrors(newErrors);
@@ -94,265 +80,213 @@ export function AthleteSearchForm({ onSubmit, onCancel, isSubmitting }: AthleteS
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!validateForm()) {
-            return;
-        }
-
+        if (!validateForm()) return;
         await onSubmit(formData);
     };
 
     const handleClearAll = () => {
-        setFormData({});
+        setFormData({ country: 'USA' });
         setErrors({});
         setPositions([]);
     };
 
-    const isFormValid = () => {
-        // Check if at least one filter is set
-        const hasFilters = Object.values(formData).some(value =>
-            value !== undefined && value !== '' && value !== null
-        );
-        return hasFilters;
-    };
-
-
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-            {errors.general && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                    {errors.general}
-                </div>
-            )}
+        <form onSubmit={handleSubmit} className="space-y-5">
 
-            {/* Sport and Position - Side by side on desktop */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Sport Selection */}
-                <div className="w-full">
-                    <label htmlFor="sport" className="block text-sm font-medium text-gray-700 mb-1">
-                        Sport
-                    </label>
+            {/* Sport + Position */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <Label htmlFor="sport">Sport</Label>
                     <select
                         id="sport"
-                        name="sport"
                         value={formData.sport || ''}
                         onChange={(e) => setFormData(prev => ({ ...prev, sport: e.target.value || undefined }))}
                         disabled={isSubmitting}
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm sm:text-base focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        className={inputCls}
+                        style={inputStyle}
                     >
-                        <option value="">Select a sport</option>
-                        {sportOptions.map((sport) => (
-                            <option key={sport} value={sport}>
-                                {sport}
-                            </option>
-                        ))}
+                        <option value="">All sports</option>
+                        {sportOptions.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                 </div>
 
-                {/* Position Selection (conditional) */}
                 {formData.sport && positions.length > 0 && (
-                    <div className="w-full">
-                        <label htmlFor="position" className="block text-sm font-medium text-gray-700 mb-1">
-                            Position
-                        </label>
+                    <div>
+                        <Label htmlFor="position">Position</Label>
                         <select
                             id="position"
-                            name="position"
                             value={formData.position || ''}
                             onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value || undefined }))}
                             disabled={isSubmitting}
-                            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm sm:text-base focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            className={inputCls}
+                            style={inputStyle}
                         >
-                            <option value="">Select a position</option>
-                            {positions.map((position) => (
-                                <option key={position} value={position}>
-                                    {position}
-                                </option>
-                            ))}
+                            <option value="">All positions</option>
+                            {positions.map(p => <option key={p} value={p}>{p}</option>)}
                         </select>
                     </div>
                 )}
             </div>
 
-            {/* Desired Division Selection */}
-            <div className="w-full">
-                <label htmlFor="desiredDivision" className="block text-sm font-medium text-gray-700 mb-1">
-                    Desired Division
-                </label>
+            {/* Division */}
+            <div>
+                <Label htmlFor="desiredDivision">Desired Division</Label>
                 <select
                     id="desiredDivision"
-                    name="desiredDivision"
                     value={formData.desiredDivision || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, desiredDivision: e.target.value || undefined }))}
                     disabled={isSubmitting}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm sm:text-base focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className={inputCls}
+                    style={inputStyle}
                 >
-                    <option value="">Select a division</option>
-                    {divisionOptions.map((division) => (
-                        <option key={division} value={division}>
-                            {division}
-                        </option>
-                    ))}
+                    <option value="">Any division</option>
+                    {divisionOptions.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
             </div>
 
-            {/* GPA and Affordable Amount - Side by side on tablet+ */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* GPA Range */}
-                <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">GPA Range</label>
-                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                        <div>
-                            <input
-                                type="number"
-                                placeholder="Min"
-                                value={formData.gpaMin ?? ''}
-                                onChange={(e) => setFormData(prev => ({
-                                    ...prev,
-                                    gpaMin: e.target.value ? parseFloat(e.target.value) : undefined
-                                }))}
-                                disabled={isSubmitting}
-                                min="0"
-                                max="4.0"
-                                step="0.1"
-                                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                            />
-                        </div>
-                        <div>
-                            <input
-                                type="number"
-                                placeholder="Max"
-                                value={formData.gpaMax ?? ''}
-                                onChange={(e) => setFormData(prev => ({
-                                    ...prev,
-                                    gpaMax: e.target.value ? parseFloat(e.target.value) : undefined
-                                }))}
-                                disabled={isSubmitting}
-                                min="0"
-                                max="4.0"
-                                step="0.1"
-                                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                            />
-                        </div>
+            {/* GPA + Affordable Amount */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <Label>GPA Range</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                        <input
+                            type="number"
+                            placeholder="Min"
+                            value={formData.gpaMin ?? ''}
+                            onChange={(e) => setFormData(prev => ({ ...prev, gpaMin: e.target.value ? parseFloat(e.target.value) : undefined }))}
+                            disabled={isSubmitting}
+                            min="0" max="4.0" step="0.1"
+                            className={inputCls}
+                            style={errors.gpa ? inputErrorStyle : inputStyle}
+                        />
+                        <input
+                            type="number"
+                            placeholder="Max"
+                            value={formData.gpaMax ?? ''}
+                            onChange={(e) => setFormData(prev => ({ ...prev, gpaMax: e.target.value ? parseFloat(e.target.value) : undefined }))}
+                            disabled={isSubmitting}
+                            min="0" max="4.0" step="0.1"
+                            className={inputCls}
+                            style={errors.gpa ? inputErrorStyle : inputStyle}
+                        />
                     </div>
-                    {errors.gpa && (
-                        <p className="text-sm text-red-600 mt-1">{errors.gpa}</p>
-                    )}
+                    <FieldError message={errors.gpa} />
                 </div>
 
-                {/* Affordable Amount */}
-                <div className="w-full">
-                    <label htmlFor="affordableAmount" className="block text-sm font-medium text-gray-700 mb-1">
-                        Affordable Amount ($)
-                    </label>
+                <div>
+                    <Label htmlFor="affordableAmount">Scholarship Needed ($)</Label>
                     <input
                         id="affordableAmount"
                         type="number"
-                        placeholder="e.g., 10000"
+                        placeholder="e.g. 10,000"
                         value={formData.affordableAmount ?? ''}
-                        onChange={(e) => setFormData(prev => ({
-                            ...prev,
-                            affordableAmount: e.target.value ? parseFloat(e.target.value) : undefined
-                        }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, affordableAmount: e.target.value ? parseFloat(e.target.value) : undefined }))}
                         disabled={isSubmitting}
-                        min="0"
-                        step="1000"
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        min="0" step="1000"
+                        className={inputCls}
+                        style={errors.affordableAmount ? inputErrorStyle : inputStyle}
                     />
-                    {errors.affordableAmount && (
-                        <p className="text-sm text-red-600 mt-1">{errors.affordableAmount}</p>
-                    )}
+                    <FieldError message={errors.affordableAmount} />
                 </div>
             </div>
 
-            {/* Height and Weight - Side by side on tablet+ */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Height Range */}
-                <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                        Height (e.g., 5&apos;10&quot;)
-                    </label>
-                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                        <div>
-                            <input
-                                type="text"
-                                placeholder="Min"
-                                value={formData.heightMin ?? ''}
-                                onChange={(e) => setFormData(prev => ({
-                                    ...prev,
-                                    heightMin: e.target.value || undefined
-                                }))}
-                                disabled={isSubmitting}
-                                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                            />
-                        </div>
-                        <div>
-                            <input
-                                type="text"
-                                placeholder="Max"
-                                value={formData.heightMax ?? ''}
-                                onChange={(e) => setFormData(prev => ({
-                                    ...prev,
-                                    heightMax: e.target.value || undefined
-                                }))}
-                                disabled={isSubmitting}
-                                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                            />
-                        </div>
+            {/* Height + Weight */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <Label>Height (e.g. 5&apos;10&quot;)</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                        <input
+                            type="text"
+                            placeholder="Min"
+                            value={formData.heightMin ?? ''}
+                            onChange={(e) => setFormData(prev => ({ ...prev, heightMin: e.target.value || undefined }))}
+                            disabled={isSubmitting}
+                            className={inputCls}
+                            style={errors.height ? inputErrorStyle : inputStyle}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Max"
+                            value={formData.heightMax ?? ''}
+                            onChange={(e) => setFormData(prev => ({ ...prev, heightMax: e.target.value || undefined }))}
+                            disabled={isSubmitting}
+                            className={inputCls}
+                            style={errors.height ? inputErrorStyle : inputStyle}
+                        />
                     </div>
-                    {errors.height && (
-                        <p className="text-sm text-red-600 mt-1">{errors.height}</p>
-                    )}
+                    <FieldError message={errors.height} />
                 </div>
 
-                {/* Weight Range */}
-                <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">Weight (lbs)</label>
-                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                        <div>
-                            <input
-                                type="number"
-                                placeholder="Min"
-                                value={formData.weightMin ?? ''}
-                                onChange={(e) => setFormData(prev => ({
-                                    ...prev,
-                                    weightMin: e.target.value ? parseFloat(e.target.value) : undefined
-                                }))}
-                                disabled={isSubmitting}
-                                min="0"
-                                step="1"
-                                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                            />
-                        </div>
-                        <div>
-                            <input
-                                type="number"
-                                placeholder="Max"
-                                value={formData.weightMax ?? ''}
-                                onChange={(e) => setFormData(prev => ({
-                                    ...prev,
-                                    weightMax: e.target.value ? parseFloat(e.target.value) : undefined
-                                }))}
-                                disabled={isSubmitting}
-                                min="0"
-                                step="1"
-                                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                            />
-                        </div>
+                <div>
+                    <Label>Weight (lbs)</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                        <input
+                            type="number"
+                            placeholder="Min"
+                            value={formData.weightMin ?? ''}
+                            onChange={(e) => setFormData(prev => ({ ...prev, weightMin: e.target.value ? parseFloat(e.target.value) : undefined }))}
+                            disabled={isSubmitting}
+                            min="0" step="1"
+                            className={inputCls}
+                            style={errors.weight ? inputErrorStyle : inputStyle}
+                        />
+                        <input
+                            type="number"
+                            placeholder="Max"
+                            value={formData.weightMax ?? ''}
+                            onChange={(e) => setFormData(prev => ({ ...prev, weightMax: e.target.value ? parseFloat(e.target.value) : undefined }))}
+                            disabled={isSubmitting}
+                            min="0" step="1"
+                            className={inputCls}
+                            style={errors.weight ? inputErrorStyle : inputStyle}
+                        />
                     </div>
-                    {errors.weight && (
-                        <p className="text-sm text-red-600 mt-1">{errors.weight}</p>
-                    )}
+                    <FieldError message={errors.weight} />
                 </div>
             </div>
 
-            {/* Action Buttons - Stacked on mobile, side by side on tablet+ */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2 sm:pt-4">
+            {/* Location */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <CountrySelect
+                    label="Country"
+                    name="country"
+                    value={formData.country || 'USA'}
+                    onChange={(val) => setFormData(prev => ({ ...prev, country: val, state: undefined }))}
+                    disabled={isSubmitting}
+                    extraOptions={[{ value: 'international', label: 'All International' }]}
+                />
+
+                {formData.country === 'USA' && (
+                    <div>
+                        <Label htmlFor="state">State</Label>
+                        <select
+                            id="state"
+                            value={formData.state || ''}
+                            onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value || undefined }))}
+                            disabled={isSubmitting}
+                            className={inputCls}
+                            style={inputStyle}
+                        >
+                            <option value="">All States</option>
+                            {US_STATES_LIST.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                        </select>
+                    </div>
+                )}
+            </div>
+
+            {/* Divider */}
+            <div style={{ borderTop: '1px solid var(--ink-3)' }} />
+
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-2">
                 <button
                     type="button"
                     onClick={handleClearAll}
                     disabled={isSubmitting}
-                    className="w-full sm:flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-100 text-gray-700 rounded-lg text-sm sm:text-base font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="w-full sm:flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ background: 'var(--ink-3)', color: 'var(--text-mid)' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--ink-2)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'var(--ink-3)')}
                 >
                     Clear All
                 </button>
@@ -360,16 +294,22 @@ export function AthleteSearchForm({ onSubmit, onCancel, isSubmitting }: AthleteS
                     type="button"
                     onClick={onCancel}
                     disabled={isSubmitting}
-                    className="w-full sm:flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-white text-gray-700 border border-gray-300 rounded-lg text-sm sm:text-base font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="w-full sm:flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ background: 'transparent', color: 'var(--text-mid)', border: '1px solid var(--ink-3)' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--ink-3)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
                     Cancel
                 </button>
                 <button
                     type="submit"
-                    disabled={isSubmitting || !isFormValid()}
-                    className="w-full sm:flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-lg text-sm sm:text-base font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    disabled={isSubmitting}
+                    className="w-full sm:flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }}
+                    onMouseEnter={e => { if (!isSubmitting) e.currentTarget.style.background = 'var(--brand-600)'; }}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-500)')}
                 >
-                    {isSubmitting ? 'Searching...' : 'Search'}
+                    {isSubmitting ? 'Searching…' : 'Search'}
                 </button>
             </div>
         </form>

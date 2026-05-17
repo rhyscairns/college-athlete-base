@@ -94,6 +94,31 @@ describe('Player Registration - Complete Integration Flow', () => {
                     null, // testScores
                 ])
             );
+
+            // Requirement 1.1, 1.3: stored sport value must be title-case
+            const insertArgs = mockQuery.mock.calls[1][1] as unknown[];
+            const storedSport = insertArgs.find((v) => v === registrationData.sport);
+            expect(storedSport).toBe('Basketball'); // title-case, not 'basketball'
+        });
+
+        it('should store sport value in title-case format (Requirement 1.1, 1.3)', async () => {
+            // Explicitly use a title-case sport name — this is what SPORTS_LIST now produces
+            const registrationData = generatePlayerRegistration({ sport: 'Soccer', position: 'Goalkeeper' });
+
+            mockQuery.mockResolvedValueOnce([{ exists: false }]);
+            mockQuery.mockResolvedValueOnce([{ id: 'player-uuid-soccer' }]);
+
+            const request = createMockRequest(registrationData);
+            const response = await POST(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(201);
+            expect(data.success).toBe(true);
+
+            // Assert the sport stored in the DB is title-case 'Soccer', not 'soccer'
+            const insertArgs = mockQuery.mock.calls[1][1] as unknown[];
+            expect(insertArgs).toContain('Soccer');
+            expect(insertArgs).not.toContain('soccer');
         });
 
         it('should successfully register player with complete field set', async () => {

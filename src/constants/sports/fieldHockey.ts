@@ -10,6 +10,7 @@ export const fieldHockey: SportConstants = {
         'Forward',
         'Striker',
         'Wing',
+        'Other',
     ],
     events: [],
 };

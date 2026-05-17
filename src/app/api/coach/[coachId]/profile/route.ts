@@ -282,6 +282,8 @@ export async function PUT(
             if (body.teamName !== undefined) updates.teamName = body.teamName;
             if (body.officeLocation !== undefined) updates.officeLocation = body.officeLocation;
             if (body.officeHours !== undefined) updates.officeHours = body.officeHours;
+            if (body.scholarshipBudget !== undefined) updates.scholarshipBudget = body.scholarshipBudget;
+            if (body.annualCostPerPlayer !== undefined) updates.annualCostPerPlayer = body.annualCostPerPlayer;
             if (body.achievements !== undefined) updates.achievements = body.achievements;
 
             updatedProfile = await updateCoachProfile(coachId, updates);

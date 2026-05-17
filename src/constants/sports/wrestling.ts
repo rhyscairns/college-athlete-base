@@ -15,5 +15,6 @@ export const wrestling: SportConstants = {
         '184 lbs',
         '197 lbs',
         '285 lbs',
+        'Other',
     ],
 };

@@ -1,9 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GameHighlightsSectionEdit } from '../components/sections/GameHighlightsSectionEdit';
+import type { Video } from '../../../types';
 
 describe('GameHighlightsSectionEdit', () => {
-    const mockVideos = [
+    const mockVideos: Video[] = [
         {
             id: 'video-1',
             title: 'Test Video 1',
@@ -220,5 +221,194 @@ describe('GameHighlightsSectionEdit', () => {
         render(<GameHighlightsSectionEdit {...savingProps} />);
 
         expect(screen.getByText('Saving...')).toBeInTheDocument();
+    });
+
+    // ── Auto-feature logic (Requirements 1.1, 1.2, 1.3) ──────────────────────
+
+    it('sets isFeatured: true on the first added video', () => {
+        let captured: Video[] = [];
+        const setFormData = jest.fn((updater) => {
+            captured = updater([]);
+        });
+
+        render(
+            <GameHighlightsSectionEdit
+                {...defaultProps}
+                formData={[]}
+                setFormData={setFormData}
+            />
+        );
+
+        fireEvent.click(screen.getByText('+ Add Video'));
+
+        expect(setFormData).toHaveBeenCalled();
+        expect(captured).toHaveLength(1);
+        expect(captured[0].isFeatured).toBe(true);
+    });
+
+    it('does not change the existing featured video when a second video is added', () => {
+        const existingVideo: Video = {
+            id: 'video-1',
+            title: 'First',
+            description: '',
+            url: '',
+            thumbnail: '',
+            duration: '',
+            isFeatured: true,
+            date: '',
+        };
+
+        let captured: Video[] = [];
+        const setFormData = jest.fn((updater) => {
+            captured = updater([existingVideo]);
+        });
+
+        render(
+            <GameHighlightsSectionEdit
+                {...defaultProps}
+                formData={[existingVideo]}
+                setFormData={setFormData}
+            />
+        );
+
+        fireEvent.click(screen.getByText('+ Add Video'));
+
+        expect(captured).toHaveLength(2);
+        expect(captured[0].isFeatured).toBe(true);
+        expect(captured[1].isFeatured).toBe(false);
+    });
+
+    it('promotes the first remaining video to featured when the featured video is removed', () => {
+        const videos: Video[] = [
+            { id: 'v1', title: 'A', description: '', url: '', thumbnail: '', duration: '', isFeatured: true, date: '' },
+            { id: 'v2', title: 'B', description: '', url: '', thumbnail: '', duration: '', isFeatured: false, date: '' },
+        ];
+
+        let captured: Video[] = [];
+        const setFormData = jest.fn((updater) => {
+            captured = updater(videos);
+        });
+
+        render(
+            <GameHighlightsSectionEdit
+                {...defaultProps}
+                formData={videos}
+                setFormData={setFormData}
+            />
+        );
+
+        // Remove the first (featured) video
+        fireEvent.click(screen.getAllByText('Remove')[0]);
+
+        expect(captured).toHaveLength(1);
+        expect(captured[0].id).toBe('v2');
+        expect(captured[0].isFeatured).toBe(true);
+    });
+
+    // ── Radio button visibility (Requirements 1.4, 1.5) ──────────────────────
+
+    it('hides the "Set as main video" radio when only one video exists', () => {
+        const singleVideo: Video[] = [
+            { id: 'v1', title: 'Only Video', description: '', url: '', thumbnail: '', duration: '', isFeatured: true, date: '' },
+        ];
+
+        render(
+            <GameHighlightsSectionEdit
+                {...defaultProps}
+                formData={singleVideo}
+            />
+        );
+
+        expect(screen.queryByText('Set as main video (appears on player card)')).not.toBeInTheDocument();
+    });
+
+    it('shows the "Set as main video" radio when two or more videos exist', () => {
+        render(<GameHighlightsSectionEdit {...defaultProps} />);
+
+        // defaultProps has two videos
+        const radios = screen.getAllByText('Set as main video (appears on player card)');
+        expect(radios.length).toBeGreaterThanOrEqual(2);
+    });
+
+    // ── Auto-thumbnail from YouTube URL (Requirements 2.1, 2.3, 2.4, 2.5) ───
+
+    it('auto-populates thumbnail when a YouTube URL is entered', () => {
+        const emptyVideo: Video = {
+            id: 'v1', title: '', description: '', url: '', thumbnail: '', duration: '', isFeatured: true, date: '',
+        };
+
+        let captured: Video[] = [];
+        const setFormData = jest.fn((updater) => {
+            captured = updater([emptyVideo]);
+        });
+
+        render(
+            <GameHighlightsSectionEdit
+                {...defaultProps}
+                formData={[emptyVideo]}
+                setFormData={setFormData}
+            />
+        );
+
+        const urlInput = screen.getByPlaceholderText('https://youtube.com/watch?v=...');
+        fireEvent.change(urlInput, { target: { value: 'https://youtube.com/watch?v=abc123' } });
+
+        expect(captured[0].thumbnail).toBe('https://img.youtube.com/vi/abc123/hqdefault.jpg');
+    });
+
+    it('leaves thumbnail empty when a non-YouTube URL is entered', () => {
+        const emptyVideo: Video = {
+            id: 'v1', title: '', description: '', url: '', thumbnail: '', duration: '', isFeatured: true, date: '',
+        };
+
+        let captured: Video[] = [];
+        const setFormData = jest.fn((updater) => {
+            captured = updater([emptyVideo]);
+        });
+
+        render(
+            <GameHighlightsSectionEdit
+                {...defaultProps}
+                formData={[emptyVideo]}
+                setFormData={setFormData}
+            />
+        );
+
+        const urlInput = screen.getByPlaceholderText('https://youtube.com/watch?v=...');
+        fireEvent.change(urlInput, { target: { value: 'https://vimeo.com/123456' } });
+
+        expect(captured[0].thumbnail).toBe('');
+    });
+
+    it('does not overwrite a manually entered thumbnail when the URL changes', () => {
+        const videoWithManualThumb: Video = {
+            id: 'v1',
+            title: '',
+            description: '',
+            url: 'https://youtube.com/watch?v=old',
+            thumbnail: 'https://my-custom-cdn.com/thumb.jpg', // manually entered — does not match auto-derived
+            duration: '',
+            isFeatured: true,
+            date: '',
+        };
+
+        let captured: Video[] = [];
+        const setFormData = jest.fn((updater) => {
+            captured = updater([videoWithManualThumb]);
+        });
+
+        render(
+            <GameHighlightsSectionEdit
+                {...defaultProps}
+                formData={[videoWithManualThumb]}
+                setFormData={setFormData}
+            />
+        );
+
+        const urlInput = screen.getByDisplayValue('https://youtube.com/watch?v=old');
+        fireEvent.change(urlInput, { target: { value: 'https://youtube.com/watch?v=newid' } });
+
+        // Manual thumbnail must be preserved
+        expect(captured[0].thumbnail).toBe('https://my-custom-cdn.com/thumb.jpg');
     });
 });

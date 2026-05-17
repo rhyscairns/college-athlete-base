@@ -176,6 +176,7 @@ export async function POST(request: NextRequest) {
                 region: body.region,
                 scholarshipAmount: body.scholarshipAmount,
                 testScores: body.testScores,
+                referralPromoCode: body.referralPromoCode,
             });
         } catch (error) {
             logger.dbError('createPlayer', error instanceof Error ? error : new Error('Unknown database error'), {

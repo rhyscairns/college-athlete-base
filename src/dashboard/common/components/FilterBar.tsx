@@ -11,6 +11,8 @@ export interface FilterBarProps {
     onPositionChange: (position: string) => void;
     onSearch: () => void;
     isLoading?: boolean;
+    selectedStatus: string;
+    onStatusChange: (status: string) => void;
 }
 
 const selectStyle: React.CSSProperties = {
@@ -40,6 +42,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     onPositionChange,
     onSearch,
     isLoading = false,
+    selectedStatus,
+    onStatusChange,
 }) => {
     return (
         <div
@@ -100,6 +104,27 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                             }}
                         >
                             {positions.map(p => <option key={p} value={p}>{p}</option>)}
+                        </select>
+                    </div>
+
+                    {/* Status */}
+                    <div className="flex-1">
+                        <label htmlFor="status-filter" className="sr-only">Filter by status</label>
+                        <select
+                            id="status-filter"
+                            value={selectedStatus}
+                            onChange={e => onStatusChange(e.target.value)}
+                            disabled={isLoading}
+                            aria-label="Filter by status"
+                            style={{
+                                ...selectStyle,
+                                opacity: isLoading ? 0.5 : 1,
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
+                            }}
+                        >
+                            <option value="All Statuses">All Statuses</option>
+                            <option value="Available">Available</option>
+                            <option value="Committed">Committed</option>
                         </select>
                     </div>
 

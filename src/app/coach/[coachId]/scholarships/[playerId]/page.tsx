@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import { verifyToken } from '@/authentication/utils/jwt';
 import { getScholarshipByCoachAndPlayer } from '@/scholarships/db/queries';
 import { ScholarshipForm } from '@/scholarships/components/ScholarshipForm';
+import { ScholarshipStatusBadge } from '@/scholarships/components/ScholarshipStatusBadge';
 import { logger } from '@/lib/logger';
 import type { Metadata } from 'next';
 
@@ -120,6 +121,9 @@ export default async function CoachScholarshipDetailPage({ params }: Scholarship
                     <p className="text-base" style={{ color: 'var(--text-mid)' }}>
                         {playerName}
                     </p>
+                    <div className="mt-3 flex justify-center">
+                        <ScholarshipStatusBadge status={scholarship.status} />
+                    </div>
                 </header>
 
                 {/* ── Counter notes banner ── */}

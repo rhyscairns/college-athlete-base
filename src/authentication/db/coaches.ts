@@ -11,9 +11,10 @@ export interface CoachRecord {
     lastName: string;
     email: string;
     passwordHash: string;
-    coachingCategory: string;  // mens or womens
-    sports: string[];           // array of sports
+    coachingCategory: string;
+    sports: string[];
     university: string;
+    referralPromoCode?: string;
 }
 
 export interface CoachDatabaseRecord extends CoachRecord {
@@ -58,19 +59,21 @@ export async function createCoach(data: CoachRecord): Promise<string> {
         const result = await query<{ id: string }>(
             `INSERT INTO coaches (
                 first_name, last_name, email, password_hash, 
-                sport, coaching_level, current_organization, specializations, country
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                sport, coaching_level, current_organization, specializations, country,
+                referral_promo_code
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING id`,
             [
                 data.firstName,
                 data.lastName,
                 normalizedEmail,
                 data.passwordHash,
-                data.sports[0],         // Primary sport in 'sport' column
-                data.coachingCategory,  // Store in coaching_level column
-                data.university,        // Store in current_organization column
-                data.sports,            // Store all sports in specializations array
-                'USA',                  // Default country
+                data.sports[0],
+                data.coachingCategory,
+                data.university,
+                data.sports,
+                'USA',
+                data.referralPromoCode || null,
             ]
         );
 

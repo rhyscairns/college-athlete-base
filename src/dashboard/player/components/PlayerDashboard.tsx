@@ -19,11 +19,13 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     // Filter state
     const [selectedSport, setSelectedSport] = useState<string>('All Sports');
     const [selectedPosition, setSelectedPosition] = useState<string>('All Positions');
+    const [selectedStatus, setSelectedStatus] = useState<string>('All Statuses');
     const [profileLoaded, setProfileLoaded] = useState<boolean>(false);
 
     // Debounce filter changes to reduce API calls
     const debouncedSport = useDebounce(selectedSport, 300);
     const debouncedPosition = useDebounce(selectedPosition, 300);
+    const debouncedStatus = useDebounce(selectedStatus, 300);
 
     // Data state
     const [players, setPlayers] = useState<PlayerCardData[]>([]);
@@ -110,6 +112,7 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
                 excludeUserId: playerId,
                 sport: debouncedSport !== 'All Sports' ? debouncedSport : undefined,
                 position: debouncedPosition !== 'All Positions' ? debouncedPosition : undefined,
+                status: debouncedStatus !== 'All Statuses' ? debouncedStatus.toLowerCase() : undefined,
             };
 
             // Check cache first
@@ -141,6 +144,11 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
             // Add position filter if not "All Positions"
             if (debouncedPosition && debouncedPosition !== 'All Positions') {
                 urlParams.append('position', debouncedPosition);
+            }
+
+            // Add status filter if not "All Statuses"
+            if (debouncedStatus && debouncedStatus !== 'All Statuses') {
+                urlParams.append('status', debouncedStatus.toLowerCase());
             }
 
             const response = await fetch(`/api/dashboard/players?${urlParams.toString()}`);
@@ -178,7 +186,7 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
         } finally {
             setIsLoading(false);
         }
-    }, [playerId, debouncedSport, debouncedPosition, currentPage, pageSize, router]);
+    }, [playerId, debouncedSport, debouncedPosition, debouncedStatus, currentPage, pageSize, router]);
 
     // Fetch players when debounced filters or page changes
     useEffect(() => {
@@ -199,6 +207,12 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     // Handler for position filter change
     const handlePositionChange = (position: string): void => {
         setSelectedPosition(position);
+        setCurrentPage(1); // Reset to first page when filter changes
+    };
+
+    // Handler for status filter change
+    const handleStatusChange = (status: string): void => {
+        setSelectedStatus(status);
         setCurrentPage(1); // Reset to first page when filter changes
     };
 
@@ -250,6 +264,7 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     const handleClearFilters = (): void => {
         setSelectedSport('All Sports');
         setSelectedPosition('All Positions');
+        setSelectedStatus('All Statuses');
         setCurrentPage(1);
         setError(null);
     };
@@ -292,6 +307,8 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
                         onPositionChange={handlePositionChange}
                         onSearch={handleSearch}
                         isLoading={isLoading}
+                        selectedStatus={selectedStatus}
+                        onStatusChange={handleStatusChange}
                     />
                 </div>
 
@@ -313,7 +330,7 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
                             >
                                 Retry
                             </button>
-                            {(selectedSport !== 'All Sports' || selectedPosition !== 'All Positions') && (
+                            {(selectedSport !== 'All Sports' || selectedPosition !== 'All Positions' || selectedStatus !== 'All Statuses') && (
                                 <button
                                     onClick={handleClearFilters}
                                     className="px-4 py-2 rounded-lg transition-colors focus:outline-none font-semibold"
@@ -336,7 +353,7 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
                         aria-live="polite"
                     >
                         <p className="mb-2" style={{ color: 'var(--text-lo)' }}>No players found matching your filters.</p>
-                        {(selectedSport !== 'All Sports' || selectedPosition !== 'All Positions') && (
+                        {(selectedSport !== 'All Sports' || selectedPosition !== 'All Positions' || selectedStatus !== 'All Statuses') && (
                             <button
                                 onClick={handleClearFilters}
                                 className="px-4 py-2 rounded-lg transition-colors focus:outline-none font-semibold"

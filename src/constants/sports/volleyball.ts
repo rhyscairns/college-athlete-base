@@ -9,6 +9,7 @@ export const volleyball: SportConstants = {
         'Setter',
         'Libero',
         'Defensive Specialist',
+        'Other',
     ],
     events: [],
 };

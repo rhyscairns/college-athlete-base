@@ -1,7 +1,6 @@
 import CoachViewPlayerProfilePage from '@/app/coach/[coachId]/dashboard/player-profile/[playerId]/page';
 import { logger } from '@/lib/logger';
 
-// Mock dependencies
 jest.mock('@/lib/logger', () => ({
     logger: {
         info: jest.fn(),
@@ -21,16 +20,21 @@ jest.mock('@/profile/player/components/view-page/PlayerProfileView', () => ({
     ),
 }));
 
-// Mock fetch globally
-global.fetch = jest.fn();
+// Page now calls getCoachProfileById directly — mock the DB layer
+jest.mock('@/profile/player/lib/db/queries', () => ({
+    getPlayerProfileById: jest.fn(),
+}));
+
+// Mock the view counter — fire-and-forget, non-critical
+jest.mock('@/lib/db/queries/prospects', () => ({
+    incrementPlayerProfileViews: jest.fn().mockResolvedValue(undefined),
+}));
+
+import { getPlayerProfileById } from '@/profile/player/lib/db/queries';
+const mockGetPlayerProfileById = getPlayerProfileById as jest.MockedFunction<typeof getPlayerProfileById>;
 
 describe('CoachViewPlayerProfilePage', () => {
-    const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
-
-    const mockParams = {
-        coachId: 'coach-123',
-        playerId: 'player-456',
-    };
+    const mockParams = { coachId: 'coach-123', playerId: 'player-456' };
 
     const mockPlayerData = {
         id: 'player-456',
@@ -43,284 +47,88 @@ describe('CoachViewPlayerProfilePage', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000';
-    });
-
-    afterEach(() => {
-        delete process.env.NEXT_PUBLIC_API_URL;
+        mockGetPlayerProfileById.mockResolvedValue(mockPlayerData as any);
     });
 
     describe('Data Fetching', () => {
-        it('should fetch player profile from API successfully', async () => {
-            mockFetch.mockResolvedValue({
-                ok: true,
-                json: async () => ({
-                    success: true,
-                    data: mockPlayerData,
-                }),
-            } as Response);
+        it('should fetch player profile from DB successfully', async () => {
+            await CoachViewPlayerProfilePage({ params: Promise.resolve(mockParams) });
 
-            await CoachViewPlayerProfilePage({
-                params: Promise.resolve(mockParams),
-            });
-
-            expect(mockFetch).toHaveBeenCalledWith(
-                'http://localhost:3000/api/player/player-456/profile',
-                expect.objectContaining({
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    cache: 'no-store',
-                })
-            );
-
+            expect(mockGetPlayerProfileById).toHaveBeenCalledWith('player-456');
             expect(logger.info).toHaveBeenCalledWith(
-                'Fetching player profile from API',
-                expect.objectContaining({
-                    playerId: 'player-456',
-                })
-            );
-
-            expect(logger.info).toHaveBeenCalledWith(
-                'Successfully fetched player profile from API',
-                { playerId: 'player-456' }
+                'Coach viewing player profile',
+                { coachId: 'coach-123', playerId: 'player-456' }
             );
         });
 
-        it('should return error UI if API fetch fails', async () => {
-            mockFetch.mockResolvedValue({
-                ok: false,
-                status: 404,
-                statusText: 'Not Found',
-                text: async () => 'Player not found',
-            } as Response);
+        it('should return error UI if DB returns null', async () => {
+            mockGetPlayerProfileById.mockResolvedValueOnce(null);
 
-            const result = await CoachViewPlayerProfilePage({
-                params: Promise.resolve(mockParams),
-            });
-
-            expect(logger.warn).toHaveBeenCalledWith(
-                'API request failed',
-                expect.objectContaining({
-                    playerId: 'player-456',
-                    status: 404,
-                })
-            );
+            const result = await CoachViewPlayerProfilePage({ params: Promise.resolve(mockParams) });
 
             expect(logger.error).toHaveBeenCalledWith(
                 'Failed to load player profile',
                 { playerId: 'player-456' }
             );
-
-            // Verify error UI is returned
             expect(result).toBeDefined();
             expect(result.type).toBe('main');
         });
 
-        it('should return error UI if API returns unsuccessful response', async () => {
-            mockFetch.mockResolvedValue({
-                ok: true,
-                json: async () => ({
-                    success: false,
-                    error: 'Player not found',
-                }),
-            } as Response);
+        it('should return error UI if DB throws', async () => {
+            mockGetPlayerProfileById.mockRejectedValueOnce(new Error('DB error'));
 
-            const result = await CoachViewPlayerProfilePage({
-                params: Promise.resolve(mockParams),
-            });
-
-            expect(logger.warn).toHaveBeenCalledWith(
-                'API returned unsuccessful response',
-                expect.objectContaining({
-                    playerId: 'player-456',
-                    error: 'Player not found',
-                })
-            );
+            const result = await CoachViewPlayerProfilePage({ params: Promise.resolve(mockParams) });
 
             expect(logger.error).toHaveBeenCalledWith(
                 'Failed to load player profile',
                 { playerId: 'player-456' }
             );
-
-            // Verify error UI is returned
-            expect(result).toBeDefined();
-        });
-
-        it('should handle fetch timeout', async () => {
-            jest.useFakeTimers();
-
-            const abortError = new Error('The operation was aborted');
-            abortError.name = 'AbortError';
-            mockFetch.mockRejectedValue(abortError);
-
-            const result = await CoachViewPlayerProfilePage({
-                params: Promise.resolve(mockParams),
-            });
-
-            expect(logger.error).toHaveBeenCalledWith(
-                'Error fetching player profile from API',
-                expect.objectContaining({
-                    playerId: 'player-456',
-                })
-            );
-
-            expect(logger.error).toHaveBeenCalledWith(
-                'Failed to load player profile',
-                { playerId: 'player-456' }
-            );
-
-            // Verify error UI is returned
-            expect(result).toBeDefined();
-
-            jest.useRealTimers();
-        }, 10000);
-
-        it('should handle network errors', async () => {
-            mockFetch.mockRejectedValue(new Error('Network error'));
-
-            const result = await CoachViewPlayerProfilePage({
-                params: Promise.resolve(mockParams),
-            });
-
-            expect(logger.error).toHaveBeenCalledWith(
-                'Error fetching player profile from API',
-                expect.objectContaining({
-                    playerId: 'player-456',
-                    error: 'Network error',
-                })
-            );
-
-            expect(logger.error).toHaveBeenCalledWith(
-                'Failed to load player profile',
-                { playerId: 'player-456' }
-            );
-
-            // Verify error UI is returned
             expect(result).toBeDefined();
         });
     });
 
     describe('Rendering', () => {
-        it('should render PlayerProfileView with correct props when data loads successfully', async () => {
-            mockFetch.mockResolvedValue({
-                ok: true,
-                json: async () => ({
-                    success: true,
-                    data: mockPlayerData,
-                }),
-            } as Response);
-
-            const result = await CoachViewPlayerProfilePage({
-                params: Promise.resolve(mockParams),
-            });
-
-            // Verify component is rendered
+        it('should render PlayerProfileView with correct props when data loads', async () => {
+            const result = await CoachViewPlayerProfilePage({ params: Promise.resolve(mockParams) });
             expect(result).toBeDefined();
             expect(result.type).toBeDefined();
         });
 
-        it('should pass correct playerId to PlayerProfileView', async () => {
-            mockFetch.mockResolvedValue({
-                ok: true,
-                json: async () => ({
-                    success: true,
-                    data: mockPlayerData,
-                }),
-            } as Response);
-
-            await CoachViewPlayerProfilePage({
-                params: Promise.resolve(mockParams),
-            });
-
-            // Verify the correct playerId is used in fetch
-            expect(mockFetch).toHaveBeenCalledWith(
-                expect.stringContaining('player-456'),
-                expect.any(Object)
-            );
+        it('should pass correct playerId to DB query', async () => {
+            await CoachViewPlayerProfilePage({ params: Promise.resolve(mockParams) });
+            expect(mockGetPlayerProfileById).toHaveBeenCalledWith('player-456');
         });
 
         it('should render error UI when player data is null', async () => {
-            mockFetch.mockResolvedValue({
-                ok: false,
-                status: 500,
-                statusText: 'Internal Server Error',
-                text: async () => 'Server error',
-            } as Response);
+            mockGetPlayerProfileById.mockResolvedValueOnce(null);
 
-            const result = await CoachViewPlayerProfilePage({
-                params: Promise.resolve(mockParams),
-            });
-
-            // Verify error UI structure
+            const result = await CoachViewPlayerProfilePage({ params: Promise.resolve(mockParams) });
             expect(result).toBeDefined();
             expect(result.type).toBe('main');
         });
     });
 
     describe('Edge Cases', () => {
-        it('should use default API URL if NEXT_PUBLIC_API_URL is not set', async () => {
-            delete process.env.NEXT_PUBLIC_API_URL;
-
-            mockFetch.mockResolvedValue({
-                ok: true,
-                json: async () => ({
-                    success: true,
-                    data: mockPlayerData,
-                }),
-            } as Response);
-
-            await CoachViewPlayerProfilePage({
-                params: Promise.resolve(mockParams),
-            });
-
-            expect(mockFetch).toHaveBeenCalledWith(
-                'http://localhost:3000/api/player/player-456/profile',
-                expect.any(Object)
-            );
-        });
-
-        it('should return error UI when API returns null data', async () => {
-            mockFetch.mockResolvedValue({
-                ok: true,
-                json: async () => ({
-                    success: true,
-                    data: null,
-                }),
-            } as Response);
-
-            const result = await CoachViewPlayerProfilePage({
-                params: Promise.resolve(mockParams),
-            });
-
-            expect(logger.error).toHaveBeenCalledWith(
-                'Failed to load player profile',
-                { playerId: 'player-456' }
-            );
-
-            // Verify error UI is returned
-            expect(result).toBeDefined();
-            expect(result.type).toBe('main');
-        });
-
         it('should log coach and player IDs when viewing profile', async () => {
-            mockFetch.mockResolvedValue({
-                ok: true,
-                json: async () => ({
-                    success: true,
-                    data: mockPlayerData,
-                }),
-            } as Response);
-
-            await CoachViewPlayerProfilePage({
-                params: Promise.resolve(mockParams),
-            });
+            await CoachViewPlayerProfilePage({ params: Promise.resolve(mockParams) });
 
             expect(logger.info).toHaveBeenCalledWith(
                 'Coach viewing player profile',
                 { coachId: 'coach-123', playerId: 'player-456' }
             );
+        });
+
+        it('should return error UI when DB returns null data', async () => {
+            mockGetPlayerProfileById.mockResolvedValueOnce(null);
+
+            const result = await CoachViewPlayerProfilePage({ params: Promise.resolve(mockParams) });
+
+            expect(logger.error).toHaveBeenCalledWith(
+                'Failed to load player profile',
+                { playerId: 'player-456' }
+            );
+            expect(result).toBeDefined();
+            expect(result.type).toBe('main');
         });
     });
 });

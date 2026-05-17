@@ -10,5 +10,6 @@ export const danceTeam: SportConstants = {
         'Contemporary',
         'Lyrical',
         'Kick',
+        'Other',
     ],
 };

@@ -7,5 +7,6 @@ export const fencing: SportConstants = {
         'Foil',
         'Épée',
         'Sabre',
+        'Other',
     ],
 };

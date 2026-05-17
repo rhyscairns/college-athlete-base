@@ -76,7 +76,8 @@ describe('Coach Database Operations', () => {
                     'mens',        // coaching_level
                     'UCLA',        // current_organization
                     ['basketball', 'football'],  // specializations
-                    'USA'          // country
+                    'USA',         // country
+                    null,          // referralPromoCode
                 ]
             );
         });

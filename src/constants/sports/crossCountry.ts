@@ -8,5 +8,8 @@ export const crossCountry: SportConstants = {
         '6K',
         '8K',
         '10K',
+        '20K',
+        '50K',
+        'Other',
     ],
 };

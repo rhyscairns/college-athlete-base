@@ -187,4 +187,64 @@ describe('GET /api/dashboard/players', () => {
             );
         });
     });
+
+    describe('Status filter', () => {
+        it('should add NOT EXISTS condition when status=available', async () => {
+            mockQuery.mockResolvedValueOnce([{ count: '0' }]);
+            mockQuery.mockResolvedValueOnce([]);
+
+            const request = createRequest('http://localhost:3000/api/dashboard/players?status=available');
+            await GET(request);
+
+            expect(mockQuery).toHaveBeenCalledWith(
+                expect.stringContaining('NOT EXISTS'),
+                expect.any(Array)
+            );
+            expect(mockQuery).toHaveBeenCalledWith(
+                expect.stringContaining("s.status = 'accepted'"),
+                expect.any(Array)
+            );
+        });
+
+        it('should add EXISTS condition when status=committed', async () => {
+            mockQuery.mockResolvedValueOnce([{ count: '0' }]);
+            mockQuery.mockResolvedValueOnce([]);
+
+            const request = createRequest('http://localhost:3000/api/dashboard/players?status=committed');
+            await GET(request);
+
+            // The players query should contain EXISTS (not NOT EXISTS)
+            const playerQueryCall = mockQuery.mock.calls[1];
+            expect(playerQueryCall[0]).toMatch(/(?<!NOT )EXISTS/);
+            expect(playerQueryCall[0]).toContain("s.status = 'accepted'");
+        });
+
+        it('should not add any status condition when status is omitted', async () => {
+            mockQuery.mockResolvedValueOnce([{ count: '0' }]);
+            mockQuery.mockResolvedValueOnce([]);
+
+            const request = createRequest('http://localhost:3000/api/dashboard/players');
+            await GET(request);
+
+            // Neither count nor players query should filter by scholarships in WHERE
+            const countCall = mockQuery.mock.calls[0];
+            expect(countCall[0]).not.toContain('NOT EXISTS');
+            // The players query has EXISTS in the SELECT for has_accepted_offer, but not in WHERE
+            const playerCall = mockQuery.mock.calls[1];
+            expect(playerCall[0]).not.toContain('NOT EXISTS');
+        });
+
+        it('should ignore unrecognised status values', async () => {
+            mockQuery.mockResolvedValueOnce([{ count: '0' }]);
+            mockQuery.mockResolvedValueOnce([]);
+
+            const request = createRequest('http://localhost:3000/api/dashboard/players?status=unknown');
+            await GET(request);
+
+            const countCall = mockQuery.mock.calls[0];
+            expect(countCall[0]).not.toContain('NOT EXISTS');
+            // WHERE clause should be empty (no filters)
+            expect(countCall[0].trim()).toBe('SELECT COUNT(*) as count FROM players p');
+        });
+    });
 });

@@ -7,5 +7,6 @@ export const tennis: SportConstants = {
         'Singles',
         'Doubles',
         'Mixed Doubles',
+        'Other',
     ],
 };

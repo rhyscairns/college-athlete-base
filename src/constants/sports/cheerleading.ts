@@ -8,6 +8,7 @@ export const cheerleading: SportConstants = {
         'Back Spot',
         'Front Spot',
         'Tumbler',
+        'Other',
     ],
     events: [],
 };

@@ -118,62 +118,17 @@ body {
 }
 
 /* ============================================================
-   PARTICLE BURST — favorite heart click (task 2.7)
-   6 radial pseudo-elements, CSS-only, spring easing
-   Usage: add class "heart-burst" to the heart icon wrapper
+   FAVORITE HEART — subtle scale on click, no particles
    ============================================================ */
 
-.heart-burst {
-  position: relative;
+.heart-pop {
+  animation: heart-pop var(--d-base) var(--e-spring) forwards;
 }
 
-.heart-burst::before,
-.heart-burst::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-/* We use a multi-box-shadow trick for 6 radial particles */
-@keyframes particle-burst {
-  0% {
-    opacity: 1;
-    box-shadow:
-      0 0 0 0px oklch(65% 0.24 25),
-      0 0 0 0px oklch(78% 0.18 75),
-      0 0 0 0px oklch(68% 0.22 150),
-      0 0 0 0px oklch(65% 0.24 25),
-      0 0 0 0px oklch(78% 0.18 75),
-      0 0 0 0px oklch(68% 0.22 150);
-    transform: scale(1);
-  }
-  40% {
-    opacity: 1;
-    box-shadow:
-      -14px -14px 0 3px oklch(65% 0.24 25),
-       14px -14px 0 3px oklch(78% 0.18 75),
-       18px   0px 0 3px oklch(68% 0.22 150),
-       14px  14px 0 3px oklch(65% 0.24 25),
-      -14px  14px 0 3px oklch(78% 0.18 75),
-      -18px   0px 0 3px oklch(68% 0.22 150);
-  }
-  100% {
-    opacity: 0;
-    box-shadow:
-      -22px -22px 0 0px oklch(65% 0.24 25),
-       22px -22px 0 0px oklch(78% 0.18 75),
-       28px   0px 0 0px oklch(68% 0.22 150),
-       22px  22px 0 0px oklch(65% 0.24 25),
-      -22px  22px 0 0px oklch(78% 0.18 75),
-      -28px   0px 0 0px oklch(68% 0.22 150);
-    transform: scale(0.8);
-  }
-}
-
-.heart-burst::before {
-  animation: particle-burst var(--d-base) var(--e-spring) forwards;
+@keyframes heart-pop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
 }
 
 /* ============================================================
@@ -320,12 +275,11 @@ body {
 /* 5.7 — Reduced-motion: disable all custom animations gracefully */
 @media (prefers-reduced-motion: reduce) {
   .bubble-enter,
-  .heart-burst::before,
+  .heart-pop,
   .scroll-reveal,
   .unread-border,
   .animate-shimmer,
   .animate-breath,
-  .animate-spring-pop,
   .animate-progress-bar,
   .animate-fade-in {
     animation: none !important;

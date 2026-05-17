@@ -25,6 +25,7 @@ interface ScholarshipRow {
     coach_first_name?: string;
     coach_last_name?: string;
     coach_university?: string;
+    annual_cost_per_player?: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -52,6 +53,7 @@ function mapRow(row: ScholarshipRow): Scholarship {
         coachFirstName: row.coach_first_name,
         coachLastName: row.coach_last_name,
         coachUniversity: row.coach_university,
+        annualCostPerPlayer: row.annual_cost_per_player != null ? parseFloat(row.annual_cost_per_player) : undefined,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -90,7 +92,8 @@ export async function getScholarshipsByPlayer(playerId: string): Promise<Scholar
             s.*,
             c.first_name          AS coach_first_name,
             c.last_name           AS coach_last_name,
-            c.current_organization AS coach_university
+            c.current_organization AS coach_university,
+            c.annual_cost_per_player
          FROM scholarships s
          JOIN coaches c ON c.id = s.coach_id
          WHERE s.player_id = $1
@@ -119,7 +122,8 @@ export async function getScholarshipByCoachAndPlayer(
             p.email               AS player_email,
             c.first_name          AS coach_first_name,
             c.last_name           AS coach_last_name,
-            c.current_organization AS coach_university
+            c.current_organization AS coach_university,
+            c.annual_cost_per_player
          FROM scholarships s
          JOIN players p ON p.id = s.player_id
          JOIN coaches c ON c.id = s.coach_id

@@ -28,6 +28,7 @@ export const football: SportConstants = {
         'Long Snapper',
         'Kick Returner',
         'Punt Returner',
+        'Other',
     ],
     events: [],
 };

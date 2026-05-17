@@ -7,12 +7,13 @@ import { EmailInput } from './EmailInput';
 import { PasswordInput } from './PasswordInput';
 import { SubmitButton } from './SubmitButton';
 import { ErrorMessage } from './ErrorMessage';
+import { CountrySelect } from './CountrySelect';
 import {
     SPORTS_LIST,
-    COUNTRIES_LIST,
     US_STATES_LIST,
     SEX_OPTIONS,
 } from '../constants';
+import { getPositionsForSport, hasSportPositions, getEventsForSport, hasSportEvents } from '@/constants/sports';
 import {
     validateRequired,
     validateEmail,
@@ -35,12 +36,15 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
     const [gender, setGender] = useState('');
     const [sport, setSport] = useState('');
     const [position, setPosition] = useState('');
+    const [event, setEvent] = useState('');
     const [gpa, setGpa] = useState('');
     const [country, setCountry] = useState('');
     const [state, setState] = useState('');
     const [region, setRegion] = useState('');
     const [scholarshipAmount, setScholarshipAmount] = useState('');
     const [testScores, setTestScores] = useState('');
+    const [referralCode, setReferralCode] = useState('');
+    const [referralState, setReferralState] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
 
     // Error state
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -48,6 +52,12 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
 
     // Loading state
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Derived position/event options based on selected sport
+    const availablePositions = sport ? getPositionsForSport(sport) : [];
+    const availableEvents = sport ? getEventsForSport(sport) : [];
+    const hasPositions = sport ? hasSportPositions(sport) : false;
+    const hasEvents = sport ? hasSportEvents(sport) : false;
 
     // Validation functions
     const validateField = (fieldName: string, value: string): string | undefined => {
@@ -92,10 +102,13 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                 break;
 
             case 'position':
-                if (!validateRequired(value)) {
-                    return getRequiredFieldError();
+                if (value && value.length < 2) {
+                    return 'Must be at least 2 characters';
                 }
-                if (value.length < 2) {
+                break;
+
+            case 'event':
+                if (value && value.length < 2) {
                     return 'Must be at least 2 characters';
                 }
                 break;
@@ -157,6 +170,22 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
         return undefined;
     };
 
+    const handleReferralBlur = async () => {
+        const code = referralCode.trim();
+        if (!code) {
+            setReferralState('idle');
+            return;
+        }
+        setReferralState('checking');
+        try {
+            const res = await fetch(`/api/auth/validate-referral?code=${encodeURIComponent(code)}`);
+            const data = await res.json();
+            setReferralState(data.valid ? 'valid' : 'invalid');
+        } catch {
+            setReferralState('invalid');
+        }
+    };
+
     const handleBlur = (fieldName: string, value: string) => {
         const error = validateField(fieldName, value);
         setErrors((prev) => {
@@ -195,8 +224,15 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
         const sportError = validateField('sport', sport);
         if (sportError) newErrors.sport = sportError;
 
-        const positionError = validateField('position', position);
-        if (positionError) newErrors.position = positionError;
+        if (position) {
+            const positionError = validateField('position', position);
+            if (positionError) newErrors.position = positionError;
+        }
+
+        if (event) {
+            const eventError = validateField('event', event);
+            if (eventError) newErrors.event = eventError;
+        }
 
         const gpaError = validateField('gpa', gpa);
         if (gpaError) newErrors.gpa = gpaError;
@@ -252,12 +288,14 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                 password,
                 gender,
                 sport,
-                position,
-                gpa: Math.round(parseFloat(gpa) * 100) / 100, // Round to 2 decimal places
+                ...(position && { position }),
+                ...(event && { event }),
+                gpa: Math.round(parseFloat(gpa) * 100) / 100,
                 country,
                 ...(country === 'USA' ? { state } : { region }),
                 ...(scholarshipAmount && { scholarshipAmount: parseFloat(scholarshipAmount) }),
                 ...(testScores && { testScores }),
+                ...(referralCode.trim() && referralState === 'valid' && { referralPromoCode: referralCode.trim() }),
             };
 
             await onSubmit(registrationData);
@@ -276,7 +314,6 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
         password.length > 0 &&
         gender.length > 0 &&
         sport.length > 0 &&
-        position.length > 0 &&
         gpa.length > 0 &&
         country.length > 0 &&
         (country === 'USA' ? state.length > 0 : region.length > 0);
@@ -361,7 +398,11 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                         label="Sport"
                         name="sport"
                         value={sport}
-                        onChange={setSport}
+                        onChange={(value) => {
+                            setSport(value);
+                            setPosition('');
+                            setEvent('');
+                        }}
                         onBlur={() => handleBlur('sport', sport)}
                         options={SPORTS_LIST}
                         error={errors.sport}
@@ -370,18 +411,33 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                     />
                 </div>
 
-                {/* Position and GPA */}
+                {/* Position / Event and GPA */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <TextInput
-                        label="Position"
-                        name="position"
-                        value={position}
-                        onChange={setPosition}
-                        onBlur={() => handleBlur('position', position)}
-                        error={errors.position}
-                        required
-                        disabled={isSubmitting}
-                    />
+                    {hasPositions ? (
+                        <SelectInput
+                            label="Position (optional)"
+                            name="position"
+                            value={position}
+                            onChange={setPosition}
+                            onBlur={() => handleBlur('position', position)}
+                            options={availablePositions.map((p) => ({ value: p, label: p }))}
+                            error={errors.position}
+                            disabled={isSubmitting || !sport}
+                            placeholder={sport ? 'Select a position' : 'Select a sport first'}
+                        />
+                    ) : hasEvents ? (
+                        <SelectInput
+                            label="Event (optional)"
+                            name="event"
+                            value={event}
+                            onChange={setEvent}
+                            onBlur={() => handleBlur('event', event)}
+                            options={availableEvents.map((e) => ({ value: e, label: e }))}
+                            error={errors.event}
+                            disabled={isSubmitting || !sport}
+                            placeholder={sport ? 'Select an event' : 'Select a sport first'}
+                        />
+                    ) : null}
                     <TextInput
                         label="GPA"
                         name="gpa"
@@ -399,7 +455,7 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                 </div>
 
                 {/* Country */}
-                <SelectInput
+                <CountrySelect
                     label="Country"
                     name="country"
                     value={country}
@@ -409,7 +465,6 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                         setRegion('');
                     }}
                     onBlur={() => handleBlur('country', country)}
-                    options={COUNTRIES_LIST}
                     error={errors.country}
                     required
                     disabled={isSubmitting}
@@ -466,6 +521,33 @@ export function PlayerRegistrationForm({ onSubmit, onCancel }: PlayerRegistratio
                     disabled={isSubmitting}
                     placeholder="Optional"
                 />
+
+                {/* Referral code */}
+                <div>
+                    <div className="relative">
+                        <TextInput
+                            label="Referral Code"
+                            name="referralCode"
+                            value={referralCode}
+                            onChange={(v) => {
+                                setReferralCode(v);
+                                if (referralState !== 'idle') setReferralState('idle');
+                            }}
+                            onBlur={handleReferralBlur}
+                            disabled={isSubmitting}
+                            placeholder="Optional — enter a referral code"
+                        />
+                    </div>
+                    {referralState === 'checking' && (
+                        <p className="mt-1 text-xs" style={{ color: 'var(--text-lo)' }}>Checking code…</p>
+                    )}
+                    {referralState === 'valid' && (
+                        <p className="mt-1 text-xs font-medium" style={{ color: 'var(--brand-500)' }}>✓ Valid referral code</p>
+                    )}
+                    {referralState === 'invalid' && (
+                        <p className="mt-1 text-xs" style={{ color: 'var(--status-danger)' }}>Invalid referral code — please check and try again</p>
+                    )}
+                </div>
             </div>
 
             <div className="space-y-3 pt-2">

@@ -3,7 +3,9 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { verifyToken } from '@/authentication/utils/jwt';
 import { getScholarshipsByCoach } from '@/scholarships/db/queries';
+import { getCoachProfileById } from '@/profile/coach/lib/db/queries';
 import { ScholarshipsTable } from '@/scholarships/components/ScholarshipsTable';
+import { BudgetSummary } from '@/scholarships/components/BudgetSummary';
 import { logger } from '@/lib/logger';
 import type { Metadata } from 'next';
 import type { Scholarship } from '@/scholarships/types';
@@ -49,6 +51,8 @@ export default async function CoachScholarshipsPage({ params }: ScholarshipsPage
 
     // ── Data ──────────────────────────────────────────────────────────────────
     let scholarships: Scholarship[];
+    let scholarshipBudget: number | undefined;
+    let annualCostPerPlayer: number | undefined;
 
     try {
         scholarships = await getScholarshipsByCoach(coachId);
@@ -56,6 +60,14 @@ export default async function CoachScholarshipsPage({ params }: ScholarshipsPage
     } catch (error) {
         logger.error('Failed to fetch scholarships for page', { coachId }, error instanceof Error ? error : new Error('Unknown error'));
         scholarships = [];
+    }
+
+    try {
+        const coachProfile = await getCoachProfileById(coachId);
+        scholarshipBudget = coachProfile?.scholarshipBudget;
+        annualCostPerPlayer = coachProfile?.annualCostPerPlayer;
+    } catch {
+        // Non-fatal — page still works without financials
     }
 
     // ── Render ────────────────────────────────────────────────────────────────
@@ -127,6 +139,15 @@ export default async function CoachScholarshipsPage({ params }: ScholarshipsPage
                         New Scholarship
                     </Link>
                 </header>
+
+                {(scholarshipBudget !== undefined || annualCostPerPlayer !== undefined) && (
+                    <BudgetSummary
+                        scholarshipBudget={scholarshipBudget}
+                        annualCostPerPlayer={annualCostPerPlayer}
+                        scholarships={scholarships}
+                        coachId={coachId}
+                    />
+                )}
 
                 <ScholarshipsTable
                     scholarships={scholarships}

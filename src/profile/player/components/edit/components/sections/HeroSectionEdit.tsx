@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { TextInput } from '../inputs/TextInput';
+import { SelectInput } from '../inputs/SelectInput';
 import { ActionButtons } from './ActionButtons';
 import { TypeaheadInput } from '@/components/common/TypeaheadInput';
 import {
@@ -9,6 +10,7 @@ import {
     hasSportPositions,
     hasSportEvents
 } from '@/constants/sports';
+import { getAllDivisions } from '@/constants/divisions';
 import type { Hero, HeroSectionEditProps } from '../../../../types';
 
 export function HeroSectionEdit({
@@ -69,10 +71,26 @@ export function HeroSectionEdit({
     }, [positionEventType]);
 
     const handleFieldChange = (field: keyof Hero, value: string | number) => {
-        setFormData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
+        setFormData((prev) => {
+            const next: Hero = { ...prev, [field]: value };
+
+            // Auto-derive numeric search fields from display strings
+            if (field === 'height' && typeof value === 'string') {
+                const match = value.match(/^(\d+)'(\d+)/);
+                if (match) {
+                    next.heightInches = parseInt(match[1]) * 12 + parseInt(match[2]);
+                } else {
+                    const inches = parseInt(value);
+                    if (!isNaN(inches)) next.heightInches = inches;
+                }
+            }
+            if (field === 'weight' && typeof value === 'string') {
+                const lbs = parseInt(value);
+                if (!isNaN(lbs)) next.weightLbs = lbs;
+            }
+
+            return next;
+        });
     };
 
     const handleSportChange = (sport: string) => {
@@ -311,39 +329,16 @@ export function HeroSectionEdit({
                             This information helps coaches find you in their athlete search. All fields are optional but recommended for better visibility.
                         </p>
                         <div className="space-y-4">
-                            <TextInput
-                                label="Desired Division"
-                                name="desiredDivision"
-                                value={formData.desiredDivision || ''}
-                                onChange={(value: string) => handleFieldChange('desiredDivision', value)}
-                                error={errors.desiredDivision}
-                                disabled={isSaving}
-                                placeholder="e.g., NCAA Division I, NCAA Division II, NAIA"
-                            />
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <TextInput
-                                    label="Height (inches)"
-                                    name="heightInches"
-                                    type="number"
-                                    value={formData.heightInches?.toString() || ''}
-                                    onChange={(value: string) => handleFieldChange('heightInches', value ? parseInt(value) : undefined as any)}
-                                    error={errors.heightInches}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <SelectInput
+                                    label="Desired Division"
+                                    name="desiredDivision"
+                                    value={formData.desiredDivision || ''}
+                                    onChange={(value: string) => handleFieldChange('desiredDivision', value)}
+                                    error={errors.desiredDivision}
                                     disabled={isSaving}
-                                    placeholder="e.g., 74"
-                                    min={48}
-                                    max={96}
-                                />
-                                <TextInput
-                                    label="Weight (lbs)"
-                                    name="weightLbs"
-                                    type="number"
-                                    value={formData.weightLbs?.toString() || ''}
-                                    onChange={(value: string) => handleFieldChange('weightLbs', value ? parseInt(value) : undefined as any)}
-                                    error={errors.weightLbs}
-                                    disabled={isSaving}
-                                    placeholder="e.g., 185"
-                                    min={50}
-                                    max={500}
+                                    options={getAllDivisions().map(d => ({ value: d, label: d }))}
+                                    placeholder="Select a division"
                                 />
                                 <TextInput
                                     label="Affordable Amount ($)"

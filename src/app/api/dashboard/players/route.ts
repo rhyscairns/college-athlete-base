@@ -38,6 +38,7 @@ function validateQueryParams(searchParams: URLSearchParams): {
     params: {
         sport?: string;
         position?: string;
+        status?: string;
         page: number;
         pageSize: number;
         excludeUserId?: string;
@@ -79,6 +80,7 @@ function validateQueryParams(searchParams: URLSearchParams): {
     // Get optional filter parameters
     const sport = searchParams.get('sport') || undefined;
     const position = searchParams.get('position') || undefined;
+    const status = searchParams.get('status') || undefined;
 
     return {
         isValid: errors.length === 0,
@@ -86,6 +88,7 @@ function validateQueryParams(searchParams: URLSearchParams): {
         params: {
             sport,
             position,
+            status,
             page,
             pageSize,
             excludeUserId,
@@ -99,6 +102,7 @@ function validateQueryParams(searchParams: URLSearchParams): {
 function buildQuery(params: {
     sport?: string;
     position?: string;
+    status?: string;
     excludeUserId?: string;
 }): { whereClause: string; queryParams: any[] } {
     const conditions: string[] = [];
@@ -124,6 +128,17 @@ function buildQuery(params: {
         conditions.push('p.id != $' + paramIndex);
         queryParams.push(params.excludeUserId);
         paramIndex++;
+    }
+
+    // Filter by recruitment status
+    if (params.status === 'available') {
+        conditions.push(
+            'NOT EXISTS (SELECT 1 FROM scholarships s WHERE s.player_id = p.id AND s.status = \'accepted\')'
+        );
+    } else if (params.status === 'committed') {
+        conditions.push(
+            'EXISTS (SELECT 1 FROM scholarships s WHERE s.player_id = p.id AND s.status = \'accepted\')'
+        );
     }
 
     const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
@@ -168,10 +183,10 @@ export async function GET(request: NextRequest) {
             return response;
         }
 
-        const { sport, position, page, pageSize, excludeUserId } = validation.params;
+        const { sport, position, status, page, pageSize, excludeUserId } = validation.params;
 
         // Build query with filters
-        const { whereClause, queryParams } = buildQuery({ sport, position, excludeUserId });
+        const { whereClause, queryParams } = buildQuery({ sport, position, status, excludeUserId });
 
         // Get total count for pagination
         let totalCount = 0;
