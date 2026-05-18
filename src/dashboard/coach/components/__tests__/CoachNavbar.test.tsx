@@ -22,6 +22,9 @@ jest.mock('next/navigation', () => ({
     usePathname: () => '/coach/coach-123/dashboard',
 }));
 
+// Mock fetch for logout
+global.fetch = jest.fn(() => Promise.resolve({ ok: true } as Response));
+
 describe('CoachNavbar', () => {
     const mockCoachId = 'coach-123';
 

@@ -35,6 +35,14 @@ interface PlayerProfileRow {
     has_accepted_offer: boolean;
     created_at: Date;
     updated_at: Date;
+    // Physical / class info
+    height_feet: number | null;
+    height_inches: number | null;
+    weight_lbs: number | null;
+    grad_year: number | null;
+    high_school: string | null;
+    // Extended JSON data
+    profile_extended: Record<string, unknown> | null;
 }
 
 /**
@@ -57,6 +65,8 @@ export async function getPlayerProfileById(playerId: string): Promise<PlayerProf
                 EXTRACT(YEAR FROM AGE(p.date_of_birth))::INTEGER as age,
                 p.profile_image_url,
                 p.highlight_video_url, p.video_title, p.video_description, p.video_thumbnail_url,
+                p.height_feet, p.height_inches, p.weight_lbs, p.grad_year, p.high_school,
+                p.profile_extended,
                 p.created_at, p.updated_at,
                 EXISTS (
                     SELECT 1 FROM scholarships s
@@ -120,35 +130,51 @@ function transformPlayerData(player: PlayerProfileRow): PlayerProfile {
         }
     }
 
+    // Parse extended profile data
+    const ext = player.profile_extended ?? {};
+    const extContact = (ext.contact ?? {}) as Record<string, unknown>;
+    const extStats = (ext.stats ?? {}) as Record<string, string | number>;
+    const extAchievements = (ext.achievements ?? []) as PlayerProfile['achievements'];
+    const extTestimonials = (ext.coachTestimonials ?? []) as PlayerProfile['coachTestimonials'];
+    const extAcademic = (ext.academic ?? {}) as Record<string, unknown>;
+
+    // Build height string from feet/inches columns
+    const heightStr = (player.height_feet != null && player.height_inches != null)
+        ? `${player.height_feet}'${player.height_inches}"`
+        : '';
+
+    // Build weight string from lbs column
+    const weightStr = player.weight_lbs != null ? `${player.weight_lbs} lbs` : '';
+
     // Transform to PlayerProfile structure
     return {
         id: player.id,
         firstName: player.first_name,
         lastName: player.last_name,
         initials: initials.toUpperCase(),
-        classYear: '',
+        classYear: player.grad_year ? String(player.grad_year) : '',
         position: player.position,
-        school: '',
+        school: player.high_school ?? '',
         location,
-        height: '',
-        weight: '',
+        height: heightStr,
+        weight: weightStr,
         age: player.age || undefined,
         dateOfBirth: player.date_of_birth || undefined,
         profileImage: player.profile_image_url || '',
         performanceMetrics: [],
 
         academic: {
-            ncaaEligibilityCenter: '',
-            ncaaQualifier: false,
+            ncaaEligibilityCenter: (extAcademic.ncaaEligibilityCenter as string) ?? '',
+            ncaaQualifier: (extAcademic.ncaaQualifier as boolean) ?? false,
             gpa: parseFloat(player.gpa),
-            gpaScale: '4.0 Scale',
+            gpaScale: (extAcademic.gpaScale as string) ?? '4.0 Scale',
             satScore: satScore || 0,
             satMath: satMath || 0,
             satReading: satReading || 0,
             actScore: actScore,
-            classRank: '',
-            classRankDetail: '',
-            coursework: [],
+            classRank: (extAcademic.classRank as string) ?? '',
+            classRankDetail: (extAcademic.classRankDetail as string) ?? '',
+            coursework: (extAcademic.coursework as string[]) ?? [],
         },
 
         videos: player.highlight_video_url ? [{
@@ -160,30 +186,30 @@ function transformPlayerData(player: PlayerProfileRow): PlayerProfile {
             duration: '',
             isFeatured: true,
         }] : [],
-        coachTestimonials: [],
-        achievements: [],
+        coachTestimonials: extTestimonials,
+        achievements: extAchievements,
 
         contact: {
             email: player.email,
-            phone: '',
-            parentGuardianName: '',
-            parentGuardianPhone: '',
-            parentGuardianEmail: '',
+            phone: (extContact.phone as string) ?? '',
+            parentGuardianName: (extContact.parentGuardianName as string) ?? '',
+            parentGuardianPhone: (extContact.parentGuardianPhone as string) ?? '',
+            parentGuardianEmail: (extContact.parentGuardianEmail as string) ?? '',
             socialMedia: {
-                twitter: '',
-                instagram: '',
-                youtube: '',
-                tiktok: '',
+                twitter: ((extContact.socialMedia as Record<string, string>)?.twitter) ?? '',
+                instagram: ((extContact.socialMedia as Record<string, string>)?.instagram) ?? '',
+                youtube: ((extContact.socialMedia as Record<string, string>)?.youtube) ?? '',
+                tiktok: ((extContact.socialMedia as Record<string, string>)?.tiktok) ?? '',
             },
-            preferredContactMethod: '',
+            preferredContactMethod: (extContact.preferredContactMethod as string) ?? '',
             headCoach: {
-                name: '',
-                email: '',
-                phone: '',
+                name: ((extContact.headCoach as Record<string, string>)?.name) ?? '',
+                email: ((extContact.headCoach as Record<string, string>)?.email) ?? '',
+                phone: ((extContact.headCoach as Record<string, string>)?.phone) ?? '',
             },
         },
 
-        stats: {
+        stats: Object.keys(extStats).length > 0 ? extStats : {
             'Receiving Yards': '',
             'Touchdowns': '',
             'Receptions': '',
@@ -212,12 +238,11 @@ export async function updatePlayerProfile(
     try {
         logger.debug('Updating player profile', { playerId, updates });
 
-        // Build dynamic UPDATE query based on provided fields
         const updateFields: string[] = [];
         const values: unknown[] = [];
         let paramIndex = 1;
 
-        // Map PlayerProfile fields to database columns
+        // --- Dedicated columns ---
         if (updates.firstName !== undefined) {
             updateFields.push('first_name = $' + paramIndex++);
             values.push(updates.firstName);
@@ -238,12 +263,6 @@ export async function updatePlayerProfile(
             updateFields.push('date_of_birth = $' + paramIndex++);
             values.push(updates.dateOfBirth);
         }
-        if (updates.age !== undefined) {
-            updateFields.push('age = $' + paramIndex++);
-            // Ensure age is a valid number or null
-            const ageValue = updates.age === 0 ? null : updates.age;
-            values.push(ageValue);
-        }
         if (updates.profileImage !== undefined) {
             updateFields.push('profile_image_url = $' + paramIndex++);
             values.push(updates.profileImage);
@@ -257,7 +276,40 @@ export async function updatePlayerProfile(
             values.push(updates.academic.gpa.toString());
         }
 
-        // Handle videos — persist the featured (or first) video to the single-video columns
+        // Height: stored as feet + inches columns
+        if (updates.height !== undefined) {
+            const match = updates.height.match(/^(\d+)'(\d+)"/);
+            if (match) {
+                updateFields.push('height_feet = $' + paramIndex++);
+                values.push(parseInt(match[1], 10));
+                updateFields.push('height_inches = $' + paramIndex++);
+                values.push(parseInt(match[2], 10));
+            }
+        }
+
+        // Weight: stored as weight_lbs column
+        if (updates.weight !== undefined) {
+            const lbs = parseInt(updates.weight, 10);
+            if (!isNaN(lbs)) {
+                updateFields.push('weight_lbs = $' + paramIndex++);
+                values.push(lbs);
+            }
+        }
+
+        // Class year: stored as grad_year column
+        if (updates.classYear !== undefined) {
+            const yr = parseInt(updates.classYear, 10);
+            updateFields.push('grad_year = $' + paramIndex++);
+            values.push(isNaN(yr) ? null : yr);
+        }
+
+        // School: stored as high_school column
+        if (updates.school !== undefined) {
+            updateFields.push('high_school = $' + paramIndex++);
+            values.push(updates.school || null);
+        }
+
+        // Videos: persist featured video to dedicated columns
         if (updates.videos !== undefined) {
             const featured = updates.videos.find(v => v.isFeatured) ?? updates.videos[0] ?? null;
             updateFields.push(`highlight_video_url = $${paramIndex++}`);
@@ -270,34 +322,53 @@ export async function updatePlayerProfile(
             values.push(featured?.thumbnail || null);
         }
 
-        // Handle test scores (stored as JSON)
+        // Test scores: stored as JSON string in test_scores column
         if (updates.academic) {
             const { satScore, satMath, satReading, actScore } = updates.academic;
             if (satScore !== undefined || satMath !== undefined || satReading !== undefined || actScore !== undefined) {
-                const testScores = {
-                    satScore,
-                    satMath,
-                    satReading,
-                    actScore,
-                };
                 updateFields.push('test_scores = $' + paramIndex++);
-                values.push(JSON.stringify(testScores));
+                values.push(JSON.stringify({ satScore, satMath, satReading, actScore }));
             }
         }
 
-        // If no fields to update, return early
+        // --- profile_extended JSONB: merge incoming data with existing ---
+        // Collect all fields that go into the JSON column
+        const extUpdates: Record<string, unknown> = {};
+
+        if (updates.contact !== undefined) {
+            extUpdates.contact = updates.contact;
+        }
+        if (updates.stats !== undefined) {
+            extUpdates.stats = updates.stats;
+        }
+        if (updates.achievements !== undefined) {
+            extUpdates.achievements = updates.achievements;
+        }
+        if (updates.coachTestimonials !== undefined) {
+            extUpdates.coachTestimonials = updates.coachTestimonials;
+        }
+        if (updates.academic !== undefined) {
+            // Store the non-score academic fields in extended data
+            const { gpa: _gpa, satScore: _sat, satMath: _satM, satReading: _satR, actScore: _act, ...restAcademic } = updates.academic;
+            if (Object.keys(restAcademic).length > 0) {
+                extUpdates.academic = restAcademic;
+            }
+        }
+
+        if (Object.keys(extUpdates).length > 0) {
+            // Use jsonb_strip_nulls + || operator to merge into existing data
+            updateFields.push(`profile_extended = COALESCE(profile_extended, '{}'::jsonb) || $${paramIndex++}::jsonb`);
+            values.push(JSON.stringify(extUpdates));
+        }
+
         if (updateFields.length === 0) {
             logger.debug('No fields to update', { playerId });
             return true;
         }
 
-        // Add updated_at timestamp
         updateFields.push('updated_at = NOW()');
-
-        // Add playerId as the last parameter
         values.push(playerId);
 
-        // Build and execute UPDATE query
         const updateQuery = 'UPDATE players SET ' + updateFields.join(', ') + ' WHERE id = $' + paramIndex;
 
         logger.debug('Executing update query', { playerId, updateQuery, values });

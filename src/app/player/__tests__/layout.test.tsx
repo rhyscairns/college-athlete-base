@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 // Mock dependencies
 jest.mock('next/navigation', () => ({
     usePathname: jest.fn(),
+    useRouter: jest.fn(() => ({ replace: jest.fn() })),
 }));
 
 jest.mock('@/dashboard/player/components/PlayerNavbar', () => ({

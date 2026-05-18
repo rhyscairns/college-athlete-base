@@ -12,6 +12,9 @@ jest.mock('next/navigation', () => ({
     usePathname: () => '/player/player-123/dashboard',
 }));
 
+// Mock fetch for logout
+global.fetch = jest.fn(() => Promise.resolve({ ok: true } as Response));
+
 describe('PlayerNavbar', () => {
     const mockPlayerId = 'player-123';
 

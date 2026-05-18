@@ -11,9 +11,10 @@ jest.mock('@/dashboard/coach/components/CoachNavbar', () => ({
     ),
 }));
 
-// Mock usePathname
+// Mock usePathname and useRouter
 jest.mock('next/navigation', () => ({
     usePathname: jest.fn(),
+    useRouter: jest.fn(() => ({ replace: jest.fn() })),
 }));
 
 const { usePathname } = require('next/navigation');
