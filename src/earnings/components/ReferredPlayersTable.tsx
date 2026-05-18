@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import type { ReferredPlayer } from '../types';
 
 interface ReferredPlayersTableProps {
@@ -68,16 +67,14 @@ export function ReferredPlayersTable({ players }: ReferredPlayersTableProps) {
                                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--ink-2)'; }}
                                 onMouseLeave={e => { e.currentTarget.style.background = ''; }}
                             >
-                                {/* Name — links to player profile */}
+                                {/* Name */}
                                 <td className="px-4 py-3 whitespace-nowrap">
-                                    <Link
-                                        href={`/player/${player.playerId}`}
-                                        className="text-sm font-semibold hover:underline focus:outline-none focus:ring-2 focus:ring-offset-1 rounded"
-                                        style={{ color: 'var(--brand-500)' }}
-                                        aria-label={`View profile for ${fullName}`}
+                                    <span
+                                        className="text-sm font-semibold"
+                                        style={{ color: 'var(--text-hi)' }}
                                     >
                                         {fullName}
-                                    </Link>
+                                    </span>
                                 </td>
 
                                 {/* Status badge */}

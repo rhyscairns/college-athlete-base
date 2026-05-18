@@ -40,7 +40,7 @@ export function CoachNavbar({ coachId }: CoachNavbarProps) {
     const { theme, toggle: toggleTheme } = useTheme();
 
     const handleLogout = useCallback(async () => {
-        document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        await fetch('/api/auth/logout', { method: 'POST' });
         router.push('/login');
     }, [router]);
 

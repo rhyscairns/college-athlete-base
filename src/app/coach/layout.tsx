@@ -2,7 +2,7 @@
 
 import { CoachNavbar } from '@/dashboard/coach/components/CoachNavbar';
 import { ProgressBar } from '@/components/primitives/ProgressBar';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 interface CoachLayoutProps {
@@ -11,6 +11,7 @@ interface CoachLayoutProps {
 
 export default function CoachLayout({ children }: CoachLayoutProps) {
     const pathname = usePathname();
+    const router = useRouter();
     const pathSegments = pathname.split('/').filter(Boolean);
     const coachIndex = pathSegments.indexOf('coach');
     const coachId = (coachIndex !== -1 && pathSegments[coachIndex + 1]) ? pathSegments[coachIndex + 1] : '';
@@ -27,6 +28,21 @@ export default function CoachLayout({ children }: CoachLayoutProps) {
             return () => clearTimeout(t);
         }
     }, [pathname]);
+
+    // Detect bfcache restores (back-button after logout) and redirect to /login
+    useEffect(() => {
+        const handlePageShow = async (e: PageTransitionEvent) => {
+            if (!e.persisted) return;
+            try {
+                const res = await fetch('/api/auth/session', { method: 'GET', cache: 'no-store' });
+                if (!res.ok) router.replace('/login');
+            } catch {
+                // Network error — leave the user where they are
+            }
+        };
+        window.addEventListener('pageshow', handlePageShow);
+        return () => window.removeEventListener('pageshow', handlePageShow);
+    }, [router]);
 
     return (
         <div

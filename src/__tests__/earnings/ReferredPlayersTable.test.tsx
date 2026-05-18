@@ -38,10 +38,10 @@ describe('ReferredPlayersTable', () => {
         expect(screen.getByTestId('contribution-p1')).toHaveTextContent('$1.00');
     });
 
-    it('active player name links to their profile', () => {
+    it('active player name is displayed as plain text', () => {
         render(<ReferredPlayersTable players={[activePlayer]} />);
-        const link = screen.getByRole('link', { name: /View profile for Alice Smith/ });
-        expect(link).toHaveAttribute('href', '/player/p1');
+        expect(screen.getByText('Alice Smith')).toBeInTheDocument();
+        expect(screen.queryByRole('link', { name: /View profile for Alice Smith/ })).not.toBeInTheDocument();
     });
 
     it('renders inactive player row with $0.00 contribution', () => {
