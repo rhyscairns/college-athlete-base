@@ -23,6 +23,12 @@ jest.mock('@/profile/player/components/view-page/PlayerProfileView', () => ({
 // Page now calls getCoachProfileById directly — mock the DB layer
 jest.mock('@/profile/player/lib/db/queries', () => ({
     getPlayerProfileById: jest.fn(),
+    getPlayerCABStatus: jest.fn(),
+}));
+
+// Mock next/navigation notFound
+jest.mock('next/navigation', () => ({
+    notFound: jest.fn(() => { throw new Error('NEXT_NOT_FOUND'); }),
 }));
 
 // Mock the view counter — fire-and-forget, non-critical
@@ -30,8 +36,9 @@ jest.mock('@/lib/db/queries/prospects', () => ({
     incrementPlayerProfileViews: jest.fn().mockResolvedValue(undefined),
 }));
 
-import { getPlayerProfileById } from '@/profile/player/lib/db/queries';
+import { getPlayerProfileById, getPlayerCABStatus } from '@/profile/player/lib/db/queries';
 const mockGetPlayerProfileById = getPlayerProfileById as jest.MockedFunction<typeof getPlayerProfileById>;
+const mockGetPlayerCABStatus = getPlayerCABStatus as jest.MockedFunction<typeof getPlayerCABStatus>;
 
 describe('CoachViewPlayerProfilePage', () => {
     const mockParams = { coachId: 'coach-123', playerId: 'player-456' };
@@ -47,7 +54,42 @@ describe('CoachViewPlayerProfilePage', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        mockGetPlayerCABStatus.mockResolvedValue(true);
         mockGetPlayerProfileById.mockResolvedValue(mockPlayerData as any);
+    });
+
+    describe('CAB member gating', () => {
+        it('should call notFound when player is not a CAB member', async () => {
+            mockGetPlayerCABStatus.mockResolvedValue(false);
+
+            await expect(
+                CoachViewPlayerProfilePage({ params: Promise.resolve(mockParams) })
+            ).rejects.toThrow('NEXT_NOT_FOUND');
+
+            expect(logger.warn).toHaveBeenCalledWith(
+                'Coach attempted to view non-member player profile',
+                { coachId: 'coach-123', playerId: 'player-456' }
+            );
+        });
+
+        it('should not fetch profile data when player is not a CAB member', async () => {
+            mockGetPlayerCABStatus.mockResolvedValue(false);
+
+            await expect(
+                CoachViewPlayerProfilePage({ params: Promise.resolve(mockParams) })
+            ).rejects.toThrow('NEXT_NOT_FOUND');
+
+            expect(mockGetPlayerProfileById).not.toHaveBeenCalled();
+        });
+
+        it('should render profile when player is a CAB member', async () => {
+            mockGetPlayerCABStatus.mockResolvedValue(true);
+
+            const result = await CoachViewPlayerProfilePage({ params: Promise.resolve(mockParams) });
+
+            expect(result).toBeDefined();
+            expect(mockGetPlayerProfileById).toHaveBeenCalledWith('player-456');
+        });
     });
 
     describe('Data Fetching', () => {

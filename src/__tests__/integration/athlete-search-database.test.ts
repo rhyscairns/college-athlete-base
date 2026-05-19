@@ -49,8 +49,8 @@ describe('Athlete Search Database Integration', () => {
             const result = await query<{ id: string }>(
                 `INSERT INTO players (
                     first_name, last_name, date_of_birth, email, password_hash,
-                    sex, sport, position, gpa, country, state
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                    sex, sport, position, gpa, country, state, is_cab_member
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
                 RETURNING id`,
                 [
                     player.firstName,
@@ -64,6 +64,7 @@ describe('Athlete Search Database Integration', () => {
                     player.gpa,
                     player.country,
                     player.state,
+                    true, // is_cab_member = true so they appear in search results
                 ]
             );
             testPlayerIds.push(result[0].id);

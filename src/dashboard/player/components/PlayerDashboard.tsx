@@ -3,8 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { PlayerDashboardProps } from '../types';
-import type { PlayerCardData, VideoModalState } from '../../common/types';
-import { PlayerDashboardHeader } from './PlayerDashboardHeader';
+import type { PlayerCardData, VideoModalState } from '../../common/types'; import { PlayerDashboardHeader } from './PlayerDashboardHeader';
 import { FilterBar } from '../../common/components/FilterBar';
 import { PlayerCardGrid } from '../../common/components/PlayerCardGrid';
 import { Pagination } from '../../common/components/Pagination';
@@ -13,7 +12,9 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { playerFilterCache } from '@/lib/cache/filterCache';
 import { getPositionsForSport, getEventsForSport, hasSportPositions, hasSportEvents } from '@/constants';
 
-export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
+import { SubscriptionBanner } from './SubscriptionBanner';
+
+export default function PlayerDashboard({ playerId, isCABMember = false, subscriptionStatus = 'none', subscriptionPeriodEnd = null, isCloud = false }: PlayerDashboardProps) {
     const router = useRouter();
 
     // Filter state
@@ -79,6 +80,9 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
     useEffect(() => {
         setProfileLoaded(true);
     }, []);
+
+    // Track CAB membership locally so the banner can disappear after simulate
+    const [cabMember, setCabMember] = useState(isCABMember);
 
     // Fetch available sports from players
     useEffect(() => {
@@ -296,6 +300,48 @@ export default function PlayerDashboard({ playerId }: PlayerDashboardProps) {
                 className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
                 role="main"
             >
+                {/* Subscription banner / status (Req 3.11, 3.12) */}
+                {!cabMember ? (
+                    <div className="mb-6">
+                        <SubscriptionBanner
+                            playerId={playerId}
+                            isCloud={isCloud}
+                            onSubscribed={() => setCabMember(true)}
+                        />
+                    </div>
+                ) : (
+                    <div
+                        className="mb-6 px-5 py-3 rounded-2xl flex items-center gap-3"
+                        style={{
+                            background: 'oklch(19% 0.018 260)',
+                            border: '1px solid oklch(68% 0.22 150 / 0.35)',
+                        }}
+                        data-testid="subscription-active"
+                    >
+                        <span className="text-lg" aria-hidden="true">✅</span>
+                        <div>
+                            <p className="text-sm font-semibold" style={{ color: 'var(--text-hi)' }}>
+                                Subscription active
+                                {subscriptionStatus && subscriptionStatus !== 'active' && (
+                                    <span className="ml-2 text-xs font-normal" style={{ color: 'var(--text-lo)' }}>
+                                        ({subscriptionStatus})
+                                    </span>
+                                )}
+                            </p>
+                            {subscriptionPeriodEnd && (
+                                <p className="text-xs" style={{ color: 'var(--text-lo)' }}>
+                                    Next billing date:{' '}
+                                    {new Date(subscriptionPeriodEnd).toLocaleDateString(undefined, {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                    })}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Filter Bar */}
                 <div id="filter-controls">
                     <FilterBar

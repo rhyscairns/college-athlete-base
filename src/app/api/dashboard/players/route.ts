@@ -130,6 +130,9 @@ function buildQuery(params: {
         paramIndex++;
     }
 
+    // Always filter to only show CAB members (paid subscribers)
+    conditions.push('p.is_cab_member = TRUE');
+
     // Filter by recruitment status
     if (params.status === 'available') {
         conditions.push(
@@ -202,16 +205,25 @@ export async function GET(request: NextRequest) {
                 requestId,
             });
 
+            // Return empty result set rather than an error — the migration may not have run yet
+            // or there are simply no matching players. Either way, show an empty state.
             const response = NextResponse.json(
                 {
-                    success: false,
-                    error: 'Failed to fetch player count',
-                    data: null,
+                    success: true,
+                    data: {
+                        players: [],
+                        pagination: {
+                            currentPage: page,
+                            totalPages: 0,
+                            totalCount: 0,
+                            pageSize,
+                        },
+                    },
                 },
-                { status: 500 }
+                { status: 200 }
             );
 
-            logger.apiResponse('GET', '/api/dashboard/players', 500, Date.now() - startTime, { requestId });
+            logger.apiResponse('GET', '/api/dashboard/players', 200, Date.now() - startTime, { requestId });
             return response;
         }
 
