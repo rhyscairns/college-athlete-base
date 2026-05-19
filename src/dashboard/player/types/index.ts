@@ -14,6 +14,14 @@ export interface PlayerNavbarProps {
 // Player dashboard props
 export interface PlayerDashboardProps {
     playerId: string;
+    /** Whether the player has an active CAB membership (is_cab_member) */
+    isCABMember?: boolean;
+    /** Current subscription status value from the DB */
+    subscriptionStatus?: string;
+    /** ISO string of the subscription period end date, or null */
+    subscriptionPeriodEnd?: string | null;
+    /** Whether the app is running in a cloud environment */
+    isCloud?: boolean;
 }
 
 /** Stats returned by GET /api/player/[playerId]/stats */

@@ -188,6 +188,57 @@ describe('GET /api/dashboard/players', () => {
         });
     });
 
+    describe('CAB member filter', () => {
+        it('should always filter by is_cab_member = TRUE in the count query', async () => {
+            mockQuery.mockResolvedValueOnce([{ count: '0' }]);
+            mockQuery.mockResolvedValueOnce([]);
+
+            const request = createRequest('http://localhost:3000/api/dashboard/players');
+            await GET(request);
+
+            const countCall = mockQuery.mock.calls[0];
+            expect(countCall[0]).toContain('is_cab_member = TRUE');
+        });
+
+        it('should always filter by is_cab_member = TRUE in the players query', async () => {
+            mockQuery.mockResolvedValueOnce([{ count: '0' }]);
+            mockQuery.mockResolvedValueOnce([]);
+
+            const request = createRequest('http://localhost:3000/api/dashboard/players');
+            await GET(request);
+
+            const playerCall = mockQuery.mock.calls[1];
+            expect(playerCall[0]).toContain('is_cab_member = TRUE');
+        });
+
+        it('should exclude non-member players from results', async () => {
+            // Only 1 result returned (the member), even though 2 exist in DB
+            mockQuery.mockResolvedValueOnce([{ count: '1' }]);
+            mockQuery.mockResolvedValueOnce([
+                {
+                    id: '123e4567-e89b-12d3-a456-426614174000',
+                    first_name: 'Member',
+                    last_name: 'Player',
+                    sport: 'Football',
+                    position: 'Wide Receiver',
+                    profile_image_url: null,
+                    video_thumbnail_url: null,
+                    highlight_video_url: null,
+                    video_title: null,
+                    has_accepted_offer: false,
+                },
+            ]);
+
+            const request = createRequest('http://localhost:3000/api/dashboard/players');
+            const response = await GET(request);
+            const data = await response.json();
+
+            expect(response.status).toBe(200);
+            expect(data.data.players).toHaveLength(1);
+            expect(data.data.players[0].firstName).toBe('Member');
+        });
+    });
+
     describe('Status filter', () => {
         it('should add NOT EXISTS condition when status=available', async () => {
             mockQuery.mockResolvedValueOnce([{ count: '0' }]);
@@ -243,8 +294,9 @@ describe('GET /api/dashboard/players', () => {
 
             const countCall = mockQuery.mock.calls[0];
             expect(countCall[0]).not.toContain('NOT EXISTS');
-            // WHERE clause should be empty (no filters)
-            expect(countCall[0].trim()).toBe('SELECT COUNT(*) as count FROM players p');
+            // WHERE clause should only contain the CAB member filter, no scholarship conditions
+            expect(countCall[0]).toContain('is_cab_member = TRUE');
+            expect(countCall[0]).not.toContain('scholarships');
         });
     });
 });

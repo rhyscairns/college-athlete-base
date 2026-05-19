@@ -33,6 +33,7 @@ interface PlayerProfileRow {
     video_thumbnail_url: string | null;
     recruitment_status: string | null;
     has_accepted_offer: boolean;
+    is_cab_member: boolean;
     created_at: Date;
     updated_at: Date;
     // Physical / class info
@@ -67,6 +68,7 @@ export async function getPlayerProfileById(playerId: string): Promise<PlayerProf
                 p.highlight_video_url, p.video_title, p.video_description, p.video_thumbnail_url,
                 p.height_feet, p.height_inches, p.weight_lbs, p.grad_year, p.high_school,
                 p.profile_extended,
+                p.is_cab_member,
                 p.created_at, p.updated_at,
                 EXISTS (
                     SELECT 1 FROM scholarships s
@@ -221,6 +223,26 @@ function transformPlayerData(player: PlayerProfileRow): PlayerProfile {
         commitmentStatus: null,
         hasAcceptedOffer: player.has_accepted_offer === true,
     };
+}
+
+/**
+ * Check whether a player is an active CAB member (paid subscriber)
+ *
+ * @param playerId - The UUID of the player
+ * @returns Promise<boolean> - True if the player is a CAB member, false otherwise
+ */
+export async function getPlayerCABStatus(playerId: string): Promise<boolean> {
+    try {
+        const rows = await query<{ is_cab_member: boolean }>(
+            'SELECT is_cab_member FROM players WHERE id = $1',
+            [playerId]
+        );
+        if (rows.length === 0) return false;
+        return rows[0].is_cab_member === true;
+    } catch (error) {
+        logger.error('Failed to fetch player CAB status', { playerId }, error instanceof Error ? error : new Error('Unknown error'));
+        return false;
+    }
 }
 
 /**

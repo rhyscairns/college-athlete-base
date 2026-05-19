@@ -113,8 +113,9 @@ describe('searchAthletes', () => {
             const athletesCall = mockQuery.mock.calls[0];
             const athletesQueryText = athletesCall[0] as string;
 
-            // Should not have WHERE clause
-            expect(athletesQueryText).not.toContain('WHERE');
+            // Always has WHERE clause for is_cab_member filter
+            expect(athletesQueryText).toContain('WHERE');
+            expect(athletesQueryText).toContain('p.is_cab_member = TRUE');
             expect(athletesQueryText).toContain('ORDER BY p.gpa DESC, p.last_name ASC');
         });
 

@@ -1,7 +1,8 @@
 import { PlayerProfileView } from '@/profile/player/components/view-page/PlayerProfileView';
-import { getPlayerProfileById } from '@/profile/player/lib/db/queries';
+import { getPlayerProfileById, getPlayerCABStatus } from '@/profile/player/lib/db/queries';
 import { incrementPlayerProfileViews } from '@/lib/db/queries/prospects';
 import { logger } from '@/lib/logger';
+import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
 export async function generateMetadata({ params }: { params: Promise<{ playerId: string }> }): Promise<Metadata> {
@@ -21,11 +22,19 @@ interface PageProps {
  * Route: /coach/[coachId]/dashboard/player-profile/[playerId]
  *
  * Fetches the player profile directly from the DB and increments the view counter.
+ * Returns 404 if the player is not an active CAB member (not a paid subscriber).
  */
 export default async function CoachViewPlayerProfilePage({ params }: PageProps) {
     const { coachId, playerId } = await params;
 
     logger.info('Coach viewing player profile', { coachId, playerId });
+
+    // Gate access: only CAB members are visible to coaches
+    const isCABMember = await getPlayerCABStatus(playerId);
+    if (!isCABMember) {
+        logger.warn('Coach attempted to view non-member player profile', { coachId, playerId });
+        notFound();
+    }
 
     const playerData = await getPlayerProfileById(playerId).catch(() => null);
 

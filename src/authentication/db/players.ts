@@ -44,8 +44,9 @@ export async function createPlayer(data: PlayerRecord): Promise<string> {
             `INSERT INTO players (
                 first_name, last_name, date_of_birth, email, password_hash, sex, sport, position, event,
                 gpa, country, state, region, scholarship_amount, test_scores, referral_promo_code,
-                secondary_referral_promo_code, tertiary_referral_promo_code, subscription_plan
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+                secondary_referral_promo_code, tertiary_referral_promo_code, subscription_plan,
+                is_cab_member, subscription_status
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
             RETURNING id`,
             [
                 data.firstName,
@@ -67,6 +68,8 @@ export async function createPlayer(data: PlayerRecord): Promise<string> {
                 data.secondaryReferralPromoCode ?? null,
                 data.tertiaryReferralPromoCode ?? null,
                 data.subscriptionPlan ?? 'standard',
+                false,   // is_cab_member defaults to false (Req 6.6)
+                'none',  // subscription_status defaults to 'none' (Req 6.6)
             ]
         );
 
@@ -184,5 +187,49 @@ export async function getPlayerById(id: string): Promise<PlayerDatabaseRecord | 
         };
     } catch (error) {
         throw new Error('Failed to fetch player record');
+    }
+}
+
+/**
+ * Subscription status shape returned by getPlayerSubscriptionStatus
+ */
+export interface PlayerSubscriptionStatus {
+    isCABMember: boolean;
+    subscriptionStatus: string;
+    subscriptionPeriodEnd: Date | null;
+}
+
+/**
+ * Get a player's subscription / CAB membership status
+ *
+ * @param id - The player's UUID
+ * @returns Promise<PlayerSubscriptionStatus | null> - null if player not found
+ * @throws Error if database query fails
+ */
+export async function getPlayerSubscriptionStatus(id: string): Promise<PlayerSubscriptionStatus | null> {
+    try {
+        const result = await query<{
+            is_cab_member: boolean;
+            subscription_status: string;
+            subscription_period_end: Date | null;
+        }>(
+            `SELECT is_cab_member, subscription_status, subscription_period_end
+             FROM players
+             WHERE id = $1`,
+            [id]
+        );
+
+        if (result.length === 0) {
+            return null;
+        }
+
+        const row = result[0];
+        return {
+            isCABMember: row.is_cab_member,
+            subscriptionStatus: row.subscription_status,
+            subscriptionPeriodEnd: row.subscription_period_end ?? null,
+        };
+    } catch (error) {
+        throw new Error('Failed to fetch player subscription status');
     }
 }

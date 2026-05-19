@@ -134,6 +134,9 @@ export async function searchAthletes(
             }
         }
 
+        // Always filter to only show CAB members (paid subscribers)
+        conditions.push('p.is_cab_member = TRUE');
+
         // Build WHERE clause
         const whereClause = conditions.length > 0
             ? 'WHERE ' + conditions.join(' AND ')
