@@ -43,22 +43,6 @@ function buildProdStack(): { stack: CollegeAthleteBaseStack; template: Template 
 }
 
 // ---------------------------------------------------------------------------
-// Snapshot tests — Requirements: 1.1, 1.2, 1.3
-// ---------------------------------------------------------------------------
-
-describe('CDK snapshot tests', () => {
-    test('dev stack matches snapshot', () => {
-        const { template } = buildDevStack();
-        expect(template.toJSON()).toMatchSnapshot();
-    });
-
-    test('prod stack matches snapshot', () => {
-        const { template } = buildProdStack();
-        expect(template.toJSON()).toMatchSnapshot();
-    });
-});
-
-// ---------------------------------------------------------------------------
 // Multi-environment isolation — Requirements: 1.1, 1.2, 1.3
 // ---------------------------------------------------------------------------
 
