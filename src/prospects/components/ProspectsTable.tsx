@@ -3,13 +3,76 @@
 import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { VideoModal } from '@/dashboard/common/components/VideoModal';
-import { FavoriteButton } from '@/dashboard/common/components/FavoriteButton';
 import { EmptyState } from '@/components/primitives/EmptyState';
 import { EmptyProspectsIllustration } from '@/components/primitives/illustrations/EmptyProspects';
 import type { ProspectPlayerData, ProspectsTableProps, VideoModalState } from '../types';
 
-export function ProspectsTable({ prospects: initialProspects, coachId }: ProspectsTableProps) {
+// ── Action buttons ────────────────────────────────────────────────────────────
+
+interface RowActionsProps {
+    prospect: ProspectPlayerData;
+    coachId: string;
+    isRemoving: boolean;
+    onWatchVideo: (p: ProspectPlayerData) => void;
+    onUnfavorite: (id: string) => void;
+}
+
+function RowActions({ prospect, coachId, isRemoving, onWatchVideo, onUnfavorite }: RowActionsProps) {
     const router = useRouter();
+    const fullName = `${prospect.firstName} ${prospect.lastName}`;
+
+    return (
+        <div className="flex items-center gap-1">
+            {prospect.videoUrl && (
+                <button
+                    aria-label={`Watch video for ${fullName}`}
+                    onClick={() => onWatchVideo(prospect)}
+                    className="px-2 py-1 rounded text-xs transition-colors focus:outline-none focus:ring-2"
+                    style={{ color: 'var(--brand-500)', background: 'transparent' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--ink-3)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                    Watch
+                </button>
+            )}
+            <button
+                aria-label={`View profile for ${fullName}`}
+                onClick={() => router.push(`/coach/${coachId}/dashboard/player-profile/${prospect.playerId}`)}
+                className="px-2 py-1 rounded text-xs transition-colors focus:outline-none focus:ring-2"
+                style={{ color: 'var(--text-hi)', background: 'transparent' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--ink-3)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+                Profile
+            </button>
+            <button
+                aria-label={`Send scholarship to ${fullName}`}
+                onClick={() => router.push(`/coach/${coachId}/scholarships/new?playerId=${prospect.playerId}`)}
+                className="px-2 py-1 rounded text-xs transition-colors focus:outline-none focus:ring-2"
+                style={{ color: 'oklch(75% 0.18 85)', background: 'transparent' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--ink-3)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+                Scholarship
+            </button>
+            <button
+                aria-label={`Remove ${fullName} from prospects`}
+                disabled={isRemoving}
+                onClick={() => { if (!isRemoving) onUnfavorite(prospect.playerId); }}
+                className="px-2 py-1 rounded text-xs transition-colors focus:outline-none focus:ring-2 disabled:opacity-50"
+                style={{ color: 'var(--status-danger)', background: 'transparent' }}
+                onMouseEnter={e => { if (!isRemoving) e.currentTarget.style.background = 'var(--ink-3)'; }}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+                {isRemoving ? 'Removing…' : 'Remove'}
+            </button>
+        </div>
+    );
+}
+
+// ── Main table ────────────────────────────────────────────────────────────────
+
+export function ProspectsTable({ prospects: initialProspects, coachId }: ProspectsTableProps) {
     const [prospects, setProspects] = useState<ProspectPlayerData[]>(initialProspects);
     const [error, setError] = useState<string | null>(null);
     const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
@@ -19,9 +82,7 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
     const dragIndexRef = useRef<number | null>(null);
     const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-    const handleDragStart = useCallback((index: number) => {
-        dragIndexRef.current = index;
-    }, []);
+    const handleDragStart = useCallback((index: number) => { dragIndexRef.current = index; }, []);
 
     const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
         e.preventDefault();
@@ -30,11 +91,7 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
 
     const handleDrop = useCallback((dropIndex: number) => {
         const from = dragIndexRef.current;
-        if (from === null || from === dropIndex) {
-            dragIndexRef.current = null;
-            setDragOverIndex(null);
-            return;
-        }
+        if (from === null || from === dropIndex) { dragIndexRef.current = null; setDragOverIndex(null); return; }
         setProspects(prev => {
             const next = [...prev];
             const [moved] = next.splice(from, 1);
@@ -45,10 +102,7 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
         setDragOverIndex(null);
     }, []);
 
-    const handleDragEnd = useCallback(() => {
-        dragIndexRef.current = null;
-        setDragOverIndex(null);
-    }, []);
+    const handleDragEnd = useCallback(() => { dragIndexRef.current = null; setDragOverIndex(null); }, []);
 
     const handleWatchVideo = useCallback((prospect: ProspectPlayerData): void => {
         setVideoModal({
@@ -73,11 +127,7 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
         } catch {
             setError('Failed to remove prospect. Please try again.');
         } finally {
-            setRemovingIds(prev => {
-                const next = new Set(prev);
-                next.delete(playerId);
-                return next;
-            });
+            setRemovingIds(prev => { const next = new Set(prev); next.delete(playerId); return next; });
         }
     }, [coachId]);
 
@@ -127,21 +177,33 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
                                     </span>
                                     <p className="text-sm font-semibold" style={{ color: 'var(--text-hi)' }}>{fullName}</p>
                                 </div>
-                                <FavoriteButton isFavorited={true} playerName={fullName} isDisabled={isRemoving} onClick={() => handleUnfavorite(prospect.playerId)} variant="row" />
                             </div>
                             <div className="mt-2 flex flex-col gap-1">
-                                <span className="text-xs" style={{ color: 'var(--text-lo)' }}><span className="font-medium" style={{ color: 'var(--text-mid)' }}>Sport:</span> {prospect.sport ?? '—'}</span>
-                                <span className="text-xs" style={{ color: 'var(--text-lo)' }}><span className="font-medium" style={{ color: 'var(--text-mid)' }}>Position:</span> {prospect.position ?? '—'}</span>
-                                <span className="text-xs" style={{ color: 'var(--text-lo)' }}><span className="font-medium" style={{ color: 'var(--text-mid)' }}>GPA:</span> {prospect.gpa !== null ? prospect.gpa : '—'}</span>
-                                <span className="text-xs" style={{ color: 'var(--text-lo)' }}><span className="font-medium" style={{ color: 'var(--text-mid)' }}>High School:</span> {prospect.highSchool ?? '—'}</span>
-                                <span className="text-xs" style={{ color: 'var(--text-lo)' }}><span className="font-medium" style={{ color: 'var(--text-mid)' }}>Scholarship:</span> {prospect.scholarshipAmount !== null ? `$${prospect.scholarshipAmount.toLocaleString()}` : '—'}</span>
+                                <span className="text-xs" style={{ color: 'var(--text-lo)' }}>
+                                    <span className="font-medium" style={{ color: 'var(--text-mid)' }}>Sport:</span> {prospect.sport ?? '\u2014'}
+                                </span>
+                                <span className="text-xs" style={{ color: 'var(--text-lo)' }}>
+                                    <span className="font-medium" style={{ color: 'var(--text-mid)' }}>Position:</span> {prospect.position ?? '\u2014'}
+                                </span>
+                                <span className="text-xs" style={{ color: 'var(--text-lo)' }}>
+                                    <span className="font-medium" style={{ color: 'var(--text-mid)' }}>GPA:</span> {prospect.gpa !== null ? prospect.gpa : '\u2014'}
+                                </span>
+                                <span className="text-xs" style={{ color: 'var(--text-lo)' }}>
+                                    <span className="font-medium" style={{ color: 'var(--text-mid)' }}>High School:</span> {prospect.highSchool ?? '\u2014'}
+                                </span>
+                                <span className="text-xs" style={{ color: 'var(--text-lo)' }}>
+                                    <span className="font-medium" style={{ color: 'var(--text-mid)' }}>Scholarship:</span>{' '}
+                                    {prospect.scholarshipAmount !== null ? `$${prospect.scholarshipAmount.toLocaleString()}` : '\u2014'}
+                                </span>
                             </div>
-                            <div className="mt-3 flex items-center gap-2 flex-wrap">
-                                {prospect.videoUrl && (
-                                    <button onClick={() => handleWatchVideo(prospect)} aria-label={`Watch video for ${fullName}`} className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2" style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--brand-600)')} onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-500)')}>Watch Video</button>
-                                )}
-                                <button onClick={() => router.push(`/coach/${coachId}/dashboard/player-profile/${prospect.playerId}`)} aria-label={`View profile for ${fullName}`} className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2" style={{ background: 'var(--ink-3)', color: 'var(--text-mid)' }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--ink-2)')} onMouseLeave={e => (e.currentTarget.style.background = 'var(--ink-3)')}>View Profile</button>
-                                <button onClick={() => router.push(`/coach/${coachId}/scholarships/new?playerId=${prospect.playerId}`)} aria-label={`Send scholarship to ${fullName}`} className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2" style={{ background: 'oklch(75% 0.18 85 / 0.15)', color: 'oklch(75% 0.18 85)', border: '1px solid oklch(75% 0.18 85 / 0.3)' }} onMouseEnter={e => (e.currentTarget.style.background = 'oklch(75% 0.18 85 / 0.25)')} onMouseLeave={e => (e.currentTarget.style.background = 'oklch(75% 0.18 85 / 0.15)')}>Send Scholarship</button>
+                            <div className="mt-3">
+                                <RowActions
+                                    prospect={prospect}
+                                    coachId={coachId}
+                                    isRemoving={isRemoving}
+                                    onWatchVideo={handleWatchVideo}
+                                    onUnfavorite={handleUnfavorite}
+                                />
                             </div>
                         </div>
                     );
@@ -149,22 +211,25 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
             </div>
 
             {/* Desktop table */}
-            <div className="hidden md:block overflow-x-auto rounded-xl" style={{ border: '1px solid var(--ink-3)' }}>
-                <table className="w-full divide-y" style={{ borderColor: 'var(--ink-3)', background: 'var(--ink-1)' }}>
+            <div className="hidden md:block w-full overflow-x-auto rounded-xl" style={{ border: '1px solid var(--ink-3)' }}>
+                <table className="w-full" style={{ borderColor: 'var(--ink-3)', background: 'var(--ink-1)', borderCollapse: 'separate', borderSpacing: 0 }}>
                     <thead>
                         <tr style={{ background: 'var(--ink-2)' }}>
-                            <th scope="col" className="w-8 px-2 py-3" aria-label="Drag handle" />
+                            <th scope="col" className="w-8 px-2 py-3 rounded-tl-xl" aria-label="Drag handle" />
                             <th scope="col" className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--brand-500)', width: '2.5rem' }}>#</th>
-                            {['Name', 'Sport', 'Position', 'GPA', 'High School', 'Scholarship Required', 'Actions'].map(col => (
+                            {['Name', 'Sport', 'Position', 'GPA', 'High School', 'Scholarship Required'].map(col => (
                                 <th key={col} scope="col" className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap" style={{ color: 'var(--brand-500)' }}>{col}</th>
                             ))}
+                            <th scope="col" className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap rounded-tr-xl" style={{ color: 'var(--brand-500)' }}>Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y" style={{ borderColor: 'var(--ink-3)' }}>
+                    <tbody>
                         {prospects.map((prospect, index) => {
-                            const fullName = `${prospect.firstName} ${prospect.lastName}`;
                             const isRemoving = removingIds.has(prospect.playerId);
                             const isDragTarget = dragOverIndex === index;
+                            const isLast = index === prospects.length - 1;
+                            const rowBorder: React.CSSProperties = index > 0 ? { borderTop: '1px solid var(--ink-3)' } : {};
+
                             return (
                                 <tr
                                     key={prospect.playerId}
@@ -175,7 +240,6 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
                                     onDragEnd={handleDragEnd}
                                     className="transition-colors"
                                     style={{
-                                        borderColor: 'var(--ink-3)',
                                         background: isDragTarget ? 'oklch(68% 0.22 150 / 0.08)' : undefined,
                                         outline: isDragTarget ? '2px solid oklch(68% 0.22 150 / 0.4)' : undefined,
                                         outlineOffset: '-2px',
@@ -184,7 +248,8 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
                                     onMouseEnter={e => { if (!isDragTarget) e.currentTarget.style.background = 'var(--ink-2)'; }}
                                     onMouseLeave={e => { if (!isDragTarget) e.currentTarget.style.background = ''; }}
                                 >
-                                    <td className="w-8 px-2 py-3 text-center select-none" aria-hidden="true">
+                                    <td className="w-8 px-2 py-3 text-center select-none" aria-hidden="true"
+                                        style={{ ...rowBorder, borderColor: 'var(--ink-3)', ...(isLast ? { borderBottomLeftRadius: '0.75rem' } : {}) }}>
                                         <svg className="w-4 h-4 mx-auto" fill="none" viewBox="0 0 16 16" style={{ color: 'var(--text-lo)' }}>
                                             <circle cx="5" cy="4" r="1.2" fill="currentColor" />
                                             <circle cx="5" cy="8" r="1.2" fill="currentColor" />
@@ -194,26 +259,34 @@ export function ProspectsTable({ prospects: initialProspects, coachId }: Prospec
                                             <circle cx="11" cy="12" r="1.2" fill="currentColor" />
                                         </svg>
                                     </td>
-                                    <td className="px-3 py-3 whitespace-nowrap">
+                                    <td className="px-3 py-3 whitespace-nowrap" style={{ ...rowBorder, borderColor: 'var(--ink-3)' }}>
                                         <span className="inline-flex items-center justify-center w-7 h-7 rounded-md text-xs font-bold" style={{ background: 'var(--ink-3)', color: 'var(--brand-500)' }}>
                                             {index + 1}
                                         </span>
                                     </td>
-                                    <td className="px-4 py-3 text-sm font-semibold whitespace-nowrap" style={{ color: 'var(--text-hi)' }}>{fullName}</td>
-                                    <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ color: 'var(--text-mid)' }}>{prospect.sport ?? '—'}</td>
-                                    <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ color: 'var(--text-mid)' }}>{prospect.position ?? '—'}</td>
-                                    <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ fontFamily: 'var(--font-geist-mono, monospace)', color: 'var(--text-mid)' }}>{prospect.gpa !== null ? prospect.gpa : '—'}</td>
-                                    <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ fontFamily: 'var(--font-geist-mono, monospace)', color: 'var(--text-mid)' }}>{prospect.scholarshipAmount !== null ? `$${prospect.scholarshipAmount.toLocaleString()}` : '—'}</td>
-                                    <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ color: 'var(--text-mid)' }}>{prospect.highSchool ?? '—'}</td>
-                                    <td className="px-4 py-3 whitespace-nowrap" style={{ minWidth: '17rem' }}>
-                                        <div className="flex items-center gap-2">
-                                            {prospect.videoUrl && (
-                                                <button onClick={() => handleWatchVideo(prospect)} aria-label={`Watch video for ${fullName}`} className="px-3 py-1.5 text-xs font-semibold rounded-lg focus:outline-none focus:ring-2 transition-colors shrink-0" style={{ background: 'var(--brand-500)', color: 'var(--ink-0)' }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--brand-600)')} onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-500)')}>Watch Video</button>
-                                            )}
-                                            <button onClick={() => router.push(`/coach/${coachId}/dashboard/player-profile/${prospect.playerId}`)} aria-label={`View profile for ${fullName}`} className="px-3 py-1.5 text-xs font-semibold rounded-lg focus:outline-none focus:ring-2 transition-colors shrink-0" style={{ background: 'var(--ink-3)', color: 'var(--text-mid)' }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--ink-2)')} onMouseLeave={e => (e.currentTarget.style.background = 'var(--ink-3)')}>View Profile</button>
-                                            <button onClick={() => router.push(`/coach/${coachId}/scholarships/new?playerId=${prospect.playerId}`)} aria-label={`Send scholarship to ${fullName}`} className="px-3 py-1.5 text-xs font-semibold rounded-lg focus:outline-none focus:ring-2 transition-colors shrink-0" style={{ background: 'oklch(75% 0.18 85 / 0.15)', color: 'oklch(75% 0.18 85)', border: '1px solid oklch(75% 0.18 85 / 0.3)' }} onMouseEnter={e => (e.currentTarget.style.background = 'oklch(75% 0.18 85 / 0.25)')} onMouseLeave={e => (e.currentTarget.style.background = 'oklch(75% 0.18 85 / 0.15)')}>Send Scholarship</button>
-                                            <FavoriteButton isFavorited={true} playerName={fullName} isDisabled={isRemoving} onClick={() => handleUnfavorite(prospect.playerId)} variant="row" />
-                                        </div>
+                                    <td className="px-4 py-3 text-sm font-semibold whitespace-nowrap" style={{ ...rowBorder, borderColor: 'var(--ink-3)', color: 'var(--text-hi)' }}>
+                                        {prospect.firstName} {prospect.lastName}
+                                    </td>
+                                    <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ ...rowBorder, borderColor: 'var(--ink-3)', color: 'var(--text-mid)' }}>{prospect.sport ?? '\u2014'}</td>
+                                    <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ ...rowBorder, borderColor: 'var(--ink-3)', color: 'var(--text-mid)' }}>{prospect.position ?? '\u2014'}</td>
+                                    <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ ...rowBorder, borderColor: 'var(--ink-3)', fontFamily: 'var(--font-geist-mono, monospace)', color: 'var(--text-mid)' }}>
+                                        {prospect.gpa !== null ? prospect.gpa : '\u2014'}
+                                    </td>
+                                    <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ ...rowBorder, borderColor: 'var(--ink-3)', color: 'var(--text-mid)' }}>
+                                        {prospect.highSchool ?? '\u2014'}
+                                    </td>
+                                    <td className="px-4 py-3 text-sm whitespace-nowrap" style={{ ...rowBorder, borderColor: 'var(--ink-3)', fontFamily: 'var(--font-geist-mono, monospace)', color: 'var(--text-mid)' }}>
+                                        {prospect.scholarshipAmount !== null ? `$${prospect.scholarshipAmount.toLocaleString()}` : '\u2014'}
+                                    </td>
+                                    <td className="px-4 py-3 whitespace-nowrap"
+                                        style={{ ...rowBorder, borderColor: 'var(--ink-3)', ...(isLast ? { borderBottomRightRadius: '0.75rem' } : {}) }}>
+                                        <RowActions
+                                            prospect={prospect}
+                                            coachId={coachId}
+                                            isRemoving={isRemoving}
+                                            onWatchVideo={handleWatchVideo}
+                                            onUnfavorite={handleUnfavorite}
+                                        />
                                     </td>
                                 </tr>
                             );

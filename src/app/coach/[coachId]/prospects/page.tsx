@@ -57,8 +57,8 @@ export default async function ProspectsPage({ params }: ProspectsPageProps) {
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen">
-            <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="min-h-screen overflow-x-hidden">
+            <div className="max-w-6xl mx-auto px-4 py-8 min-w-0">
 
                 {/* ── Page header — matches DashboardHeader style ── */}
                 <header className="relative overflow-hidden text-center px-6 pt-12 pb-10 mb-8 rounded-2xl">

@@ -11,6 +11,7 @@ import { checkCoachEmailExists, createCoach } from '@/authentication/db/coaches'
 import { logger } from '@/lib/logger';
 import { validateEmail, validatePassword, validateRequired } from '@/authentication/utils/validation';
 import { resolveReferralChain } from '@/earnings/utils/resolveReferralChain';
+import { isCloudEnvironment, invokeAuthLambda } from '@/lib/auth-client';
 
 // CORS helper function
 function getAllowedOrigin(request: NextRequest): string {
@@ -55,6 +56,22 @@ function validateStringLength(value: any, minLength: number, maxLength: number):
  * Handle POST request for coach registration
  */
 export async function POST(request: NextRequest) {
+    // In cloud environments, proxy to the Auth Lambda (Requirement 2.2)
+    if (isCloudEnvironment()) {
+        try {
+            const body = await request.json();
+            const lambdaResponse = await invokeAuthLambda('/auth/register/coach', body);
+            const data = await lambdaResponse.json();
+            return NextResponse.json(data, { status: lambdaResponse.status });
+        } catch (error) {
+            logger.error('Auth Lambda unreachable for coach registration', {}, error instanceof Error ? error : new Error('Unknown error'));
+            return NextResponse.json(
+                { success: false, message: 'Service temporarily unavailable' },
+                { status: 503 }
+            );
+        }
+    }
+
     const startTime = Date.now();
     const requestId = crypto.randomUUID();
 

@@ -3,6 +3,7 @@ import { getPlayerByEmail } from '@/authentication/db/players';
 import { verifyPassword } from '@/authentication/utils/password';
 import { generateToken } from '@/authentication/utils/jwt';
 import { logger } from '@/lib/logger';
+import { isCloudEnvironment, invokeAuthLambda } from '@/lib/auth-client';
 
 /**
  * Get allowed origin for CORS
@@ -68,6 +69,34 @@ function validateLoginRequest(body: any): { isValid: boolean; errors: Array<{ fi
  * Handle POST request for player login
  */
 export async function POST(request: NextRequest) {
+    // In cloud environments, proxy to the Auth Lambda (Requirement 2.2)
+    if (isCloudEnvironment()) {
+        try {
+            const body = await request.json();
+            const lambdaResponse = await invokeAuthLambda('/auth/login/player', body);
+            const data = await lambdaResponse.json();
+            const response = NextResponse.json(data, { status: lambdaResponse.status });
+            // Propagate session cookie from Lambda response if present
+            if (data.token) {
+                const isProduction = process.env.NODE_ENV === 'production';
+                response.cookies.set('session', data.token, {
+                    httpOnly: true,
+                    secure: isProduction,
+                    sameSite: 'strict',
+                    maxAge: 7 * 24 * 60 * 60,
+                    path: '/',
+                });
+            }
+            return response;
+        } catch (error) {
+            logger.error('Auth Lambda unreachable for player login', {}, error instanceof Error ? error : new Error('Unknown error'));
+            return NextResponse.json(
+                { success: false, message: 'Service temporarily unavailable' },
+                { status: 503 }
+            );
+        }
+    }
+
     const startTime = Date.now();
     const requestId = crypto.randomUUID();
 

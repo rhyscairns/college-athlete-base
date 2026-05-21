@@ -9,6 +9,8 @@ import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import { AuthLambdaConstruct } from './constructs/auth-lambda-construct';
+import { PaymentLambdaConstruct } from './constructs/payment-lambda-construct';
 
 export interface CollegeAthleteBaseStackProps extends cdk.StackProps {
     environment: 'development' | 'production';
@@ -97,6 +99,41 @@ export class CollegeAthleteBaseStack extends cdk.Stack {
             },
         });
 
+        // JWT secret for signing tokens
+        const jwtSecret = new secretsmanager.Secret(this, 'JwtSecret', {
+            secretName: `${environment}/college-athlete-base/jwt-secret`,
+            generateSecretString: {
+                secretStringTemplate: JSON.stringify({}),
+                generateStringKey: 'secret',
+                excludePunctuation: false,
+                includeSpace: false,
+                passwordLength: 64,
+            },
+        });
+
+        // Stripe keys secret — dev uses test keys, production uses live keys
+        // Values must be populated manually in Secrets Manager after stack creation.
+        // Expected keys: secret_key, webhook_secret, publishable_key,
+        //                monthly_price_id, annual_price_id
+        const stripeSecret = new secretsmanager.Secret(this, 'StripeKeys', {
+            secretName: `${environment}/college-athlete-base/stripe-keys`,
+            description: `Stripe API keys for ${environment} — populate manually after stack creation`,
+        });
+
+        // Security group for Lambda functions (auth, payment)
+        const lambdaSecurityGroup = new ec2.SecurityGroup(this, 'LambdaSecurityGroup', {
+            vpc,
+            description: `Lambda security group for ${environment}`,
+            allowAllOutbound: true,
+        });
+
+        // Allow Lambda to connect to database
+        dbSecurityGroup.addIngressRule(
+            lambdaSecurityGroup,
+            ec2.Port.tcp(5432),
+            'Allow PostgreSQL access from Lambda functions'
+        );
+
         // RDS PostgreSQL database
         const database = new rds.DatabaseInstance(this, 'Database', {
             engine: rds.DatabaseInstanceEngine.postgres({
@@ -183,9 +220,15 @@ export class CollegeAthleteBaseStack extends cdk.Stack {
                     environment: {
                         NODE_ENV: environment,
                         ENVIRONMENT: environment,
+                        RUNTIME_ENV: environment,
                         LOG_LEVEL: environment === 'production' ? 'info' : 'debug',
+                        // Secret ARNs — the app fetches the actual values from Secrets Manager at runtime
+                        DB_CREDENTIALS_SECRET_ARN: dbCredentials.secretArn,
+                        JWT_SECRET_ARN: jwtSecret.secretArn,
+                        STRIPE_SECRET_ARN: stripeSecret.secretArn,
                     },
                     secrets: {
+                        // Inject the full DB credentials JSON so the app can parse host/port/user/pass
                         DATABASE_URL: ecs.Secret.fromSecretsManager(dbCredentials),
                     },
                     logDriver: ecs.LogDrivers.awsLogs({
@@ -201,6 +244,13 @@ export class CollegeAthleteBaseStack extends cdk.Stack {
                 securityGroups: [appSecurityGroup],
             }
         );
+
+        // Grant the ECS task role read access to all secrets it needs.
+        // Requirements: 1.6 — all secrets stored in Secrets Manager
+        // Each secret is scoped to this environment only (secret names are prefixed with environment).
+        dbCredentials.grantRead(fargateService.taskDefinition.taskRole);
+        jwtSecret.grantRead(fargateService.taskDefinition.taskRole);
+        stripeSecret.grantRead(fargateService.taskDefinition.taskRole);
 
         // Auto-scaling configuration
         const scaling = fargateService.service.autoScaleTaskCount({
@@ -233,6 +283,38 @@ export class CollegeAthleteBaseStack extends cdk.Stack {
         fargateService.taskDefinition.defaultContainer?.addEnvironment(
             'REDIS_URL',
             `redis://${cacheCluster.attrRedisEndpointAddress}:${cacheCluster.attrRedisEndpointPort}`
+        );
+
+        // Auth Lambda — handles login and registration in cloud environments
+        // Requirements: 2.5, 2.6, 2.9, 2.11
+        const authLambda = new AuthLambdaConstruct(this, 'AuthLambda', {
+            environment,
+            vpc,
+            lambdaSecurityGroup,
+            dbCredentialsSecret: dbCredentials,
+            jwtSecret,
+        });
+
+        // Inject AUTH_LAMBDA_URL into the ECS task so Next.js can proxy auth requests
+        fargateService.taskDefinition.defaultContainer?.addEnvironment(
+            'AUTH_LAMBDA_URL',
+            authLambda.apiUrl
+        );
+
+        // Payment Lambda — handles Stripe webhook events in cloud environments
+        // Requirements: 4.5, 4.6, 4.7, 4.8
+        const paymentLambda = new PaymentLambdaConstruct(this, 'PaymentLambda', {
+            environment,
+            vpc,
+            lambdaSecurityGroup,
+            dbCredentialsSecret: dbCredentials,
+            stripeSecret,
+        });
+
+        // Inject PAYMENT_LAMBDA_URL into the ECS task for reference
+        fargateService.taskDefinition.defaultContainer?.addEnvironment(
+            'PAYMENT_LAMBDA_URL',
+            paymentLambda.webhookUrl
         );
 
         // Outputs

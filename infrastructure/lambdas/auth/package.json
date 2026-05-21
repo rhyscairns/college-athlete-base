@@ -1,0 +1,29 @@
+{
+    "name": "college-athlete-base-auth-lambda",
+    "version": "1.0.0",
+    "description": "Auth Lambda for College Athlete Base — handles login and registration in cloud environments",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "node esbuild.config.js",
+        "test": "jest",
+        "test:watch": "jest --watch",
+        "type-check": "tsc --noEmit"
+    },
+    "dependencies": {
+        "bcrypt": "6.0.0",
+        "jsonwebtoken": "9.0.3",
+        "pg": "8.16.3"
+    },
+    "devDependencies": {
+        "@types/aws-lambda": "8.10.149",
+        "@types/bcrypt": "6.0.0",
+        "@types/jest": "30.0.0",
+        "@types/jsonwebtoken": "9.0.10",
+        "@types/node": "24.0.0",
+        "@types/pg": "8.16.0",
+        "esbuild": "0.25.5",
+        "jest": "30.2.0",
+        "ts-jest": "29.4.0",
+        "typescript": "5.8.3"
+    }
+}

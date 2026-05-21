@@ -122,7 +122,56 @@ jobs:
         run: |
           echo "AWS CLI version:"
           aws --version
-      
+
+      - name: Fetch secrets from Secrets Manager
+        id: secrets
+        run: |
+          echo "Fetching environment variables from Secrets Manager..."
+
+          DB_SECRET=$(aws secretsmanager get-secret-value \
+            --secret-id "production/college-athlete-base/db-credentials" \
+            --query 'SecretString' --output text)
+
+          JWT_SECRET=$(aws secretsmanager get-secret-value \
+            --secret-id "production/college-athlete-base/jwt-secret" \
+            --query 'SecretString' --output text)
+
+          STRIPE_SECRET=$(aws secretsmanager get-secret-value \
+            --secret-id "production/college-athlete-base/stripe-keys" \
+            --query 'SecretString' --output text)
+
+          DB_HOST=$(echo "$DB_SECRET" | jq -r '.host')
+          DB_PORT=$(echo "$DB_SECRET" | jq -r '.port')
+          DB_NAME=$(echo "$DB_SECRET" | jq -r '.database')
+          DB_USER=$(echo "$DB_SECRET" | jq -r '.username')
+          DB_PASS=$(echo "$DB_SECRET" | jq -r '.password')
+          JWT_VALUE=$(echo "$JWT_SECRET" | jq -r '.secret')
+          STRIPE_PUB=$(echo "$STRIPE_SECRET" | jq -r '.publishable_key')
+          STRIPE_SEC=$(echo "$STRIPE_SECRET" | jq -r '.secret_key')
+          STRIPE_WEBHOOK=$(echo "$STRIPE_SECRET" | jq -r '.webhook_secret')
+          STRIPE_MONTHLY=$(echo "$STRIPE_SECRET" | jq -r '.monthly_price_id')
+          STRIPE_ANNUAL=$(echo "$STRIPE_SECRET" | jq -r '.annual_price_id')
+
+          # Mask all secret values in logs
+          echo "::add-mask::$DB_PASS"
+          echo "::add-mask::$JWT_VALUE"
+          echo "::add-mask::$STRIPE_SEC"
+          echo "::add-mask::$STRIPE_WEBHOOK"
+
+          echo "db-host=$DB_HOST" >> $GITHUB_OUTPUT
+          echo "db-port=$DB_PORT" >> $GITHUB_OUTPUT
+          echo "db-name=$DB_NAME" >> $GITHUB_OUTPUT
+          echo "db-user=$DB_USER" >> $GITHUB_OUTPUT
+          echo "db-pass=$DB_PASS" >> $GITHUB_OUTPUT
+          echo "jwt-secret=$JWT_VALUE" >> $GITHUB_OUTPUT
+          echo "stripe-pub=$STRIPE_PUB" >> $GITHUB_OUTPUT
+          echo "stripe-sec=$STRIPE_SEC" >> $GITHUB_OUTPUT
+          echo "stripe-webhook=$STRIPE_WEBHOOK" >> $GITHUB_OUTPUT
+          echo "stripe-monthly=$STRIPE_MONTHLY" >> $GITHUB_OUTPUT
+          echo "stripe-annual=$STRIPE_ANNUAL" >> $GITHUB_OUTPUT
+
+          echo "✅ Secrets fetched from Secrets Manager"
+
       - name: Create backup of production database
         run: |
           echo "Creating backup of production database before deployment..."
@@ -151,10 +200,64 @@ jobs:
             --task-definition ${{ secrets.PROD_ECS_TASK_FAMILY }} \
             --query 'taskDefinition' \
             --output json)
+
+          # Fetch Lambda URLs from CloudFormation stack outputs
+          AUTH_LAMBDA_URL=$(aws cloudformation describe-stacks \
+            --stack-name ProdStack \
+            --query "Stacks[0].Outputs[?ExportName=='production-auth-lambda-url'].OutputValue" \
+            --output text)
+
+          PAYMENT_LAMBDA_URL=$(aws cloudformation describe-stacks \
+            --stack-name ProdStack \
+            --query "Stacks[0].Outputs[?ExportName=='production-payment-webhook-url'].OutputValue" \
+            --output text)
           
-          # Create new task definition with updated image
-          NEW_TASK_DEF=$(echo "$CURRENT_TASK_DEF" | jq --arg IMAGE "$IMAGE_TAG" '
+          # Create new task definition with updated image and injected env vars from Secrets Manager
+          # Production uses Stripe live keys (pk_live_*, sk_live_*)
+          NEW_TASK_DEF=$(echo "$CURRENT_TASK_DEF" | jq \
+            --arg IMAGE "$IMAGE_TAG" \
+            --arg RUNTIME_ENV "production" \
+            --arg AUTH_LAMBDA_URL "$AUTH_LAMBDA_URL" \
+            --arg PAYMENT_LAMBDA_URL "$PAYMENT_LAMBDA_URL" \
+            --arg DB_HOST "${{ steps.secrets.outputs.db-host }}" \
+            --arg DB_PORT "${{ steps.secrets.outputs.db-port }}" \
+            --arg DB_NAME "${{ steps.secrets.outputs.db-name }}" \
+            --arg DB_USER "${{ steps.secrets.outputs.db-user }}" \
+            --arg DB_PASS "${{ steps.secrets.outputs.db-pass }}" \
+            --arg JWT_SECRET "${{ steps.secrets.outputs.jwt-secret }}" \
+            --arg STRIPE_PUB "${{ steps.secrets.outputs.stripe-pub }}" \
+            --arg STRIPE_SEC "${{ steps.secrets.outputs.stripe-sec }}" \
+            --arg STRIPE_WEBHOOK "${{ steps.secrets.outputs.stripe-webhook }}" \
+            --arg STRIPE_MONTHLY "${{ steps.secrets.outputs.stripe-monthly }}" \
+            --arg STRIPE_ANNUAL "${{ steps.secrets.outputs.stripe-annual }}" \
+            '
             .containerDefinitions[0].image = $IMAGE |
+            .containerDefinitions[0].environment = (
+              (.containerDefinitions[0].environment // []) |
+              map(select(.name | IN(
+                "RUNTIME_ENV","AUTH_LAMBDA_URL","PAYMENT_LAMBDA_URL",
+                "DATABASE_HOST","DATABASE_PORT","DATABASE_NAME","DATABASE_USER","DATABASE_PASSWORD",
+                "JWT_SECRET","NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY","STRIPE_SECRET_KEY",
+                "STRIPE_WEBHOOK_SECRET","STRIPE_MONTHLY_PRICE_ID","STRIPE_ANNUAL_PRICE_ID",
+                "NEXT_PUBLIC_APP_URL"
+              ) | not)
+            ) + [
+              {"name": "RUNTIME_ENV",                       "value": $RUNTIME_ENV},
+              {"name": "AUTH_LAMBDA_URL",                   "value": $AUTH_LAMBDA_URL},
+              {"name": "PAYMENT_LAMBDA_URL",                "value": $PAYMENT_LAMBDA_URL},
+              {"name": "DATABASE_HOST",                     "value": $DB_HOST},
+              {"name": "DATABASE_PORT",                     "value": $DB_PORT},
+              {"name": "DATABASE_NAME",                     "value": $DB_NAME},
+              {"name": "DATABASE_USER",                     "value": $DB_USER},
+              {"name": "DATABASE_PASSWORD",                 "value": $DB_PASS},
+              {"name": "JWT_SECRET",                        "value": $JWT_SECRET},
+              {"name": "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY","value": $STRIPE_PUB},
+              {"name": "STRIPE_SECRET_KEY",                 "value": $STRIPE_SEC},
+              {"name": "STRIPE_WEBHOOK_SECRET",             "value": $STRIPE_WEBHOOK},
+              {"name": "STRIPE_MONTHLY_PRICE_ID",           "value": $STRIPE_MONTHLY},
+              {"name": "STRIPE_ANNUAL_PRICE_ID",            "value": $STRIPE_ANNUAL},
+              {"name": "NEXT_PUBLIC_APP_URL",               "value": "https://collegeathletebase.com"}
+            ]) |
             del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)
           ')
           
@@ -386,10 +489,98 @@ jobs:
             echo "4. Fix issues and retry deployment" >> $GITHUB_STEP_SUMMARY
           fi
 
+  deploy-lambdas:
+    name: Build and Deploy Lambda Functions
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.PROD_AWS_REGION }}
+
+      - name: Build auth Lambda
+        working-directory: infrastructure/lambdas/auth
+        run: |
+          npm ci
+          npm run build
+          echo "✅ Auth Lambda built"
+
+      - name: Deploy auth Lambda
+        working-directory: infrastructure/lambdas/auth
+        run: |
+          cd dist && zip -r ../auth-lambda.zip . && cd ..
+          aws lambda update-function-code \
+            --function-name "production-college-athlete-base-auth" \
+            --zip-file fileb://auth-lambda.zip \
+            --publish
+          echo "✅ Auth Lambda deployed"
+
+      - name: Wait for auth Lambda update to complete
+        run: |
+          aws lambda wait function-updated \
+            --function-name "production-college-athlete-base-auth"
+          echo "✅ Auth Lambda update complete"
+
+      - name: Build payment Lambda
+        working-directory: infrastructure/lambdas/payment
+        run: |
+          npm ci
+          npm run build
+          echo "✅ Payment Lambda built"
+
+      - name: Deploy payment Lambda
+        # Production payment Lambda uses Stripe live keys (configured in Secrets Manager)
+        working-directory: infrastructure/lambdas/payment
+        run: |
+          cd dist && zip -r ../payment-lambda.zip . && cd ..
+          aws lambda update-function-code \
+            --function-name "production-college-athlete-base-payment" \
+            --zip-file fileb://payment-lambda.zip \
+            --publish
+          echo "✅ Payment Lambda deployed (production — Stripe live keys)"
+
+      - name: Wait for payment Lambda update to complete
+        run: |
+          aws lambda wait function-updated \
+            --function-name "production-college-athlete-base-payment"
+          echo "✅ Payment Lambda update complete"
+
+      - name: Generate Lambda deployment summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "## Lambda Deployment Successful :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Lambda | Mode | Status |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|------|--------|" >> $GITHUB_STEP_SUMMARY
+            echo "| production-college-athlete-base-auth | — | ✅ Deployed |" >> $GITHUB_STEP_SUMMARY
+            echo "| production-college-athlete-base-payment | Stripe live keys | ✅ Deployed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## Lambda Deployment Failed :x:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "ECS deployment succeeded but Lambda deployment failed." >> $GITHUB_STEP_SUMMARY
+            echo "Auth and payment flows may be degraded in the production environment." >> $GITHUB_STEP_SUMMARY
+          fi
+
   post-deployment-verification:
     name: Post-Deployment Verification
     runs-on: ubuntu-latest
-    needs: [prepare-deployment, deploy-production]
+    needs: [prepare-deployment, deploy-production, deploy-lambdas]
     if: success()
     
     steps:
@@ -433,7 +624,7 @@ jobs:
   notify:
     name: Send Deployment Notifications
     runs-on: ubuntu-latest
-    needs: [prepare-deployment, deploy-production, post-deployment-verification]
+    needs: [prepare-deployment, deploy-production, deploy-lambdas, post-deployment-verification]
     if: always()
     
     steps:

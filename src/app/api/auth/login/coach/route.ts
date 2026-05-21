@@ -3,6 +3,7 @@ import { getCoachByEmail } from '@/authentication/db/coaches';
 import { verifyPassword } from '@/authentication/utils/password';
 import { generateToken } from '@/authentication/utils/jwt';
 import { logger } from '@/lib/logger';
+import { isCloudEnvironment, invokeAuthLambda } from '@/lib/auth-client';
 
 // Constants
 const API_ROUTE = '/api/auth/login/coach';
@@ -200,6 +201,33 @@ async function authenticateCoach(
  * Handle POST request for coach login
  */
 export async function POST(request: NextRequest) {
+    // In cloud environments, proxy to the Auth Lambda (Requirement 2.2)
+    if (isCloudEnvironment()) {
+        try {
+            const body = await request.json();
+            const lambdaResponse = await invokeAuthLambda('/auth/login/coach', body);
+            const data = await lambdaResponse.json();
+            const response = NextResponse.json(data, { status: lambdaResponse.status });
+            if (data.token) {
+                const isProduction = process.env.NODE_ENV === 'production';
+                response.cookies.set('session', data.token, {
+                    httpOnly: true,
+                    secure: isProduction,
+                    sameSite: 'strict',
+                    maxAge: 7 * 24 * 60 * 60,
+                    path: '/',
+                });
+            }
+            return response;
+        } catch (error) {
+            logger.error('Auth Lambda unreachable for coach login', {}, error instanceof Error ? error : new Error('Unknown error'));
+            return NextResponse.json(
+                { success: false, message: 'Service temporarily unavailable' },
+                { status: 503 }
+            );
+        }
+    }
+
     const startTime = Date.now();
     const requestId = crypto.randomUUID();
 

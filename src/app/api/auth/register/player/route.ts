@@ -4,6 +4,7 @@ import { checkEmailExists, createPlayer } from '@/authentication/db/players';
 import { hashPassword } from '@/authentication/utils/password';
 import { logger } from '@/lib/logger';
 import { resolveReferralChain } from '@/earnings/utils/resolveReferralChain';
+import { isCloudEnvironment, invokeAuthLambda } from '@/lib/auth-client';
 
 /**
  * Get allowed origin for CORS
@@ -42,6 +43,22 @@ export async function OPTIONS(request: NextRequest) {
  * Handle POST request for player registration
  */
 export async function POST(request: NextRequest) {
+    // In cloud environments, proxy to the Auth Lambda (Requirement 2.2)
+    if (isCloudEnvironment()) {
+        try {
+            const body = await request.json();
+            const lambdaResponse = await invokeAuthLambda('/auth/register/player', body);
+            const data = await lambdaResponse.json();
+            return NextResponse.json(data, { status: lambdaResponse.status });
+        } catch (error) {
+            logger.error('Auth Lambda unreachable for player registration', {}, error instanceof Error ? error : new Error('Unknown error'));
+            return NextResponse.json(
+                { success: false, message: 'Service temporarily unavailable' },
+                { status: 503 }
+            );
+        }
+    }
+
     const startTime = Date.now();
     const requestId = crypto.randomUUID();
 
