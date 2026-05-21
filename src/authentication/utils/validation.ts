@@ -10,16 +10,34 @@ export const validateRequired = (value: string | undefined | null): boolean => {
 };
 
 /**
- * Validates if an email address is properly formatted
+ * Validates if an email address is properly formatted.
+ * Uses a split-based approach instead of a nested-quantifier regex
+ * to avoid ReDoS via catastrophic backtracking.
  */
 export const validateEmail = (email: string): boolean => {
     if (!validateRequired(email)) {
         return false;
     }
 
-    // RFC 5322 compliant email regex (simplified but robust)
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email.trim());
+    const trimmed = email.trim();
+
+    // Must contain exactly one '@'
+    const atIndex = trimmed.indexOf('@');
+    if (atIndex <= 0 || atIndex !== trimmed.lastIndexOf('@')) return false;
+
+    const local = trimmed.slice(0, atIndex);
+    const domain = trimmed.slice(atIndex + 1);
+
+    // Local part: non-empty, no whitespace
+    if (!local || /\s/.test(local)) return false;
+
+    // Domain: must contain at least one '.', no whitespace,
+    // and the TLD (part after last '.') must be non-empty
+    const dotIndex = domain.lastIndexOf('.');
+    if (dotIndex <= 0 || dotIndex === domain.length - 1) return false;
+    if (/\s/.test(domain)) return false;
+
+    return true;
 };
 
 /**

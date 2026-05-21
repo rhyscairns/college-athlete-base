@@ -7,7 +7,6 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { HeroSection } from '@/profile/player/components/view-page/HeroSection';
 import {
     createMockPlayerProfile,
@@ -59,7 +58,6 @@ describe('Player Profile Sport/Position Edit - Integration Tests', () => {
         });
 
         it('should show "No sports found" when no matches', async () => {
-            const user = userEvent.setup();
             const mockPlayer = createMockPlayerProfile();
 
             render(
@@ -73,8 +71,7 @@ describe('Player Profile Sport/Position Edit - Integration Tests', () => {
             );
 
             const sportInput = screen.getByLabelText(/sport/i);
-            await user.clear(sportInput);
-            await user.type(sportInput, 'xyz');
+            fireEvent.change(sportInput, { target: { value: 'xyz' } });
 
             await waitFor(() => {
                 expect(screen.getByText(/no sports found/i)).toBeInTheDocument();
@@ -220,7 +217,6 @@ describe('Player Profile Sport/Position Edit - Integration Tests', () => {
 
     describe('Validation Prevents Invalid Selections', () => {
         it('should show validation error for invalid sport selection', async () => {
-            const user = userEvent.setup();
             const mockPlayer = createMockPlayerProfile();
 
             render(
@@ -234,8 +230,7 @@ describe('Player Profile Sport/Position Edit - Integration Tests', () => {
             );
 
             const sportInput = screen.getByLabelText(/sport/i);
-            await user.clear(sportInput);
-            await user.type(sportInput, 'InvalidSport');
+            fireEvent.change(sportInput, { target: { value: 'InvalidSport' } });
             fireEvent.blur(sportInput);
 
             await waitFor(() => {
@@ -244,7 +239,6 @@ describe('Player Profile Sport/Position Edit - Integration Tests', () => {
         });
 
         it('should clear validation error when valid selection is made', async () => {
-            const user = userEvent.setup();
             const mockPlayer = createMockPlayerProfile();
 
             render(
@@ -258,24 +252,24 @@ describe('Player Profile Sport/Position Edit - Integration Tests', () => {
             );
 
             const sportInput = screen.getByLabelText(/sport/i) as HTMLInputElement;
-            await user.clear(sportInput);
-            await user.type(sportInput, 'InvalidSport');
+
+            // Trigger validation error with an invalid sport
+            fireEvent.change(sportInput, { target: { value: 'InvalidSport' } });
             fireEvent.blur(sportInput);
 
             await waitFor(() => {
                 expect(screen.getByText(/please select a sport from the list/i)).toBeInTheDocument();
             });
 
-            // Clear and select valid sport
-            await user.clear(sportInput);
-            await user.type(sportInput, 'Soc');
+            // Clear and type a valid search term to open the dropdown
+            fireEvent.change(sportInput, { target: { value: 'Soc' } });
 
             await waitFor(() => {
                 expect(screen.getByRole('listbox')).toBeInTheDocument();
             });
 
             const option = screen.getByRole('option', { name: /soccer/i });
-            await user.click(option);
+            fireEvent.click(option);
 
             await waitFor(() => {
                 expect(screen.queryByText(/please select a sport from the list/i)).not.toBeInTheDocument();
